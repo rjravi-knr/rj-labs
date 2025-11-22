@@ -1,5 +1,5 @@
 {
-  "name": "my-turborepo",
+  "name": "rj-suite",
   "private": true,
   "scripts": {
     "build": "turbo run build",
