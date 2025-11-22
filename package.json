@@ -1,5 +1,5 @@
 {
-  "name": "rj-suite",
+  "name": "rj-labs",
   "private": true,
   "scripts": {
     "build": "turbo run build",
