@@ -30,10 +30,16 @@ We follow the **Conventional Commits** specification. Each commit should define 
 
 ### Format
 ```
-<type>(<scope>): <description>
+<type>(<application>): <description>
 
 [optional body]
 ```
+
+### Components
+- **Type**: The kind of change (feat, fix, etc.)
+- **Application**: The specific app or package being changed (e.g., `web`, `docs`, `ui`, `config`)
+- **Description**: A short summary of the change
+- **Body**: (Optional) Detailed explanation of the change
 
 ### Types
 - **feat**: A new feature
@@ -46,6 +52,7 @@ We follow the **Conventional Commits** specification. Each commit should define 
 - **chore**: Changes to the build process or auxiliary tools and libraries such as documentation generation
 
 ### Examples
-- `feat(auth): implement login with email`
+- `feat(web): implement login with email`
 - `fix(ui): resolve button alignment issue on mobile`
-- `docs(readme): update installation instructions`
+- `docs(docs): update installation instructions`
+- `chore(config): update eslint rules`
