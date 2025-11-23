@@ -1,6 +1,6 @@
 
 import React from "react"
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { Meta, StoryObj } from "@storybook/react";
 import { AspectRatio } from "./aspect-ratio";
 
 const meta: Meta<typeof AspectRatio> = {
@@ -45,7 +45,7 @@ export const Square: Story = {
       />
     ),
   },
-  render: (args) => (
+  render: (args: any) => (
     <div style={{ width: 400, border: '1px grey', borderRadius: 12, padding: 8, background: '#fafafa' }}>
       <AspectRatio {...args} />
     </div>
@@ -63,7 +63,7 @@ export const FourByThree: Story = {
       />
     ),
   },
-  render: (args) => (
+  render: (args: any) => (
     <div style={{ width: 500, border: '1px grey', borderRadius: 12, padding: 8, background: '#fafafa' }}>
       <AspectRatio {...args} />
     </div>

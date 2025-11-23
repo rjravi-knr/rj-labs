@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { Meta, StoryObj } from "@storybook/react";
 import { Avatar, AvatarImage, AvatarFallback } from "./avatar";
 
 const meta: Meta<typeof Avatar> = {
@@ -99,13 +99,8 @@ export const AllVariantsAndSizes: Story = {
 
 // Playground story for controls
 export const Playground: Story = {
-  args: {
-    size: "md",
-    src: undefined,
-    alt: "User",
-    // fallback removed from args
-  },
-  render: (args) => {
+  args: {} as any,
+  render: (args: any) => {
     const fallback = "AB";
     return (
       <div style={{ width: 80, height: 80, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -118,11 +113,6 @@ export const Playground: Story = {
   },
   argTypes: {
     // Removed 'src' as it is not recognized in the Avatar component's argTypes
-    alt: {
-      control: "text",
-      description: "Alt text for image",
-      table: { category: "AvatarImage" },
-    },
     // fallback removed from argTypes
     size: {
       control: { type: "select" },

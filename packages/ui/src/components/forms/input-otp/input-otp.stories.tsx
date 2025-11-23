@@ -1,3 +1,4 @@
+import React from "react"
 import type { Meta, StoryObj } from "@storybook/react"
 import {
   InputOTP,
@@ -13,29 +14,46 @@ const meta = {
   argTypes: {},
 } satisfies Meta<typeof InputOTP>
 
-export default meta
-type Story = StoryObj<typeof meta>
+const InputOTPDemo = () => {
+  const [value, setValue] = React.useState("")
 
-export const Default: Story = {
-  args: {
-    maxLength: 6,
-    children: (
-      <>
+  return (
+    <div className="space-y-2">
+      <InputOTP
+        maxLength={6}
+        value={value}
+        onChange={(value) => setValue(value)}
+      >
         <InputOTPGroup>
           <InputOTPSlot index={0} />
           <InputOTPSlot index={1} />
           <InputOTPSlot index={2} />
+          <InputOTPSlot index={3} />
         </InputOTPGroup>
         <InputOTPSeparator />
         <InputOTPGroup>
-          <InputOTPSlot index={3} />
           <InputOTPSlot index={4} />
           <InputOTPSlot index={5} />
         </InputOTPGroup>
-      </>
-    ),
+      </InputOTP>
+      <div className="text-center text-sm">
+        {value === "" ? (
+          <>Enter your one-time password.</>
+        ) : (
+          <>You entered: {value}</>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export default meta
+type Story = StoryObj<typeof meta>
+
+export const Default: Story = {
+  render: () => <InputOTPDemo />,
+  args: {
+    maxLength: 6,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as any,
-  render: (args) => (
-    <InputOTP {...args} />
-  ),
 }

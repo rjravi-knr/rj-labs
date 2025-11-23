@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { cn } from "@labs/ui/lib/utils"
 import { Slider } from "./slider"
 
 const meta = {

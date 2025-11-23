@@ -3,7 +3,7 @@ import * as ToggleGroupPrimitive from "@radix-ui/react-toggle-group"
 import { type VariantProps } from "class-variance-authority"
 
 import { cn } from "@labs/ui/lib/utils"
-import { toggleVariants } from "../../atoms/toggle"
+import { toggleVariants } from "../../atoms/toggle/toggle"
 
 const ToggleGroup = React.forwardRef<
   React.ElementRef<typeof ToggleGroupPrimitive.Root>,
@@ -13,6 +13,7 @@ const ToggleGroup = React.forwardRef<
   <ToggleGroupPrimitive.Root
     ref={ref}
     className={cn("flex items-center justify-center gap-1", className)}
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     {...(props as any)}
   >
     <ToggleGroupContext.Provider value={{ variant, size }}>
@@ -35,7 +36,8 @@ const ToggleGroupItem = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof ToggleGroupPrimitive.Item> &
     VariantProps<typeof toggleVariants>
 >(({ className, children, variant, size, value, ...props }, ref) => {
-  const context = React.useContext(ToggleGroupContext)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const context = React.useContext(ToggleGroupContext) as any
 
   return (
     <ToggleGroupPrimitive.Item

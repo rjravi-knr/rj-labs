@@ -1,6 +1,5 @@
 import * as React from "react"
 import { Check, ChevronsUpDown } from "lucide-react"
-import { Command as CommandPrimitive } from "cmdk"
 
 import { cn } from "@labs/ui/lib/utils"
 import { Button } from "../../atoms/button"
@@ -11,7 +10,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "../../navigation/command"
+} from "../../navigation/command/command"
 import {
   Popover,
   PopoverContent,

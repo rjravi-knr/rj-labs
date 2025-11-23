@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { Meta, StoryObj } from "@storybook/react";
 import { Alert, AlertTitle, AlertDescription } from "./alert";
 
 const meta: Meta<typeof Alert> = {
@@ -62,7 +62,7 @@ export const Default: Story = {
     children: "This is an alert message.",
     variant: "default",
   },
-  render: (args: any) => (
+  render: (args) => (
     <div style={{ width: "50vw", minHeight: 120 }}>
       <Alert {...args} style={{ ...args.style, width: "100%" }} />
     </div>
@@ -74,7 +74,7 @@ export const Destructive: Story = {
     children: "This is a destructive alert.",
     variant: "destructive",
   },
-  render: (args: any) => (
+  render: (args) => (
     <div style={{ width: "50vw", minHeight: 120 }}>
       <Alert {...args} />
     </div>
@@ -85,7 +85,7 @@ export const WithTitleAndDescription: Story = {
   args: {
     variant: "default",
   },
-  render: (args: any) => (
+  render: (args) => (
     <div style={{ width: "50vw", minHeight: 120 }}>
       <Alert {...args} style={{ ...args.style, width: "100%" }}>
         <AlertTitle>Heads up!</AlertTitle>
@@ -101,7 +101,7 @@ export const Playground: Story = {
     variant: "default",
     children: "This is a customizable alert.",
   },
-  render: (args: any) => (
+  render: (args) => (
     <div style={{ width: "50vw", minHeight: 120 }}>
       <Alert {...args} style={{ ...args.style, width: "100%" }} />
     </div>

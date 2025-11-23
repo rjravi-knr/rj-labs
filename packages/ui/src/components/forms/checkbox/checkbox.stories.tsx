@@ -1,5 +1,5 @@
 import React from "react"
-import { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from "@storybook/react"
 import { Checkbox } from "./checkbox"
 
 const meta: Meta = {
@@ -71,8 +71,9 @@ export const Disabled: Story = {
 }
 
 export const Playground: Story = {
-  args: {},
-  render: (args) => (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  args: {} as any,
+  render: (args: any) => (
     <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
       <Checkbox {...args} id="playground" />
       <span>Playground</span>

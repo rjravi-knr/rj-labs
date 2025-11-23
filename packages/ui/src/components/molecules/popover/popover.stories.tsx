@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { Button } from "../../atoms/button"
-import { Input } from "../../forms/input"
-import { Label } from "../../atoms/typography" // Assuming Label is in typography or I might need to create it. Wait, Label is usually a primitive.
+import { Input } from "../../forms/input/input"
 // Checking plan: Label is in Forms section, not implemented yet.
 // I'll use a simple label or just text for now.
 // Or I can check if Label exists. It was listed as [ ] Label in Forms.

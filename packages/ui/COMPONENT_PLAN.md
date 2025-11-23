@@ -61,25 +61,25 @@ Components for user data entry.
 ## 4. Navigation (Wayfinding)
 Components to help users move through the app.
 
-- [ ] **Tabs**: Tabbed interface.
+- [x] **Tabs**: Tabbed interface. `src/components/navigation/tabs`
 - [x] **Breadcrumb**: Path navigation. `src/components/navigation/breadcrumb`
-- [ ] **Pagination**: Page navigation.
-- [ ] **DropdownMenu**: Menu actions.
-- [ ] **Menubar**: Desktop-style menu bar.
-- [ ] **NavigationMenu**: Complex site navigation.
+- [x] **Pagination**: Page navigation. `src/components/navigation/pagination`
+- [x] **DropdownMenu**: Menu actions. `src/components/navigation/dropdown-menu`
+- [x] **Menubar**: Desktop-style menu bar. `src/components/navigation/menubar`
+- [x] **NavigationMenu**: Complex site navigation. `src/components/navigation/navigation-menu`
 - [x] **Command**: Command palette. `src/components/navigation/command`
 - [x] **ContextMenu**: Right-click menu. `src/components/navigation/context-menu`
 - [ ] **Sidebar**: Application sidebar.
-- [ ] **Drawer**: Mobile-friendly side overlay.
+- [x] **Drawer**: Mobile-friendly side overlay. `src/components/navigation/drawer`
 
 ## 5. Feedback & Overlays
 Components for user interaction feedback and modal content.
 
 - [x] **Dialog (Modal)**: Critical interaction overlay. `src/components/feedback/dialog`
-- [ ] **Sheet**: Side-anchored overlay (Sidebar/Drawer).
+- [x] **Sheet**: Side-anchored overlay (Sidebar/Drawer). `src/components/feedback/sheet`
 - [ ] **Toast**: Temporary notification.
-- [ ] **Sonner**: Stackable toast notifications.
-- [ ] **Progress**: Progress bar.
+- [x] **Sonner**: Stackable toast notifications. `src/components/feedback/sonner`
+- [x] **Progress**: Progress bar. `src/components/feedback/progress`
 - [x] **AlertDialog**: Critical confirmation dialog. `src/components/feedback/alert-dialog`
 
 ## 6. Data Display

@@ -1,5 +1,5 @@
 import React from "react"
-import { Meta, StoryObj } from "@storybook/react-vite"
+import type { Meta, StoryObj } from "@storybook/react"
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -92,7 +92,7 @@ export const WithEllipsis: Story = {
 
 export const Playground: Story = {
   args: {},
-  render: (_args: any) => (
+  render: () => (
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem>

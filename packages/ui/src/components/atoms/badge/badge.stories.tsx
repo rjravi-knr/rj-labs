@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { Meta, StoryObj } from "@storybook/react";
 import { Badge } from "./badge";
 
 const meta: Meta<typeof Badge> = {
@@ -49,7 +49,7 @@ export const Playground: Story = {
     children: "Badge",
     variant: "default",
   },
-  render: (args) => (
+  render: (args: any) => (
     <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 100 }}>
       <Badge {...args} />
     </div>
