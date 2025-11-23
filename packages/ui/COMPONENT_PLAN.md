@@ -42,21 +42,21 @@ Simple combinations of atoms.
 Components for user data entry.
 
 - [x] **Input**: Text input fields. `src/components/forms/input`
-- [ ] **Textarea**: Multi-line text input.
+- [x] **Textarea**: Multi-line text input. `src/components/forms/textarea`
 - [x] **Checkbox**: Binary choice. `src/components/forms/checkbox`
-- [ ] **RadioGroup**: Single choice from list.
-- [ ] **Switch**: Toggle switch.
-- [ ] **Select**: Dropdown selection.
+- [x] **RadioGroup**: Single choice from list. `src/components/forms/radio-group`
+- [x] **Switch**: Toggle switch. `src/components/forms/switch`
+- [x] **Select**: Dropdown selection. `src/components/forms/select`
 - [ ] **NativeSelect**: Native browser dropdown.
-- [ ] **Slider**: Range selection.
-- [ ] **Form**: Wrapper for form validation and layout (React Hook Form).
+- [x] **Slider**: Range selection. `src/components/forms/slider`
+- [x] **Form**: Wrapper for form validation and layout (React Hook Form). `src/components/forms/form`
 - [ ] **Field**: Generic form field wrapper.
-- [ ] **Label**: Accessible field labels.
-- [ ] **Combobox**: Searchable dropdown.
-- [ ] **DatePicker**: Date selection input.
-- [ ] **InputOTP**: One-time password input.
+- [x] **Label**: Accessible field labels. `src/components/forms/label`
+- [x] **Combobox**: Searchable dropdown. `src/components/forms/combobox`
+- [x] **DatePicker**: Date selection input. `src/components/forms/date-picker`
+- [x] **InputOTP**: One-time password input. `src/components/forms/input-otp`
 - [ ] **InputGroup**: Group of related inputs.
-- [ ] **ToggleGroup**: Group of two-state buttons.
+- [x] **ToggleGroup**: Group of two-state buttons. `src/components/forms/toggle-group`
 
 ## 4. Navigation (Wayfinding)
 Components to help users move through the app.
