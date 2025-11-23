@@ -4,26 +4,40 @@ import { Meta } from '@storybook/addon-docs';
 
 # Installation
 
-To use the UI components in your project, install the `@workspace/ui` package:
+To use the UI components in your project, install the `@labs/ui` package. Since this is a workspace package, you should add it to your project's dependencies.
+
+## Using pnpm (Recommended)
 
 ```sh
-pnpm add @workspace/ui
+pnpm add @labs/ui
 ```
 
-or with npm:
+## Usage
 
-```sh
-npm install @workspace/ui
-```
-
-or with yarn:
-
-```sh
-yarn add @workspace/ui
-```
-
-Then import the components you need:
+Import the components you need directly from the package:
 
 ```tsx
-import { Card, Button } from '@workspace/ui';
+import { Button } from '@labs/ui';
+import { Card, CardHeader, CardContent } from '@labs/ui';
+
+export default function MyComponent() {
+  return (
+    <Card>
+      <CardHeader>
+        <h2 className="text-lg font-bold">Hello World</h2>
+      </CardHeader>
+      <CardContent>
+        <Button>Click me</Button>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+## Styles
+
+Make sure to import the global styles in your application's entry point (e.g., `layout.tsx` or `_app.tsx`):
+
+```tsx
+import '@labs/ui/globals.css';
 ```

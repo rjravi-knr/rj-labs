@@ -4,30 +4,104 @@ import { Meta } from '@storybook/addon-docs';
 
 # Theming
 
-The UI components support theming via CSS variables and utility classes (e.g., Tailwind CSS).
+The UI library uses CSS variables for theming, allowing for easy customization and dark mode support. These variables are defined in `src/styles/globals.css`.
 
-## CSS Variables
+## Color Palette
 
-Override CSS variables to customize appearance:
+The color palette is semantic, meaning colors are named after their function rather than their hue.
 
 ```css
 :root {
-  --card-bg: #fff;
-  --card-foreground: #222;
-  --card-border-radius: 0.75rem;
-  --card-border-color: #e5e7eb;
-  --card-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+
+  --primary: 222.2 47.4% 11.2%;
+  --primary-foreground: 210 40% 98%;
+
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+
+  --accent: 210 40% 96.1%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 222.2 84% 4.9%;
+
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+
+  --card: 222.2 84% 4.9%;
+  --card-foreground: 210 40% 98%;
+
+  --popover: 222.2 84% 4.9%;
+  --popover-foreground: 210 40% 98%;
+
+  --primary: 210 40% 98%;
+  --primary-foreground: 222.2 47.4% 11.2%;
+
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
+
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 212.7 26.8% 83.9%;
 }
 ```
 
-## Tailwind Example
+## Customizing
 
-Use Tailwind classes via the `className` prop:
+To customize the theme, you can override these CSS variables in your application's global CSS file.
 
-```tsx
-<Card className="bg-gray-100 text-gray-900 rounded-2xl shadow-lg" />
+### Example: Changing the Primary Color
+
+To change the primary color to blue, update the `--primary` and `--primary-foreground` variables:
+
+```css
+:root {
+  --primary: 221.2 83.2% 53.3%; /* Blue 600 */
+  --primary-foreground: 210 40% 98%;
+}
 ```
 
-## Dark Mode
+## Typography
 
-Components support dark mode if your theme provides the appropriate classes or variables.
+The library uses standard Tailwind CSS font utilities. You can customize the font family in your `tailwind.config.js`.
+
+```js
+// tailwind.config.js
+module.exports = {
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+      },
+    },
+  },
+}
+```

@@ -33,10 +33,10 @@ Simple combinations of atoms.
 - [x] **Alert**: Status message with icon. `src/components/molecules/alert`
 - [x] **Accordion**: Collapsible content sections. `src/components/molecules/accordion`
 - [x] **Collapsible**: Simple expand/collapse. `src/components/molecules/collapsible`
-- [ ] **Tooltip**: Hover information.
-- [ ] **Popover**: Click-triggered overlay content.
-- [ ] **HoverCard**: Preview content on hover.
-- [ ] **ButtonGroup**: Group of buttons.
+- [x] **Tooltip**: Hover information. `src/components/molecules/tooltip`
+- [x] **Popover**: Click-triggered overlay content. `src/components/molecules/popover`
+- [x] **HoverCard**: Preview content on hover. `src/components/molecules/hover-card`
+- [x] **ButtonGroup**: Group of buttons. `src/components/molecules/button-group`
 
 ## 3. Forms (Input & Control)
 Components for user data entry.

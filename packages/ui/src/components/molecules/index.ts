@@ -3,3 +3,7 @@ export * from "./accordion";
 export * from "./alert";
 export * from "./card";
 export * from "./collapsible";
+export * from "./tooltip";
+export * from "./popover";
+export * from "./hover-card";
+export * from "./button-group";
