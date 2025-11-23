@@ -1,8 +1,18 @@
 {
   "extends": "@labs/typescript-config/react-library.json",
   "compilerOptions": {
-    "outDir": "dist"
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@ui/*": ["./src/components/*"],
+      "@ui/elements": ["./src/components/elements/index.js"],
+      "@ui/feedback": ["./src/components/feedback/index.js"],
+      "@ui/layouts": ["./src/components/layouts/index.js"],
+      "@ui/forms": ["./src/components/forms/index.js"],
+      "@labs/ui/*": ["./src/*"]
+    }
   },
-  "include": ["src"],
+  "include": ["."],
   "exclude": ["node_modules", "dist"]
 }

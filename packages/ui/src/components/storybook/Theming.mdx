@@ -1,0 +1,33 @@
+import { Meta } from '@storybook/addon-docs';
+
+<Meta title="Get Started/Theming" />
+
+# Theming
+
+The UI components support theming via CSS variables and utility classes (e.g., Tailwind CSS).
+
+## CSS Variables
+
+Override CSS variables to customize appearance:
+
+```css
+:root {
+  --card-bg: #fff;
+  --card-foreground: #222;
+  --card-border-radius: 0.75rem;
+  --card-border-color: #e5e7eb;
+  --card-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+```
+
+## Tailwind Example
+
+Use Tailwind classes via the `className` prop:
+
+```tsx
+<Card className="bg-gray-100 text-gray-900 rounded-2xl shadow-lg" />
+```
+
+## Dark Mode
+
+Components support dark mode if your theme provides the appropriate classes or variables.
