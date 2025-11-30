@@ -1,118 +1,75 @@
-import Image, { type ImageProps } from "next/image";
-import { Button } from "@labs/ui/button";
-import styles from "./page.module.css";
+'use client';
 
-type Props = Omit<ImageProps, "src"> & {
-  srcLight: string;
-  srcDark: string;
-};
+import { Editor } from '@craftjs/core';
+import { Toolbox } from '@/components/editor/Toolbox';
+import { Viewport } from '@/components/editor/Viewport';
+import { SettingsPanel } from '@/components/editor/SettingsPanel';
+import { Toolbar } from '@/components/editor/Toolbar';
+import { RenderNode } from '@/components/editor/RenderNode';
+import { EditorInit } from '@/components/editor/EditorInit';
 
-const ThemeImage = (props: Props) => {
-  const { srcLight, srcDark, ...rest } = props;
+// Import all user components
+import { Container } from '@/components/user/Container';
+import { Text } from '@/components/user/Text';
+import { Button } from '@/components/user/Button';
+import { ImageComponent } from '@/components/user/Image';
+import { Hero } from '@/components/user/Hero';
+import { CourseCard } from '@/components/user/CourseCard';
+import { FAQ } from '@/components/user/FAQ';
+import { CopilotSidebar } from '@/components/ai/CopilotSidebar';
+import { useEffect, useState } from 'react';
+
+export default function BuilderPage() {
+  const [isCopilotOpen, setIsCopilotOpen] = useState(false);
+
+  // Load saved page on mount
+  useEffect(() => {
+    const savedPage = localStorage.getItem('builder-page');
+    if (savedPage && window.location.search.includes('load=true')) {
+      // Will be loaded by Editor onNodesChange
+    }
+
+    const handleToggle = () => setIsCopilotOpen(prev => !prev);
+    document.addEventListener('toggle-copilot', handleToggle);
+    return () => document.removeEventListener('toggle-copilot', handleToggle);
+  }, []);
 
   return (
-    <>
-      <Image {...rest} src={srcLight} className="imgLight" />
-      <Image {...rest} src={srcDark} className="imgDark" />
-    </>
-  );
-};
+    <div className="h-screen flex flex-col">
+      <Editor
+        resolver={{
+          Container,
+          Text,
+          Button,
+          Image: ImageComponent,
+          Hero,
+          CourseCard,
+          FAQ,
+        }}
+        onRender={RenderNode}
 
-export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <h1 style={{ fontSize: '3rem', margin: '0 0 1rem 0', background: 'linear-gradient(to right, #3b82f6, #8b5cf6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-          RJ Suite
-        </h1>
-        <p style={{ fontSize: '1.2rem', color: '#666', marginBottom: '2rem' }}>
-          A Modern SaaS System Monorepo
-        </p>
-
-        <div style={{ maxWidth: '600px', textAlign: 'left', marginBottom: '2rem' }}>
-          <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>📦 About This Monorepo</h2>
-          <p style={{ marginBottom: '1rem', lineHeight: '1.6' }}>
-            This is a <strong>Turborepo monorepo</strong> setup for the RJ Suite SaaS System. 
-            It contains multiple applications and shared packages organized efficiently.
-          </p>
-
-          <div style={{ background: '#f5f5f5', padding: '1.5rem', borderRadius: '8px', marginBottom: '1.5rem' }}>
-            <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              🌐 <strong>/web</strong> <span style={{ fontSize: '0.9rem', color: '#666', fontWeight: 'normal' }}>(this app)</span>
-            </h3>
-            <p style={{ margin: '0.5rem 0', lineHeight: '1.6', color: '#555' }}>
-              The <strong>main web application</strong> - This is where your primary SaaS application lives. 
-              Build your core product features, user dashboards, and business logic here.
-            </p>
-            <p style={{ margin: 0, fontSize: '0.9rem', color: '#666' }}>
-              📁 Location: <code style={{ background: '#e5e5e5', padding: '2px 6px', borderRadius: '4px' }}>apps/web</code>
-            </p>
+      >
+        <EditorInit />
+        <Toolbar />
+        <div className="flex-1 flex overflow-hidden">
+          {/* Left Panel - Toolbox */}
+          <div className="w-64 flex-shrink-0">
+            <Toolbox />
           </div>
 
-          <div style={{ background: '#f0f9ff', padding: '1.5rem', borderRadius: '8px', marginBottom: '1.5rem' }}>
-            <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              📚 <strong>/docs</strong>
-            </h3>
-            <p style={{ margin: '0.5rem 0', lineHeight: '1.6', color: '#555' }}>
-              The <strong>documentation application</strong> - A separate Next.js app for your project documentation, 
-              API references, guides, and developer resources.
-            </p>
-            <p style={{ margin: 0, fontSize: '0.9rem', color: '#666' }}>
-              📁 Location: <code style={{ background: '#dbeafe', padding: '2px 6px', borderRadius: '4px' }}>apps/docs</code>
-            </p>
+          {/* Center Panel - Canvas */}
+          <div className="flex-1">
+            <Viewport />
           </div>
 
-          <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>🎯 Quick Start</h3>
-          <ol style={{ lineHeight: '1.8', color: '#555' }}>
-            <li>Edit <code style={{ background: '#e5e5e5', padding: '2px 6px', borderRadius: '4px' }}>apps/web/app/page.tsx</code> to customize this page</li>
-            <li>Shared UI components are in the <code style={{ background: '#e5e5e5', padding: '2px 6px', borderRadius: '4px' }}>@labs/ui</code> package</li>
-            <li>Run <code style={{ background: '#e5e5e5', padding: '2px 6px', borderRadius: '4px' }}>pnpm run dev</code> to start all apps in development mode</li>
-          </ol>
+          {/* Right Panel - Settings */}
+          <div className="w-80 flex-shrink-0">
+            <SettingsPanel />
+          </div>
         </div>
-
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="/docs"
-            rel="noopener noreferrer"
-          >
-            📚 View Documentation
-          </a>
-          <Button className={styles.secondary}>
-            Get Started
-          </Button>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com/templates?search=turborepo&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://turborepo.com?utm_source=create-turbo"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to turborepo.com →
-        </a>
-      </footer>
+        
+        <CopilotSidebar isOpen={isCopilotOpen} onClose={() => setIsCopilotOpen(false)} />
+      </Editor>
     </div>
   );
 }
