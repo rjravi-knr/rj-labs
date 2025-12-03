@@ -115,6 +115,13 @@
     "./switch": "./src/components/forms/switch/index.ts",
     "./textarea": "./src/components/forms/textarea/index.ts",
     "./toggle-group": "./src/components/forms/toggle-group/index.ts",
+    "./breadcrumb": "./src/components/navigation/breadcrumb/index.ts",
+    "./command": "./src/components/navigation/command/index.ts",
+    "./context-menu": "./src/components/navigation/context-menu/index.ts",
+    "./drawer": "./src/components/navigation/drawer/index.ts",
+    "./menubar": "./src/components/navigation/menubar/index.ts",
+    "./navigation-menu": "./src/components/navigation/navigation-menu/index.ts",
+    "./pagination": "./src/components/navigation/pagination/index.ts",
     "./lib/*": "./src/lib/*.ts",
     "./components/*": "./src/components/*.tsx",
     "./hooks/*": "./src/hooks/*.ts"
