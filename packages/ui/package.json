@@ -102,6 +102,10 @@
     "./hover-card": "./src/components/molecules/hover-card/index.ts",
     "./popover": "./src/components/molecules/popover/index.ts",
     "./tooltip": "./src/components/molecules/tooltip/index.ts",
+    "./alert-dialog": "./src/components/feedback/alert-dialog/index.ts",
+    "./dialog": "./src/components/feedback/dialog/index.ts",
+    "./progress": "./src/components/feedback/progress/index.ts",
+    "./sonner": "./src/components/feedback/sonner/index.ts",
     "./lib/*": "./src/lib/*.ts",
     "./components/*": "./src/components/*.tsx",
     "./hooks/*": "./src/hooks/*.ts"

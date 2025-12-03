@@ -81,6 +81,22 @@ const items = [
         title: "Tooltip",
         href: "/docs/components/tooltip",
       },
+      {
+        title: "Alert Dialog",
+        href: "/docs/components/alert-dialog",
+      },
+      {
+        title: "Dialog",
+        href: "/docs/components/dialog",
+      },
+      {
+        title: "Progress",
+        href: "/docs/components/progress",
+      },
+      {
+        title: "Sonner",
+        href: "/docs/components/sonner",
+      },
     ],
   },
 ]
