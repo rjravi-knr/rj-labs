@@ -1,6 +1,6 @@
 "use client"
 
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@labs/ui/command"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from "@labs/ui/command"
 import { ComponentPreview } from "../../../components/component-preview"
 
 export default function CommandPage() {
@@ -16,7 +16,7 @@ export default function CommandPage() {
       <div className="space-y-4">
         <h2 className="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
         <div className="rounded-md bg-muted p-4">
-          <code className="text-sm">import {"{ Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem }"} from "@labs/ui/command"</code>
+          <code className="text-sm">import {"{ Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem, CommandSeparator }"} from "@labs/ui/command"</code>
         </div>
       </div>
 
@@ -25,11 +25,19 @@ export default function CommandPage() {
         <div className="rounded-md bg-muted p-4">
           <pre className="text-sm whitespace-pre-wrap">
 {`<Command>
-  <CommandInput placeholder="Type a command..." />
+  <CommandInput placeholder="Type a command or search..." />
   <CommandList>
     <CommandEmpty>No results found.</CommandEmpty>
     <CommandGroup heading="Suggestions">
       <CommandItem>Calendar</CommandItem>
+      <CommandItem>Search Emoji</CommandItem>
+      <CommandItem>Calculator</CommandItem>
+    </CommandGroup>
+    <CommandSeparator />
+    <CommandGroup heading="Settings">
+      <CommandItem>Profile</CommandItem>
+      <CommandItem>Billing</CommandItem>
+      <CommandItem>Settings</CommandItem>
     </CommandGroup>
   </CommandList>
 </Command>`}
@@ -49,6 +57,12 @@ export default function CommandPage() {
       <CommandItem>Search Emoji</CommandItem>
       <CommandItem>Calculator</CommandItem>
     </CommandGroup>
+    <CommandSeparator />
+    <CommandGroup heading="Settings">
+      <CommandItem>Profile</CommandItem>
+      <CommandItem>Billing</CommandItem>
+      <CommandItem>Settings</CommandItem>
+    </CommandGroup>
   </CommandList>
 </Command>`}>
           <Command className="rounded-lg border shadow-md max-w-md">
@@ -59,6 +73,12 @@ export default function CommandPage() {
                 <CommandItem>Calendar</CommandItem>
                 <CommandItem>Search Emoji</CommandItem>
                 <CommandItem>Calculator</CommandItem>
+              </CommandGroup>
+              <CommandSeparator />
+              <CommandGroup heading="Settings">
+                <CommandItem>Profile</CommandItem>
+                <CommandItem>Billing</CommandItem>
+                <CommandItem>Settings</CommandItem>
               </CommandGroup>
             </CommandList>
           </Command>
