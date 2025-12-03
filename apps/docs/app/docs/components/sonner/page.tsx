@@ -1,6 +1,6 @@
 "use client"
 
-import { Toaster } from "@labs/ui/sonner"
+import { Toaster, toast } from "@labs/ui/sonner"
 import { Button } from "@labs/ui/button"
 import { ComponentPreview } from "../../../components/component-preview"
 
@@ -17,10 +17,7 @@ export default function SonnerPage() {
       <div className="space-y-4">
         <h2 className="scroll-m-20 text-2xl font-semibold tracking-tight">Installation</h2>
         <div className="rounded-md bg-muted p-4">
-          <pre className="text-sm whitespace-pre-wrap">
-{`import { Toaster } from "@labs/ui/sonner"
-import { toast } from "sonner"`}
-          </pre>
+          <code className="text-sm">import {"{ Toaster, toast }"} from "@labs/ui/sonner"</code>
         </div>
       </div>
 
