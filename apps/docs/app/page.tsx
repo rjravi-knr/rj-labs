@@ -26,7 +26,7 @@ export default function Home() {
                 Get Started
               </Button>
             </Link>
-            <Link href="https://github.com/ravikiran/rj-suite" target="_blank" rel="noreferrer">
+            <Link href="https://github.com/rjravi-knr/rj-labs" target="_blank" rel="noreferrer">
               <Button variant="outline" size="lg" className="h-11 px-8">
                 GitHub
               </Button>

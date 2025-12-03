@@ -5,7 +5,7 @@ export function SiteFooter() {
         <p className="text-balance text-center text-sm leading-loose text-muted-foreground md:text-left">
           Built by Ravikiran. The source code is available on{" "}
           <a
-            href="https://github.com/ravikiran/rj-suite"
+            href="https://github.com/rjravi-knr/rj-labs"
             target="_blank"
             rel="noreferrer"
             className="font-medium underline underline-offset-4"

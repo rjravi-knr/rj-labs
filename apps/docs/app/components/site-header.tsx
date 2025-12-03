@@ -35,7 +35,7 @@ export function SiteHeader() {
           </div>
           <nav className="flex items-center gap-2">
             <Link
-              href="https://github.com/ravikiran/rj-suite"
+              href="https://github.com/rjravi-knr/rj-labs"
               target="_blank"
               rel="noreferrer"
             >
