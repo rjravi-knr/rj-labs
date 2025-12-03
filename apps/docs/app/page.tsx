@@ -1,137 +1,82 @@
-import Image, { type ImageProps } from "next/image";
-import { Button } from "@labs/ui/button";
-import styles from "./page.module.css";
-
-type Props = Omit<ImageProps, "src"> & {
-  srcLight: string;
-  srcDark: string;
-};
-
-const ThemeImage = (props: Props) => {
-  const { srcLight, srcDark, ...rest } = props;
-
-  return (
-    <>
-      <Image {...rest} src={srcLight} className="imgLight" />
-      <Image {...rest} src={srcDark} className="imgDark" />
-    </>
-  );
-};
+import Link from "next/link"
+import { Button } from "@labs/ui/button"
+import { ArrowRight, Book, Layout, Zap } from "lucide-react"
 
 export default function Home() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <h1 style={{ fontSize: '3.5rem', margin: '0 0 0.5rem 0', background: 'linear-gradient(to right, #3b82f6, #8b5cf6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            📚 RJ Suite Documentation
+    <div className="flex flex-col min-h-[calc(100vh-14rem)]">
+      <section className="space-y-6 pb-8 pt-6 md:pb-12 md:pt-10 lg:py-32">
+        <div className="container mx-auto flex max-w-[64rem] flex-col items-center gap-4 text-center">
+          <Link
+            href="https://twitter.com/ravikiran"
+            className="rounded-2xl bg-muted px-4 py-1.5 text-sm font-medium"
+            target="_blank"
+          >
+            Follow on Twitter
+          </Link>
+          <h1 className="font-heading text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-foreground pb-2">
+            RJ Suite Documentation
           </h1>
-          <p style={{ fontSize: '1.3rem', color: '#666', marginBottom: '0' }}>
-            Your comprehensive guide to the RJ Suite SaaS System
+          <p className="max-w-[42rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8">
+            Your comprehensive guide to the RJ Suite SaaS System. Built with Turborepo, Next.js, and Tailwind CSS.
+          </p>
+          <div className="space-x-4">
+            <Link href="/docs">
+              <Button size="lg" className="h-11 px-8">
+                Get Started
+              </Button>
+            </Link>
+            <Link href="https://github.com/ravikiran/rj-suite" target="_blank" rel="noreferrer">
+              <Button variant="outline" size="lg" className="h-11 px-8">
+                GitHub
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+      
+      <section className="container space-y-6 bg-slate-50 py-8 dark:bg-transparent md:py-12 lg:py-24">
+        <div className="mx-auto grid justify-center gap-4 sm:grid-cols-2 md:max-w-[64rem] md:grid-cols-3">
+          <div className="relative overflow-hidden rounded-lg border bg-background p-2">
+            <div className="flex h-[180px] flex-col justify-between rounded-md p-6">
+              <Layout className="h-12 w-12 text-primary" />
+              <div className="space-y-2">
+                <h3 className="font-bold">Monorepo Structure</h3>
+                <p className="text-sm text-muted-foreground">
+                  Organized with Turborepo for efficient build and development workflows.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="relative overflow-hidden rounded-lg border bg-background p-2">
+            <div className="flex h-[180px] flex-col justify-between rounded-md p-6">
+              <Zap className="h-12 w-12 text-primary" />
+              <div className="space-y-2">
+                <h3 className="font-bold">Fast Development</h3>
+                <p className="text-sm text-muted-foreground">
+                  Powered by Next.js and Tailwind CSS for rapid UI development.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="relative overflow-hidden rounded-lg border bg-background p-2">
+            <div className="flex h-[180px] flex-col justify-between rounded-md p-6">
+              <Book className="h-12 w-12 text-primary" />
+              <div className="space-y-2">
+                <h3 className="font-bold">Documentation</h3>
+                <p className="text-sm text-muted-foreground">
+                  Comprehensive guides and API references for all packages.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="mx-auto text-center md:max-w-[58rem]">
+          <p className="leading-normal text-muted-foreground sm:text-lg sm:leading-7">
+            RJ Suite is built on a modern stack to ensure scalability and maintainability.
           </p>
         </div>
-
-        <div style={{ maxWidth: '800px', textAlign: 'left', marginBottom: '2rem' }}>
-          <div style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', padding: '2rem', borderRadius: '12px', color: 'white', marginBottom: '2rem' }}>
-            <h2 style={{ fontSize: '1.8rem', margin: '0 0 1rem 0', color: 'white' }}>🚀 Welcome to RJ Suite</h2>
-            <p style={{ margin: '0', lineHeight: '1.8', fontSize: '1.1rem', opacity: '0.95' }}>
-              RJ Suite is a modern SaaS system built with a <strong>Turborepo monorepo</strong> architecture. 
-              This documentation will help you understand the project structure, development workflow, and best practices.
-            </p>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-            <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '8px', border: '2px solid #e2e8f0' }}>
-              <h3 style={{ fontSize: '1.3rem', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                🏗️ Monorepo Structure
-              </h3>
-              <ul style={{ margin: '0', paddingLeft: '1.25rem', lineHeight: '1.8', color: '#475569' }}>
-                <li><code style={{ background: '#e2e8f0', padding: '2px 6px', borderRadius: '4px', fontSize: '0.9rem' }}>apps/web</code> - Main SaaS app</li>
-                <li><code style={{ background: '#e2e8f0', padding: '2px 6px', borderRadius: '4px', fontSize: '0.9rem' }}>apps/docs</code> - This docs site</li>
-                <li><code style={{ background: '#e2e8f0', padding: '2px 6px', borderRadius: '4px', fontSize: '0.9rem' }}>packages/*</code> - Shared packages</li>
-              </ul>
-            </div>
-
-            <div style={{ background: '#fefce8', padding: '1.5rem', borderRadius: '8px', border: '2px solid #fde047' }}>
-              <h3 style={{ fontSize: '1.3rem', margin: '0 0 0.75rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                ⚡ Quick Commands
-              </h3>
-              <ul style={{ margin: '0', paddingLeft: '1.25rem', lineHeight: '1.8', color: '#713f12', listStyle: 'none' }}>
-                <li><code style={{ background: '#fef08a', padding: '4px 8px', borderRadius: '4px', fontSize: '0.85rem', display: 'inline-block', marginBottom: '0.5rem' }}>pnpm run dev</code> - Start dev servers</li>
-                <li><code style={{ background: '#fef08a', padding: '4px 8px', borderRadius: '4px', fontSize: '0.85rem', display: 'inline-block', marginBottom: '0.5rem' }}>pnpm run build</code> - Build all apps</li>
-                <li><code style={{ background: '#fef08a', padding: '4px 8px', borderRadius: '4px', fontSize: '0.85rem', display: 'inline-block', marginBottom: '0.5rem' }}>pnpm run lint</code> - Lint all apps</li>
-              </ul>
-            </div>
-          </div>
-
-          <div style={{ background: '#f0f9ff', padding: '2rem', borderRadius: '8px', marginBottom: '2rem', border: '2px solid #7dd3fc' }}>
-            <h2 style={{ fontSize: '1.5rem', margin: '0 0 1rem 0' }}>📦 Shared Packages</h2>
-            <p style={{ margin: '0 0 1rem 0', lineHeight: '1.6', color: '#0c4a6e' }}>
-              The monorepo includes shared packages that are used across multiple apps:
-            </p>
-            <div style={{ background: 'white', padding: '1rem', borderRadius: '6px' }}>
-              <ul style={{ margin: '0', paddingLeft: '1.5rem', lineHeight: '2', color: '#0c4a6e' }}>
-                <li><strong>@labs/ui</strong> - Shared React UI components</li>
-                <li><strong>@labs/typescript-config</strong> - Shared TypeScript configurations</li>
-                <li><strong>@labs/eslint-config</strong> - Shared ESLint rules</li>
-              </ul>
-            </div>
-          </div>
-
-          <div style={{ background: '#faf5ff', padding: '2rem', borderRadius: '8px', border: '2px solid #d8b4fe' }}>
-            <h2 style={{ fontSize: '1.5rem', margin: '0 0 1rem 0' }}>🎯 Getting Started</h2>
-            <ol style={{ margin: '0', paddingLeft: '1.5rem', lineHeight: '2', color: '#581c87' }}>
-              <li>Clone the repository and run <code style={{ background: '#e9d5ff', padding: '2px 6px', borderRadius: '4px' }}>pnpm install</code></li>
-              <li>Start the development servers with <code style={{ background: '#e9d5ff', padding: '2px 6px', borderRadius: '4px' }}>pnpm run dev</code></li>
-              <li>Access the main app at <code style={{ background: '#e9d5ff', padding: '2px 6px', borderRadius: '4px' }}>localhost:3000</code></li>
-              <li>Access this docs site at <code style={{ background: '#e9d5ff', padding: '2px 6px', borderRadius: '4px' }}>localhost:3001</code></li>
-              <li>Start building your SaaS features! 🚀</li>
-            </ol>
-          </div>
-        </div>
-
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="/"
-          >
-            🌐 Go to Main App
-          </a>
-          <Button appName="docs" className={styles.secondary}>
-            API Reference
-          </Button>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com/templates?search=turborepo&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://turborepo.com?utm_source=create-turbo"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to turborepo.com →
-        </a>
-      </footer>
+      </section>
     </div>
-  );
+  )
 }
