@@ -49,6 +49,18 @@ const items = [
         title: "Typography",
         href: "/docs/components/typography",
       },
+      {
+        title: "Accordion",
+        href: "/docs/components/accordion",
+      },
+      {
+        title: "Alert",
+        href: "/docs/components/alert",
+      },
+      {
+        title: "Card",
+        href: "/docs/components/card",
+      },
     ],
   },
 ]
