@@ -40,7 +40,7 @@ export default function CommandPage() {
       <div className="space-y-6">
         <h2 className="scroll-m-20 text-2xl font-semibold tracking-tight">Examples</h2>
         
-        <ComponentPreview code={`<Command className="rounded-lg border shadow-md">
+        <ComponentPreview code={`<Command className="rounded-lg border shadow-md max-w-md">
   <CommandInput placeholder="Type a command or search..." />
   <CommandList>
     <CommandEmpty>No results found.</CommandEmpty>
@@ -51,7 +51,7 @@ export default function CommandPage() {
     </CommandGroup>
   </CommandList>
 </Command>`}>
-          <Command className="rounded-lg border shadow-md">
+          <Command className="rounded-lg border shadow-md max-w-md">
             <CommandInput placeholder="Type a command or search..." />
             <CommandList>
               <CommandEmpty>No results found.</CommandEmpty>
