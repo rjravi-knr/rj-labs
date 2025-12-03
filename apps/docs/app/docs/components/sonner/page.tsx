@@ -1,7 +1,6 @@
 "use client"
 
 import { Toaster } from "@labs/ui/sonner"
-import { toast } from "sonner"
 import { Button } from "@labs/ui/button"
 import { ComponentPreview } from "../../../components/component-preview"
 

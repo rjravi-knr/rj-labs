@@ -133,6 +133,34 @@ const items = [
         title: "Toggle Group",
         href: "/docs/components/toggle-group",
       },
+      {
+        title: "Breadcrumb",
+        href: "/docs/components/breadcrumb",
+      },
+      {
+        title: "Command",
+        href: "/docs/components/command",
+      },
+      {
+        title: "Context Menu",
+        href: "/docs/components/context-menu",
+      },
+      {
+        title: "Drawer",
+        href: "/docs/components/drawer",
+      },
+      {
+        title: "Menubar",
+        href: "/docs/components/menubar",
+      },
+      {
+        title: "Navigation Menu",
+        href: "/docs/components/navigation-menu",
+      },
+      {
+        title: "Pagination",
+        href: "/docs/components/pagination",
+      },
     ],
   },
 ]
