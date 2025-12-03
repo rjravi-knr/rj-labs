@@ -97,6 +97,42 @@ const items = [
         title: "Sonner",
         href: "/docs/components/sonner",
       },
+      {
+        title: "Combobox",
+        href: "/docs/components/combobox",
+      },
+      {
+        title: "Date Picker",
+        href: "/docs/components/date-picker",
+      },
+      {
+        title: "Form",
+        href: "/docs/components/form",
+      },
+      {
+        title: "Input OTP",
+        href: "/docs/components/input-otp",
+      },
+      {
+        title: "Select",
+        href: "/docs/components/select",
+      },
+      {
+        title: "Slider",
+        href: "/docs/components/slider",
+      },
+      {
+        title: "Switch",
+        href: "/docs/components/switch",
+      },
+      {
+        title: "Textarea",
+        href: "/docs/components/textarea",
+      },
+      {
+        title: "Toggle Group",
+        href: "/docs/components/toggle-group",
+      },
     ],
   },
 ]

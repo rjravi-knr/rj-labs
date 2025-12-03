@@ -36,19 +36,19 @@ const categories = [
   {
     name: "Feedback",
     description: "Components for user feedback and notifications",
-    status: "in-progress",
+    status: "complete",
     components: [
-      { name: "Alert Dialog", href: "/docs/components/alert-dialog", done: false },
-      { name: "Dialog", href: "/docs/components/dialog", done: false },
-      { name: "Progress", href: "/docs/components/progress", done: false },
-      { name: "Sheet", href: "/docs/components/sheet", done: false },
-      { name: "Sonner", href: "/docs/components/sonner", done: false },
+      { name: "Alert Dialog", href: "/docs/components/alert-dialog", done: true },
+      { name: "Dialog", href: "/docs/components/dialog", done: true },
+      { name: "Progress", href: "/docs/components/progress", done: true },
+      { name: "Sheet", href: "/docs/components/sheet", done: true },
+      { name: "Sonner", href: "/docs/components/sonner", done: true },
     ],
   },
   {
     name: "Forms",
     description: "Form inputs and controls",
-    status: "pending",
+    status: "in-progress",
     components: [
       { name: "Checkbox", href: "/docs/components/checkbox", done: false },
       { name: "Combobox", href: "/docs/components/combobox", done: false },
