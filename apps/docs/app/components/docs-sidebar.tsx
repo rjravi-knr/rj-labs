@@ -12,6 +12,10 @@ const items = [
         title: "Introduction",
         href: "/docs",
       },
+      {
+        title: "Components",
+        href: "/docs/components",
+      },
     ],
   },
   {
