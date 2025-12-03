@@ -10,7 +10,7 @@ import {
 } from "@labs/ui/breadcrumb"
 import { ComponentPreview } from "../../../components/component-preview"
 
-export default function BreadcrumbPage() {
+export default function BreadcrumbDocPage() {
   return (
     <div className="space-y-10">
       <div className="space-y-2">
