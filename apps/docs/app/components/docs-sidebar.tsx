@@ -61,6 +61,22 @@ const items = [
         title: "Card",
         href: "/docs/components/card",
       },
+      {
+        title: "Collapsible",
+        href: "/docs/components/collapsible",
+      },
+      {
+        title: "Hover Card",
+        href: "/docs/components/hover-card",
+      },
+      {
+        title: "Popover",
+        href: "/docs/components/popover",
+      },
+     {
+        title: "Tooltip",
+        href: "/docs/components/tooltip",
+      },
     ],
   },
 ]

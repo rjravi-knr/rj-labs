@@ -98,6 +98,10 @@
     "./accordion": "./src/components/molecules/accordion/index.ts",
     "./alert": "./src/components/molecules/alert/index.ts",
     "./card": "./src/components/molecules/card/index.ts",
+    "./collapsible": "./src/components/molecules/collapsible/index.ts",
+    "./hover-card": "./src/components/molecules/hover-card/index.ts",
+    "./popover": "./src/components/molecules/popover/index.ts",
+    "./tooltip": "./src/components/molecules/tooltip/index.ts",
     "./lib/*": "./src/lib/*.ts",
     "./components/*": "./src/components/*.tsx",
     "./hooks/*": "./src/hooks/*.ts"
