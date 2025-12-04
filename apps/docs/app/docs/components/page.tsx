@@ -104,20 +104,71 @@ export default function ComponentsPage() {
   )
 
   return (
-    <div className="space-y-10">
-      <div className="space-y-4">
-        <h1 className="scroll-m-20 text-4xl font-bold tracking-tight">Components</h1>
-        <p className="text-lg text-muted-foreground">
-          Beautifully designed components built with Radix UI and Tailwind CSS.
-        </p>
-        <div className="flex items-center gap-4 text-sm">
-          <Badge variant="outline" className="text-base">
-            {completedComponents} / {totalComponents} Complete
-          </Badge>
-          <span className="text-muted-foreground">
-            {Math.round((completedComponents / totalComponents) * 100)}% Documentation Coverage
-          </span>
+    <div className="relative flex flex-col pb-10">
+      {/* Hero Section */}
+      <div className="border-b pb-8">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 text-white">
+            <svg
+              className="h-6 w-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
+              />
+            </svg>
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold">
+              <span className="bg-gradient-to-r from-blue-600 via-cyan-600 to-teal-600 bg-clip-text text-transparent">
+                UI Components
+              </span>
+            </h1>
+            <p className="text-muted-foreground">Beautifully designed, accessible components for modern applications</p>
+          </div>
         </div>
+
+        <div className="mt-6 flex flex-wrap gap-4">
+          <div className="flex items-center gap-2 rounded-lg border bg-card px-4 py-2">
+            <CheckCircle2 className="h-4 w-4 text-green-500" />
+            <span className="text-sm font-medium">{completedComponents} Components</span>
+          </div>
+          <div className="flex items-center gap-2 rounded-lg border bg-card px-4 py-2">
+            <CheckCircle2 className="h-4 w-4 text-green-500" />
+            <span className="text-sm font-medium">Radix UI Primitives</span>
+          </div>
+          <div className="flex items-center gap-2 rounded-lg border bg-card px-4 py-2">
+            <CheckCircle2 className="h-4 w-4 text-green-500" />
+            <span className="text-sm font-medium">Fully Accessible</span>
+          </div>
+          <div className="flex items-center gap-2 rounded-lg border bg-card px-4 py-2">
+            <CheckCircle2 className="h-4 w-4 text-green-500" />
+            <span className="text-sm font-medium">Dark Mode</span>
+          </div>
+        </div>
+
+        {/* Quick Install */}
+        <div className="mt-6">
+          <div className="rounded-lg border bg-muted/50 p-4">
+            <p className="mb-2 text-sm text-muted-foreground">Install in your project:</p>
+            <code className="rounded bg-black px-3 py-2 text-sm text-green-400 dark:bg-white dark:text-green-600">
+              pnpm add @labs/ui
+            </code>
+          </div>
+        </div>
+      </div>
+
+      {/* Features */}
+      <div className="mt-8 mb-8">
+        <h2 className="text-2xl font-bold mb-4">Component Categories</h2>
+        <p className="text-muted-foreground mb-6">
+          {categories.length} categories organized using Atomic Design principles
+        </p>
       </div>
 
       <div className="grid gap-8">
