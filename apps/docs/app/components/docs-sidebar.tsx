@@ -16,6 +16,10 @@ const items = [
         title: "Components",
         href: "/docs/components",
       },
+      {
+        title: "Utils",
+        href: "/docs/utils",
+      },
     ],
   },
   {
@@ -165,30 +169,117 @@ const items = [
   },
 ]
 
+const utilsItems = [
+  {
+    title: "Getting Started",
+    items: [
+      {
+        title: "Introduction",
+        href: "/docs",
+      },
+      {
+        title: "Components",
+        href: "/docs/components",
+      },
+      {
+        title: "Utils Overview",
+        href: "/docs/utils",
+      },
+    ],
+  },
+  {
+    title: "Utilities",
+    items: [
+      {
+        title: "String",
+        href: "/docs/utils/string",
+        badge: "16",
+      },
+      {
+        title: "Date/Time",
+        href: "/docs/utils/date",
+        badge: "20",
+      },
+      {
+        title: "Validation",
+        href: "/docs/utils/validation",
+        badge: "15",
+      },
+      {
+        title: "Number",
+        href: "/docs/utils/number",
+        badge: "14",
+      },
+      {
+        title: "Array",
+        href: "/docs/utils/array",
+        badge: "14",
+      },
+      {
+        title: "Object",
+        href: "/docs/utils/object",
+        badge: "13",
+      },
+      {
+        title: "Async",
+        href: "/docs/utils/async",
+        badge: "8",
+      },
+      {
+        title: "Function",
+        href: "/docs/utils/function",
+        badge: "5",
+      },
+      {
+        title: "URL",
+        href: "/docs/utils/url",
+        badge: "9",
+      },
+      {
+        title: "Crypto",
+        href: "/docs/utils/crypto",
+        badge: "7",
+      },
+      {
+        title: "Types",
+        href: "/docs/utils/types",
+        badge: "11",
+      },
+    ],
+  },
+]
+
 export function DocsSidebar() {
   const pathname = usePathname()
+  const isUtilsPage = pathname.startsWith('/docs/utils')
+  const currentItems = isUtilsPage ? utilsItems : items
 
   return (
     <div className="w-full">
-      {items.map((item, index) => (
+      {currentItems.map((item, index) => (
         <div key={index} className="pb-4">
           <h4 className="mb-1 rounded-md px-2 py-1 text-sm font-semibold">
             {item.title}
           </h4>
           {item.items?.length && (
             <div className="grid grid-flow-row auto-rows-max text-sm">
-              {item.items.map((item) => (
+              {item.items.map((subItem) => (
                 <Link
-                  key={item.href}
-                  href={item.href}
+                  key={subItem.href}
+                  href={subItem.href}
                   className={cn(
-                    "group flex w-full items-center rounded-md border border-transparent px-2 py-1 hover:underline",
-                    pathname === item.href
+                    "group flex w-full items-center justify-between rounded-md border border-transparent px-2 py-1 hover:underline",
+                    pathname === subItem.href
                       ? "font-medium text-foreground"
                       : "text-muted-foreground"
                   )}
                 >
-                  {item.title}
+                  <span>{subItem.title}</span>
+                  {subItem.badge && (
+                    <span className="ml-2 rounded-md bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
+                      {subItem.badge}
+                    </span>
+                  )}
                 </Link>
               ))}
             </div>
