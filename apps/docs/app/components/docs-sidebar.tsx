@@ -4,7 +4,19 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@labs/ui/lib/utils"
 
-const items = [
+interface SidebarItem {
+  title: string
+  href: string
+  badge?: string
+}
+
+interface SidebarGroup {
+  title: string
+  items: SidebarItem[]
+}
+
+
+const items: SidebarGroup[] = [
   {
     title: "Getting Started",
     items: [
@@ -169,7 +181,7 @@ const items = [
   },
 ]
 
-const utilsItems = [
+const utilsItems: SidebarGroup[] = [
   {
     title: "Getting Started",
     items: [
