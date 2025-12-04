@@ -4,16 +4,19 @@
 node_modules
 .pnp
 .pnp.js
+.yarn/install-state.gz
 
 # Local env files
 .env
-.env.local
+.env*.local
 .env.development.local
 .env.test.local
 .env.production.local
 
 # Testing
 coverage
+.nyc_output
+*.lcov
 
 # Turbo
 .turbo
@@ -26,16 +29,88 @@ coverage
 out/
 build
 dist
+*.tsbuildinfo
 
+# TypeScript
+*.tsbuildinfo
+tsconfig.tsbuildinfo
 
 # Debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
 # Misc
 .DS_Store
 *.pem
+Thumbs.db
 
 # Storybook
 storybook-static
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# IDE - JetBrains
+.idea/
+*.iml
+*.ipr
+*.iws
+.idea_modules/
+
+# IDEs and editors
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.cache
+tmp/
+temp/
+
+# Test artifacts
+test-results/
+playwright-report/
+e2e/.auth/
+
+# Package manager caches
+.pnpm-store/
+.yarn/cache
+.npm/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional stylelint cache
+.stylelintcache
+
+# Diagnostic reports (https://nodejs.org/api/report.html)
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
