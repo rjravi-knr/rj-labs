@@ -140,6 +140,31 @@ export default function Home() {
               </Card>
             </div>
 
+            {/* Utils Toolkit */}
+            <div className="animate-fade-in-up opacity-0 [animation-delay:150ms]">
+              <Card className="group relative overflow-hidden border-2 border-primary/50 bg-gradient-to-br from-purple-50/50 to-pink-50/50 dark:from-purple-950/20 dark:to-pink-950/20 transition-all hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/20 h-full">
+                <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-purple-500/10 blur-3xl transition-all group-hover:h-40 group-hover:w-40" />
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <Zap className="h-8 w-8 text-purple-600 dark:text-purple-400 transition-transform group-hover:scale-110 group-hover:rotate-12" />
+                    <Badge variant="default" className="animate-pulse-slow bg-purple-600">Available</Badge>
+                  </div>
+                  <CardTitle className="mt-4">Utils Toolkit</CardTitle>
+                  <CardDescription>
+                    150+ TypeScript utilities for strings, dates, validation, arrays, and more
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Link href="/docs/utils">
+                    <Button variant="outline" className="w-full group/btn">
+                      View Utilities
+                      <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            </div>
+
             {/* Learning Products */}
             {[
               {
