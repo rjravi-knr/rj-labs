@@ -33,12 +33,12 @@ const toolkits = [
   {
     icon: Package,
     title: "Database Package",
-    count: "Coming Soon",
-    description: "Type-safe database layer with Prisma ORM, migrations, and connection pooling.",
-    href: "#",
-    status: "In Development",
+    count: "Multi-database",
+    description: "Type-safe PostgreSQL with Drizzle ORM and built-in multi-tenancy. MongoDB and Redis coming in Phase 2 & 3.",
+    href: "/docs/database",
+    status: "Available",
     color: "from-green-500 to-emerald-500",
-    features: ["Prisma ORM", "Type-safe queries", "Migrations", "PostgreSQL"]
+    features: ["Drizzle ORM", "Multi-tenancy", "Type-safe queries", "Phase 1 Complete"]
   },
   {
     icon: Package,
@@ -90,6 +90,12 @@ export default function IntroductionPage() {
             <Button size="lg" variant="outline" className="gap-2">
               <Zap className="h-4 w-4" />
               View Utilities
+            </Button>
+          </Link>
+          <Link href="/docs/database">
+            <Button size="lg" variant="outline" className="gap-2">
+              <Package className="h4 w-4" />
+              Database Package
             </Button>
           </Link>
           <a href="https://github.com/rjravi-knr/rj-labs" target="_blank" rel="noreferrer">

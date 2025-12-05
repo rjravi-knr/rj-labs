@@ -32,6 +32,10 @@ const items: SidebarGroup[] = [
         title: "Utils",
         href: "/docs/utils",
       },
+      {
+        title: "Database",
+        href: "/docs/database",
+      },
     ],
   },
   {
@@ -261,10 +265,78 @@ const utilsItems: SidebarGroup[] = [
   },
 ]
 
+const databaseItems: SidebarGroup[] = [
+  {
+    title: "Getting Started",
+    items: [
+      {
+        title: "Introduction",
+        href: "/docs",
+      },
+      {
+        title: "Components",
+        href: "/docs/components",
+      },
+      {
+        title: "Utils",
+        href: "/docs/utils",
+      },
+      {
+        title: "Database Overview",
+        href: "/docs/database",
+      },
+    ],
+  },
+  {
+    title: "Database Package",
+    items: [
+      {
+        title: "Setup Guide",
+        href: "/docs/database/setup",
+      },
+      {
+        title: "Multi-Tenancy",
+        href: "/docs/database/multi-tenancy",
+      },
+    ],
+  },
+  {
+    title: "SQL / PostgreSQL",
+    items: [
+      {
+        title: "SQL Overview",
+        href: "/docs/database/sql",
+        badge: "Phase 1",
+      },
+    ],
+  },
+  {
+    title: "MongoDB",
+    items: [
+      {
+        title: "MongoDB",
+        href: "/docs/database/mongodb",
+        badge: "Phase 2",
+      },
+    ],
+  },
+  {
+    title: "Redis",
+    items: [
+      {
+        title: "Redis",
+        href: "/docs/database/redis",
+        badge: "Phase 3",
+      },
+    ],
+  },
+]
+
 export function DocsSidebar() {
   const pathname = usePathname()
   const isUtilsPage = pathname.startsWith('/docs/utils')
-  const currentItems = isUtilsPage ? utilsItems : items
+  const isDatabasePage = pathname.startsWith('/docs/database')
+  const currentItems = isDatabasePage ? databaseItems : (isUtilsPage ? utilsItems : items)
 
   return (
     <div className="w-full">
