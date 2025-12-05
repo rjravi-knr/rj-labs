@@ -1,6 +1,9 @@
-// MongoDB client will be implemented in Phase 2
-// This is a placeholder to maintain package structure
+// MongoDB client
+export * from './client'
 
-export function createMongoClient() {
-  throw new Error('MongoDB client not yet implemented. Coming in Phase 2.')
-}
+// Models
+export * from './models'
+
+// Repositories
+export * from './repositories'
+

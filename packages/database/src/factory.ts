@@ -1,5 +1,6 @@
 import { createSqlClient } from './sql/client'
-import { createMongoClient } from './mongo'
+import { createMongoClient } from './mongo/client'
+import { LogsRepository } from './mongo/repositories'
 import { createCacheClient } from './cache'
 import type { DatabaseConfig } from './core/types'
 import { getConfig } from './core/config'
@@ -16,20 +17,38 @@ import { getConfig } from './core/config'
  * // Use SQL client
  * const users = await db.sql.select().from(users)
  * 
- * // Use MongoDB (Phase 2)
- * // const analytics = await db.mongo.Analytics.find()
+ * // Use MongoDB for logs (Phase 2)
+ * await db.mongo.logs.create({
+ *   level: 'info',
+ *   message: 'User logged in',
+ *   context: 'auth',
+ * })
  * 
- * // Use Redis cache (Phase 3)
+ * // Use Redis cache (Phase 3 - coming soon)
  * // await db.cache.set('key', 'value')
  * ```
  */
 export function createDatabase(config?: DatabaseConfig) {
   const resolvedConfig = getConfig(config)
 
+  // MongoDB is optional - only initialize if URI is provided
+  let mongoInstance: { logs: LogsRepository } | undefined
+  
+  if (resolvedConfig.mongo.uri) {
+    // Connection is lazy - happens on first query
+    createMongoClient(resolvedConfig.mongo).catch((err) => {
+      console.warn('MongoDB connection deferred:', err.message)
+    })
+    
+    mongoInstance = {
+      logs: new LogsRepository(),
+    }
+  }
+
   return {
     sql: createSqlClient(resolvedConfig.sql),
-    // MongoDB and Redis will be enabled in Phase 2 & 3
-    // mongo: createMongoClient(resolvedConfig.mongo),
+    mongo: mongoInstance,
+    // Redis will be enabled in Phase 3
     // cache: createCacheClient(resolvedConfig.cache),
   }
 }

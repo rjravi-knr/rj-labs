@@ -36,6 +36,10 @@ const items: SidebarGroup[] = [
         title: "Database",
         href: "/docs/database",
       },
+      {
+        title: "Auth Engine",
+        href: "/docs/auth",
+      },
     ],
   },
   {
@@ -201,6 +205,10 @@ const utilsItems: SidebarGroup[] = [
         title: "Utils Overview",
         href: "/docs/utils",
       },
+      {
+        title: "Auth Engine",
+        href: "/docs/auth",
+      },
     ],
   },
   {
@@ -285,6 +293,10 @@ const databaseItems: SidebarGroup[] = [
         title: "Database Overview",
         href: "/docs/database",
       },
+      {
+        title: "Auth Engine",
+        href: "/docs/auth",
+      },
     ],
   },
   {
@@ -332,11 +344,45 @@ const databaseItems: SidebarGroup[] = [
   },
 ]
 
+const authItems: SidebarGroup[] = [
+  {
+    title: "Getting Started",
+    items: [
+      {
+        title: "Introduction",
+        href: "/docs",
+      },
+      {
+        title: "Components",
+        href: "/docs/components",
+      },
+      {
+        title: "Database",
+        href: "/docs/database",
+      },
+      {
+        title: "Auth Engine",
+        href: "/docs/auth",
+      },
+    ],
+  },
+  {
+    title: "Auth Package",
+    items: [
+      {
+        title: "Overview",
+        href: "/docs/auth",
+      },
+    ],
+  },
+]
+
 export function DocsSidebar() {
   const pathname = usePathname()
   const isUtilsPage = pathname.startsWith('/docs/utils')
   const isDatabasePage = pathname.startsWith('/docs/database')
-  const currentItems = isDatabasePage ? databaseItems : (isUtilsPage ? utilsItems : items)
+  const isAuthPage = pathname.startsWith('/docs/auth')
+  const currentItems = isAuthPage ? authItems : (isDatabasePage ? databaseItems : (isUtilsPage ? utilsItems : items))
 
   return (
     <div className="w-full">
