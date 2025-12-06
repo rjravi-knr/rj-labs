@@ -78,7 +78,7 @@ export class LogsRepository extends BaseRepository<ILog> {
    * Get recent logs (default: last 100)
    */
   async getRecent(limit = 100): Promise<ILog[]> {
-    const { getTenantContext } = await import('../../tenancy/context')
+    const { getTenantContext } = await import('../../tenancy/context.js')
     const tenantContext = getTenantContext()
     
     const filter = tenantContext ? { tenantId: tenantContext.tenantId } : {}
