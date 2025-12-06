@@ -14,8 +14,8 @@ import {
 import { AuthLayout } from '../components/auth-layout';
 
 export const metadata: Metadata = {
-  title: 'Sign In - RJ SaaS',
-  description: 'Sign in to your account',
+  title: 'Sign Up - RJ SaaS',
+  description: 'Create an account',
 };
 
 function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -41,16 +41,16 @@ function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-export default function SignInPage() {
+export default function SignUpPage() {
   return (
     <AuthLayout>
       <Card className="border-none shadow-none sm:border sm:shadow-sm">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl font-bold tracking-tight">
-            Welcome back
+            Create an account
           </CardTitle>
           <CardDescription>
-            Enter your details to sign in to your account
+            Enter your email below to create your account
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -78,6 +78,16 @@ export default function SignInPage() {
             </div>
 
             <div className="grid gap-2">
+              <Label htmlFor="name">Full Name</Label>
+              <Input
+                id="name"
+                placeholder="Ravi Kiran J"
+                type="text"
+                autoCapitalize="words"
+                autoCorrect="off"
+              />
+            </div>
+            <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
@@ -89,19 +99,11 @@ export default function SignInPage() {
               />
             </div>
             <div className="grid gap-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                <Link
-                  href="/forgot-password"
-                  className="text-xs font-medium text-primary underline-offset-4 hover:underline"
-                >
-                  Forgot password?
-                </Link>
-              </div>
+              <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" />
             </div>
             <Button type="submit" className="w-full">
-              Sign In
+              Create Account
             </Button>
           </div>
           <div className="mt-4 text-center text-xs text-muted-foreground">
@@ -125,12 +127,12 @@ export default function SignInPage() {
       </Card>
 
       <div className="mt-6 text-center text-sm text-muted-foreground">
-        Don&apos;t have an account?{' '}
+        Already have an account?{' '}
         <Link
-          href="/sign-up"
+          href="/sign-in"
           className="font-semibold text-primary underline-offset-4 hover:underline"
         >
-          Sign up
+          Sign in
         </Link>
       </div>
     </AuthLayout>
