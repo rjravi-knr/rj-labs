@@ -3,8 +3,12 @@ import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
 import { apiReference } from '@scalar/hono-api-reference';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
+import { AuthService } from '@labs/auth';
+import { createSqlClient } from '@labs/database/sql';
 
 const app = new OpenAPIHono();
+const db = createSqlClient(); 
+const authService = new AuthService(db);
 
 // Middleware
 app.use('*', logger());
@@ -37,26 +41,48 @@ app.get('/', (c) => {
   `);
 });
 
-// Hello Route (Test)
+// APIs
 app.openapi(
   createRoute({
-    method: 'get',
-    path: '/api/hello',
-    responses: {
-      200: {
-        description: 'Respond with a hello message',
+    method: 'post',
+    path: '/api/auth/login',
+    request: {
+      body: {
         content: {
           'application/json': {
             schema: z.object({
-              message: z.string(),
+              email: z.string().email(),
+              password: z.string().min(1)
+            })
+          }
+        }
+      }
+    },
+    responses: {
+      200: {
+        description: 'Login successful',
+        content: {
+          'application/json': {
+            schema: z.object({
+              token: z.string(),
+              user: z.object({
+                id: z.string(),
+                email: z.string()
+              })
             }),
           },
         },
       },
     },
   }),
-  (c) => {
-    return c.json({ message: 'Hello from Hono Auth Service!' });
+  async (c) => {
+    const { email } = c.req.valid('json');
+    // TODO: Use authService.login(email, password)
+    const user = await authService.getUserByEmail(email);
+    return c.json({
+      token: 'mock-token',
+      user: { id: user.id || '123', email: user.email }
+    });
   }
 );
 
