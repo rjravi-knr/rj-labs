@@ -3,24 +3,25 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "dev": "next dev --port 3002",
-        "build": "next build",
-        "start": "next start",
+        "dev": "tsx watch src/index.ts",
+        "build": "tsc",
+        "start": "node dist/index.js",
         "lint": "eslint ."
     },
     "dependencies": {
+        "@hono/node-server": "^1.13.7",
+        "@hono/zod-openapi": "^0.18.3",
         "@labs/auth": "workspace:*",
         "@labs/database": "workspace:*",
-        "next": "^15.1.0",
-        "react": "^19.0.0",
-        "react-dom": "^19.0.0"
+        "@scalar/hono-api-reference": "^0.5.165",
+        "hono": "^4.6.14",
+        "zod": "^4.1.13"
     },
     "devDependencies": {
         "@labs/eslint-config": "workspace:*",
         "@labs/typescript-config": "workspace:*",
-        "@types/node": "^20.0.0",
-        "@types/react": "^19.0.0",
-        "@types/react-dom": "^19.0.0",
-        "typescript": "^5.0.0"
+        "@types/node": "^22.10.2",
+        "tsx": "^4.19.2",
+        "typescript": "^5.7.2"
     }
 }
