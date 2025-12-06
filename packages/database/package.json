@@ -20,17 +20,17 @@
         "check-types": "tsc --noEmit"
     },
     "dependencies": {
-        "drizzle-orm": "^0.36.4",
-        "postgres": "^3.4.5",
-        "mongoose": "^8.9.3",
+        "drizzle-orm": "^0.33.0",
         "ioredis": "^5.4.2",
+        "mongoose": "^8.9.3",
+        "postgres": "^3.4.5",
         "zod": "^3.24.2"
     },
     "devDependencies": {
         "@labs/eslint-config": "workspace:*",
         "@labs/typescript-config": "workspace:*",
         "@types/node": "^22.15.3",
-        "drizzle-kit": "^0.30.2",
+        "drizzle-kit": "^0.24.0",
         "tsx": "^4.19.2",
         "typescript": "^5.9.2"
     }

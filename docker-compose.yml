@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:14
+    container_name: rj_suite_postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: rj_suite
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - rj_network
+
+  # Future services (Redis, Mongo) can be added here easily
+  # redis:
+  #   image: redis:alpine
+  #   ports:
+  #     - "6379:6379"
+  #   networks:
+  #     - rj_network
+
+volumes:
+  postgres_data:
+
+networks:
+  rj_network:
