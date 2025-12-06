@@ -28,6 +28,12 @@ export function SiteHeader() {
               Components
             </Link>
             <Link
+              href="/docs/auth"
+              className="transition-colors hover:text-foreground/80 text-foreground/60"
+            >
+              Auth
+            </Link>
+            <Link
               href="/docs/utils"
               className="transition-colors hover:text-foreground/80 text-foreground/60"
             >

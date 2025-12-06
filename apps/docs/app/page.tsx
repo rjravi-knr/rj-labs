@@ -72,6 +72,12 @@ export default function Home() {
                   Developer Resources
                 </Button>
               </Link>
+              <Link href="/docs/development">
+                <Button variant="outline" size="lg" className="h-12 gap-2 px-8 text-base backdrop-blur-sm border-blue-500/20 text-blue-600 dark:text-blue-400 hover:bg-blue-500/10">
+                  <Book className="h-4 w-4" />
+                  Dev Guide
+                </Button>
+              </Link>
             </div>
 
             {/* Quick Stats */}

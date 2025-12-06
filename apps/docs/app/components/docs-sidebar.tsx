@@ -20,6 +20,7 @@ const items: SidebarGroup[] = [
   {
     title: "Getting Started",
     items: [
+
       {
         title: "Introduction",
         href: "/docs",
@@ -40,6 +41,7 @@ const items: SidebarGroup[] = [
         title: "Auth Engine",
         href: "/docs/auth",
       },
+
     ],
   },
   {
@@ -193,6 +195,7 @@ const utilsItems: SidebarGroup[] = [
   {
     title: "Getting Started",
     items: [
+
       {
         title: "Introduction",
         href: "/docs",
@@ -209,6 +212,7 @@ const utilsItems: SidebarGroup[] = [
         title: "Auth Engine",
         href: "/docs/auth",
       },
+
     ],
   },
   {
@@ -277,6 +281,7 @@ const databaseItems: SidebarGroup[] = [
   {
     title: "Getting Started",
     items: [
+
       {
         title: "Introduction",
         href: "/docs",
@@ -297,6 +302,7 @@ const databaseItems: SidebarGroup[] = [
         title: "Auth Engine",
         href: "/docs/auth",
       },
+
     ],
   },
   {
@@ -348,6 +354,7 @@ const authItems: SidebarGroup[] = [
   {
     title: "Getting Started",
     items: [
+
       {
         title: "Introduction",
         href: "/docs",
@@ -364,6 +371,7 @@ const authItems: SidebarGroup[] = [
         title: "Auth Engine",
         href: "/docs/auth",
       },
+
     ],
   },
   {

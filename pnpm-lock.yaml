@@ -18,6 +18,64 @@ importers:
         specifier: 5.9.2
         version: 5.9.2
 
+  apps/auth:
+    dependencies:
+      '@labs/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@labs/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@labs/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@tailwindcss/postcss':
+        specifier: ^4.0.8
+        version: 4.1.17
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
+      lucide-react:
+        specifier: ^0.475.0
+        version: 0.475.0(react@19.2.0)
+      next:
+        specifier: ^16.0.1
+        version: 16.0.1(@opentelemetry/api@1.9.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      react:
+        specifier: ^19.0.0
+        version: 19.2.0
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.0(react@19.2.0)
+      tailwind-merge:
+        specifier: ^3.0.1
+        version: 3.4.0
+      tailwindcss:
+        specifier: ^4.0.8
+        version: 4.1.17
+      tailwindcss-animate:
+        specifier: ^1.0.7
+        version: 1.0.7(tailwindcss@4.1.17)
+    devDependencies:
+      '@labs/eslint-config':
+        specifier: workspace:*
+        version: link:../../packages/eslint-config
+      '@labs/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/typescript-config
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.25
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.2.2
+      '@types/react-dom':
+        specifier: ^19.0.0
+        version: 19.2.2(@types/react@19.2.2)
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.2
+
   apps/docs:
     dependencies:
       '@labs/auth':
@@ -441,9 +499,9 @@ importers:
       '@labs/auth':
         specifier: workspace:*
         version: link:../../packages/auth
-      '@labs/ui':
+      '@labs/database':
         specifier: workspace:*
-        version: link:../../packages/ui
+        version: link:../../packages/database
       next:
         specifier: ^15.1.0
         version: 15.5.7(@opentelemetry/api@1.9.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -4290,6 +4348,7 @@ packages:
   next@16.0.1:
     resolution: {integrity: sha512-e9RLSssZwd35p7/vOa+hoDFggUZIUbZhIUSLZuETCwrCVvxOs87NamoUzT+vbcNAL8Ld9GobBnWOA6SbV/arOw==}
     engines: {node: '>=20.9.0'}
+    deprecated: This version has a security vulnerability. Please upgrade to a patched version. See https://nextjs.org/blog/CVE-2025-66478 for more details.
     hasBin: true
     peerDependencies:
       '@opentelemetry/api': ^1.1.0

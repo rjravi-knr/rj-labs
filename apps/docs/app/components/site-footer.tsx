@@ -29,6 +29,16 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
+                <Link href="/docs/auth" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Auth Engine
+                </Link>
+              </li>
+              <li>
+                <Link href="/docs/development" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Development Guide
+                </Link>
+              </li>
+              <li>
                 <Link href="/docs/utils" className="text-muted-foreground hover:text-foreground transition-colors">
                   Utilities
                 </Link>
