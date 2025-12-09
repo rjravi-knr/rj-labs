@@ -13,7 +13,7 @@ export * from './core/config'
 export * from './core/errors'
 
 // Multi-tenancy
-export * from './tenancy'
+export * from './modules/tenancy'
 
 // Database adapters
 export * from './sql'

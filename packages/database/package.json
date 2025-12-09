@@ -8,8 +8,8 @@
         ".": "./src/index.ts",
         "./sql": "./src/sql/index.ts",
         "./mongo": "./src/mongo/index.ts",
-        "./cache": "./src/cache/index.ts",
-        "./tenancy": "./src/tenancy/index.ts",
+        "./auth": "./src/modules/auth/index.ts",
+        "./tenancy": "./src/modules/tenancy/index.ts",
         "./testing": "./src/testing/index.ts"
     },
     "scripts": {

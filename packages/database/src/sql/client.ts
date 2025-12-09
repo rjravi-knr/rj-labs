@@ -2,7 +2,7 @@ import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import type { SqlConfig } from '../core/types'
 import { ConnectionError } from '../core/errors'
-import * as schema from './schema'
+import * as schema from './index'
 
 /**
  * Create a PostgreSQL client with Drizzle ORM

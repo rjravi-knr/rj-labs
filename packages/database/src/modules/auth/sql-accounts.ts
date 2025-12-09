@@ -1,12 +1,12 @@
-import { pgTable, uuid, varchar, timestamp, uniqueIndex, jsonb } from 'drizzle-orm/pg-core'
-import { users } from './users'
+import { pgTable, uuid, varchar, timestamp, uniqueIndex, jsonb, bigint } from 'drizzle-orm/pg-core'
+import { users } from './sql-users'
 
 /**
  * Accounts table - stores Oauth/Provider links for users
  */
 export const accounts = pgTable('accounts', {
   id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  userId: bigint('user_id', { mode: 'number' }).references(() => users.id, { onDelete: 'cascade' }).notNull(),
   type: varchar('type', { length: 50 }).notNull(), // 'oauth', 'email', etc.
   provider: varchar('provider', { length: 50 }).notNull(), // 'google', 'github'
   providerAccountId: varchar('provider_account_id', { length: 255 }).notNull(),

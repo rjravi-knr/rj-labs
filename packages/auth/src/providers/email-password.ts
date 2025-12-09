@@ -52,9 +52,9 @@ export class EmailPasswordProvider implements AuthProvider {
       // Create user via adapter
       const newUser = await this.adapter.createUser({
           email,
-          emailVerified: false,
-          displayName: name,
-          providerId: this.id,
+          emailVerified: null,
+          name: name,
+
           tenantId,
           metadata: {
               // In real app, store password hash here or in separate table

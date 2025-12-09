@@ -1,4 +1,2 @@
-export * from './client'
-export * from './schema'
-export * from './queries'
-export * from './transactions'
+export * from '../modules/auth/sql';
+export * from '../modules/tenancy/sql';

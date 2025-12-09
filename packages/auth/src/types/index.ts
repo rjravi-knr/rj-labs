@@ -1,12 +1,10 @@
 export interface User {
   id: string;
-  email: string;
-  emailVerified: boolean;
-  displayName?: string | null;
-  photoURL?: string | null;
-  phoneNumber?: string | null;
-  providerId: string;
   tenantId: string;
+  email: string;
+  name?: string;
+  emailVerified: Date | null;
+  image?: string;
   createdAt: Date;
   updatedAt: Date;
   metadata?: Record<string, any>;

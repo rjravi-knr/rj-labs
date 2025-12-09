@@ -1,5 +1,5 @@
 import type { Model, Document, FilterQuery, UpdateQuery } from 'mongoose'
-import { getTenantContext } from '../../tenancy/context'
+import { getTenantContext } from '../../modules/tenancy/context'
 
 /**
  * Base repository class with tenant-aware CRUD operations

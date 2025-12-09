@@ -7,7 +7,7 @@ export class MemoryAdapter implements AuthAdapter {
   private sessions: Map<string, Session> = new Map();
 
   async createUser(user: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User> {
-    const id = Math.random().toString(36).substring(7);
+    const id = Math.floor(Math.random() * 1000000).toString();
     const now = new Date();
     const newUser: User = {
       ...user,

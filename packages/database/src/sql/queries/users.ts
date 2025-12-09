@@ -1,19 +1,15 @@
 import { eq, and } from 'drizzle-orm'
 import type { SqlClient } from '../client'
-import { users, type User, type NewUser } from '../schema/users'
-import { getTenantContext } from '../../tenancy/context'
+import { users, type User, type NewUser } from '../../modules/auth/sql-users'
+import { getTenantContext } from '../../modules/tenancy/context'
 
 /**
  * Find user by ID (tenant-scoped)
  */
-export async function findUserById(db: SqlClient, id: string): Promise<User | undefined> {
-  const tenant = getTenantContext()
-  const conditions = tenant 
-    ? and(eq(users.id, id), eq(users.tenantId, tenant.tenantId))
-    : eq(users.id, id)
-
-  const result = await db.select().from(users).where(conditions).limit(1)
-  return result[0]
+export async function findUserById(db: SqlClient, id: number, tenant: { tenantId: string }): Promise<User | undefined> {
+  return db.query.users.findFirst({
+    where: and(eq(users.id, id), eq(users.tenantId, tenant.tenantId)),
+  })
 }
 
 /**
