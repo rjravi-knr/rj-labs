@@ -1,14 +1,25 @@
 import { serve } from '@hono/node-server';
-import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
+import { OpenAPIHono, createRoute } from '@hono/zod-openapi';
+import { z } from 'zod';
+import { extendZodWithOpenApi } from '@hono/zod-openapi';
+
+extendZodWithOpenApi(z);
 import { apiReference } from '@scalar/hono-api-reference';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
-import { AuthService } from '@labs/auth';
-import { createSqlClient } from '@labs/database/sql';
+import { initializeAuth, signIn } from '@labs/auth';
+import { DrizzleAdapter } from '@labs/auth/adapters';
+
+// Initialize Auth SDK with Drizzle Adapter
+initializeAuth(
+  {
+    providers: ['email_password'],
+    sessionDuration: 3600 * 1000 * 24, // 24 hours
+  }, 
+  new DrizzleAdapter()
+);
 
 const app = new OpenAPIHono();
-const db = createSqlClient(); 
-const authService = new AuthService(db);
 
 // Middleware
 app.use('*', logger());
@@ -32,6 +43,7 @@ app.get('/', (c) => {
       <body>
         <h1>Auth Service</h1>
         <p>Running on Hono 🔥</p>
+        <p>Powered by @labs/auth & @labs/database (Multi-Tenant)</p>
         <div class="links">
           <a href="/doc">OpenAPI Spec</a>
           <a href="/docs">API Documentation</a>
@@ -52,7 +64,8 @@ app.openapi(
           'application/json': {
             schema: z.object({
               email: z.string().email(),
-              password: z.string().min(1)
+              password: z.string().min(1),
+              tenantId: z.string().min(1).default('acme-corp')
             })
           }
         }
@@ -64,25 +77,35 @@ app.openapi(
         content: {
           'application/json': {
             schema: z.object({
-              token: z.string(),
+              token: z.string().openapi({ example: 'acme-corp.token123' }),
               user: z.object({
-                id: z.string(),
-                email: z.string()
-              })
-            }),
+                id: z.string().openapi({ example: '1' }),
+                email: z.string().openapi({ example: 'admin@acme-corp.com' }),
+                tenantId: z.string().openapi({ example: 'acme-corp' })
+              }).openapi({ example: { id: '1', email: 'admin@acme-corp.com', tenantId: 'acme-corp' } })
+            }).openapi({ example: { token: '...', user: { id: '1', email: '...', tenantId: '...' } } }),
           },
         },
       },
+      401: {
+        description: 'Unauthorized',
+        content: { 'application/json': { schema: z.object({ error: z.string() }) } }
+      }
     },
   }),
   async (c) => {
-    const { email } = c.req.valid('json');
-    // TODO: Use authService.login(email, password)
-    const user = await authService.getUserByEmail(email);
-    return c.json({
-      token: 'mock-token',
-      user: { id: user.id || '123', email: user.email }
-    });
+    try {
+      const { email, password, tenantId } = c.req.valid('json');
+      
+      const { user, session } = await signIn('email_password', { email, password }, tenantId);
+      
+      return c.json({
+        token: session.token,
+        user: { id: user.id, email: user.email, tenantId: user.tenantId }
+      });
+    } catch (err: any) {
+      return c.json({ error: err.message || 'Login failed' }, 401);
+    }
   }
 );
 
@@ -92,7 +115,7 @@ app.doc('/doc', {
   info: {
     version: '1.0.0',
     title: 'RJ Suite Auth Service API',
-    description: 'Authentication service powered by Hono.',
+    description: 'Authentication service powered by Hono and @labs/auth.',
   },
 });
 

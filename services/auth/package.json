@@ -15,7 +15,7 @@
         "@labs/database": "workspace:*",
         "@scalar/hono-api-reference": "^0.5.165",
         "hono": "^4.6.14",
-        "zod": "^4.1.13"
+        "zod": "3.23.8"
     },
     "devDependencies": {
         "@labs/eslint-config": "workspace:*",

@@ -4,6 +4,11 @@
     "description": "Authentication SDK inspired by Firebase",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
+    "exports": {
+        ".": "./dist/index.js",
+        "./adapters": "./dist/adapters/index.js",
+        "./types": "./dist/types/index.js"
+    },
     "source": "src/index.ts",
     "scripts": {
         "build": "tsc",
