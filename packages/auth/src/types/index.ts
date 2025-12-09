@@ -1,0 +1,75 @@
+export interface User {
+  id: string;
+  email: string;
+  emailVerified: boolean;
+  displayName?: string | null;
+  photoURL?: string | null;
+  phoneNumber?: string | null;
+  providerId: string;
+  tenantId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  metadata?: Record<string, any>;
+}
+
+export interface Session {
+  id: string;
+  userId: string;
+  expiresAt: Date;
+  token: string;
+  ipAddress?: string;
+  userAgent?: string;
+}
+
+export type AuthProviderType = 'email_password' | 'google' | 'github' | 'twitter' | 'microsoft' | 'phone' | 'passwordless';
+
+export interface AuthConfig {
+  apiKey?: string;
+  authDomain?: string;
+  providers: AuthProviderType[];
+  autoSignIn?: boolean;
+  sessionDuration?: number; // in milliseconds
+  persistence?: 'local' | 'session' | 'none';
+  debug?: boolean;
+}
+
+export interface AuthError {
+  code: string;
+  message: string;
+  details?: any;
+}
+
+export interface AuthStartOptions {
+  config: AuthConfig;
+  adapter?: AuthAdapter;
+}
+
+// Interface for Database Adapters
+export interface AuthAdapter {
+  name: string;
+  
+  // User Management
+  createUser(user: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User>;
+  getUser(id: string): Promise<User | null>;
+  getUserByEmail(email: string, tenantId: string): Promise<User | null>;
+  updateUser(id: string, data: Partial<User>): Promise<User>;
+  deleteUser(id: string): Promise<void>;
+
+  // Session Management
+  createSession(session: Omit<Session, 'id' | 'createdAt'>): Promise<Session>;
+  getSession(token: string): Promise<Session | null>;
+  deleteSession(token: string): Promise<void>;
+  deleteUserSessions(userId: string): Promise<void>;
+  
+  // Verification
+  createVerificationToken?(identifier: string, token: string, expires: Date): Promise<void>;
+  useVerificationToken?(identifier: string, token: string): Promise<boolean>;
+}
+
+export interface AuthProvider {
+  id: string;
+  name: string;
+  type: AuthProviderType;
+  signIn(credentials?: any): Promise<User>;
+  signOut(): Promise<void>;
+}

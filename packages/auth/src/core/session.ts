@@ -1,0 +1,41 @@
+import { AuthAdapter, Session, User } from '../types';
+import { getAuthConfig } from './config';
+import { createAuthError, AuthErrors } from './errors';
+
+export class SessionManager {
+  constructor(private adapter: AuthAdapter) {}
+
+  async createSession(user: User): Promise<Session> {
+    const config = getAuthConfig();
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + (config.sessionDuration || 3600000));
+    
+    const token = Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
+
+    const session = await this.adapter.createSession({
+      userId: user.id,
+      expiresAt,
+      token,
+      // ipAddress and userAgent can be added if context is available
+    });
+
+    return session;
+  }
+
+  async validateSession(token: string): Promise<Session | null> {
+    const session = await this.adapter.getSession(token);
+    
+    if (!session) return null;
+
+    if (new Date() > session.expiresAt) {
+      await this.adapter.deleteSession(token);
+      return null;
+    }
+
+    return session;
+  }
+
+  async destroySession(token: string): Promise<void> {
+    await this.adapter.deleteSession(token);
+  }
+}
