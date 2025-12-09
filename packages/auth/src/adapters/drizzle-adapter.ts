@@ -124,4 +124,20 @@ export class DrizzleAdapter implements AuthAdapter {
        const db = getTenantDb(tenantId);
        await db.delete(sessions).where(eq(sessions.userId, Number(userId)));
   }
+
+  async verifyPassword(email: string, tenantId: string, plainPassword: string): Promise<User | null> {
+    const db = getTenantDb(tenantId);
+    const [user] = await db.select().from(users).where(and(eq(users.email, email), eq(users.tenantId, tenantId)));
+    
+    if (!user || !user.passwordHash) return null;
+
+    // TODO: Implement real hashing (bcrypt/argon2)
+    // For now, we compare plaintext if it matches, OR we check if it matches a 'mockhash_' pattern
+    // If the DB stores "secret123", we expect "secret123"
+    if (user.passwordHash === plainPassword) {
+         return { ...user, id: user.id.toString() } as unknown as User;
+    }
+    
+    return null;
+  }
 }

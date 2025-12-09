@@ -11,27 +11,10 @@ export class EmailPasswordProvider implements AuthProvider {
   async signIn(credentials: { email: string; password: string; tenantId: string }): Promise<User> {
       const { email, password, tenantId } = credentials;
       
-      // In a real implementation, we would hash the password and compare.
-      // For this mock/stub, we'll assume the user exists if we find them.
-      // BUT, since we don't store passwords in the User object (security!), 
-      // the Adapter needs a way to verify credentials. 
-      // This highlights a design nuance: Authentication vs User Storage.
-      // The Provider usually handles verification. 
-      // For Email/Password, we need a 'credential store' or reuse the User table with a password field which IS NOT return in the standard User object.
-      
-      // For simplicity in this SDK scaffold, let's look up the user.
-      const user = await this.adapter.getUserByEmail(email, tenantId);
+      const user = await this.adapter.verifyPassword(email, tenantId, password);
       
       if (!user) {
-          throw createAuthError(AuthErrors.USER_NOT_FOUND.code);
-      }
-      
-      // Verify password (Mock)
-      const storedPassword = user.metadata?.temporary_mock_password;
-      if (storedPassword && password !== storedPassword) {
-           throw createAuthError(AuthErrors.WRONG_PASSWORD.code);
-      } else if (password === 'wrong-password') {
-           throw createAuthError(AuthErrors.WRONG_PASSWORD.code);
+          throw createAuthError(AuthErrors.WRONG_PASSWORD.code);
       }
 
       return user;

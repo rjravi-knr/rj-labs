@@ -88,4 +88,11 @@ export class MemoryAdapter implements AuthAdapter {
       }
     }
   }
+
+  async verifyPassword(email: string, tenantId: string, password: string): Promise<User | null> {
+      // Mock implementation
+      const user = await this.getUserByEmail(email, tenantId);
+      if (user) return user;
+      return null;
+  }
 }

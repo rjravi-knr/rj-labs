@@ -63,6 +63,9 @@ export interface AuthAdapter {
   // Verification
   createVerificationToken?(identifier: string, token: string, expires: Date): Promise<void>;
   useVerificationToken?(identifier: string, token: string): Promise<boolean>;
+
+  // Password Management
+  verifyPassword(email: string, tenantId: string, password: string): Promise<User | null>; // Returns User on success
 }
 
 export interface AuthProvider {
