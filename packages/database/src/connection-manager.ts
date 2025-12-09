@@ -44,18 +44,23 @@ export class ConnectionManager {
       return connectionCache.get(tenantId)!
     }
 
-    // SIMULATION: In reality, fetch connection string for tenantId
-    // For local dev, we might be using the same Postgres instance but ideally different DBs
-    // Or we just return the main DB connection if everything is physically co-located for dev.
+    // SIMULATION: In reality, fetch connection string for tenantId from rj_common.tenants
+    // For local dev, we assume a convention: DATABASE_URL points to the server, we verify the DB name.
     
-    // Strategy: 
-    // 1. Look up config (mocked here or Env var convention)
-    // 2. Connect
+    // Base URL structure: postgres://user:pass@host:port
+    // We want to append /tenant_db_name
     
-    const connectionString = process.env.DATABASE_URL // Defaulting to main for Dev
-    if (!connectionString) throw new Error('DATABASE_URL not found')
+    const baseUrl = process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432'
+    // Hacky parse for dev convenience
+    const urlObj = new URL(baseUrl)
+    
+    // Map tenantId to db name (convert - to _)
+    const dbName = tenantId.replace(/-/g, '_')
+    urlObj.pathname = `/${dbName}`
+    
+    const finalUrl = urlObj.toString()
 
-    const client = postgres(connectionString)
+    const client = postgres(finalUrl)
     const db = drizzle(client, { schema })
     
     connectionCache.set(tenantId, db)

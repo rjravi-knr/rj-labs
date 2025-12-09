@@ -15,8 +15,11 @@
     "scripts": {
         "db:generate": "drizzle-kit generate",
         "db:migrate": "tsx src/sql/migrations/runner.ts",
-        "db:studio": "drizzle-kit studio",
-        "lint": "eslint . --max-warnings 0",
+        "db:push:common": "drizzle-kit push --config=drizzle.config.common.ts",
+        "db:push:tenant": "drizzle-kit push --config=drizzle.config.tenant.ts",
+        "db:studio:common": "DATABASE_URL_COMMON='postgres://postgres:postgres@localhost:5432/rj_common' drizzle-kit studio --config=drizzle.config.common.ts",
+        "db:studio:acme": "DATABASE_URL='postgres://postgres:postgres@localhost:5432/acme_corp' drizzle-kit studio --config=drizzle.config.tenant.ts --port 4984",
+        "db:studio:local": "DATABASE_URL='postgres://postgres:postgres@localhost:5432/rj_local' drizzle-kit studio --config=drizzle.config.tenant.ts --port 4985",
         "check-types": "tsc --noEmit"
     },
     "dependencies": {
