@@ -57,6 +57,7 @@ export abstract class BaseRepository<T extends Document> {
   async create(data: Partial<T>): Promise<T> {
     const context = getTenantContext()
     const docData = context ? { ...data, tenantId: context.tenantId } : data
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return this.model.create(docData as any)
   }
 
@@ -68,6 +69,7 @@ export abstract class BaseRepository<T extends Document> {
     const docs = context 
       ? dataArray.map(data => ({ ...data, tenantId: context.tenantId }))
       : dataArray
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return this.model.insertMany(docs as any)
   }
 

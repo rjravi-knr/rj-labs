@@ -1,7 +1,6 @@
 import { createSqlClient } from './sql/client'
 import { createMongoClient } from './mongo/client'
 import { LogsRepository } from './mongo/repositories'
-import { createCacheClient } from './cache'
 import type { DatabaseConfig } from './core/types'
 import { getConfig } from './core/config'
 
