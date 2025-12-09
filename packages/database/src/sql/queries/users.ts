@@ -7,9 +7,10 @@ import { getTenantContext } from '../../modules/tenancy/context'
  * Find user by ID (tenant-scoped)
  */
 export async function findUserById(db: SqlClient, id: number, tenant: { tenantId: string }): Promise<User | undefined> {
-  return db.query.users.findFirst({
-    where: and(eq(users.id, id), eq(users.tenantId, tenant.tenantId)),
-  })
+  const result = await db.select().from(users)
+    .where(and(eq(users.id, id), eq(users.tenantId, tenant.tenantId)))
+    .limit(1)
+  return result[0]
 }
 
 /**

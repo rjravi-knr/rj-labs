@@ -6,9 +6,8 @@ import { tenants, type Tenant, type NewTenant } from '../../modules/tenancy/sql'
  * Find tenant by ID
  */
 export async function findTenantById(db: SqlClient, id: string): Promise<Tenant | undefined> {
-  return db.query.tenants.findFirst({
-    where: eq(tenants.id, id),
-  })
+  const result = await db.select().from(tenants).where(eq(tenants.id, id)).limit(1)
+  return result[0]
 }
 
 /**

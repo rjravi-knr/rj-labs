@@ -1,7 +1,9 @@
-import { pgTable, uuid, varchar, timestamp, boolean, jsonb } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, varchar, timestamp, boolean, jsonb, pgSchema } from 'drizzle-orm/pg-core'
+
 
 /**
  * Tenants table - stores multi-tenant organization data
+ * Note: Lives in 'rj_common' database.
  */
 export const tenants = pgTable('tenants', {
   id: varchar('id', { length: 32 }).primaryKey(),
