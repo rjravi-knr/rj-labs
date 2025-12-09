@@ -10,10 +10,14 @@ export class SessionManager {
     const now = new Date();
     const expiresAt = new Date(now.getTime() + (config.sessionDuration || 3600000));
     
-    const token = Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
+    // Smart Token: tenantId.randomString
+    // This allows identifying the tenant DB just from the token
+    const randomPart = Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
+    const token = `${user.tenantId}.${randomPart}`;
 
     const session = await this.adapter.createSession({
       userId: user.id,
+      tenantId: user.tenantId,
       expiresAt,
       token,
       // ipAddress and userAgent can be added if context is available

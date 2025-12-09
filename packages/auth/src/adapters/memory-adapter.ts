@@ -27,8 +27,10 @@ export class MemoryAdapter implements AuthAdapter {
     return newUser;
   }
 
-  async getUser(id: string): Promise<User | null> {
-    return this.users.get(id) || null;
+  async getUser(id: string, tenantId: string): Promise<User | null> {
+    const user = this.users.get(id);
+    if (user && user.tenantId === tenantId) return user;
+    return null;
   }
 
   async getUserByEmail(email: string, tenantId: string): Promise<User | null> {
@@ -38,8 +40,8 @@ export class MemoryAdapter implements AuthAdapter {
     return null;
   }
 
-  async updateUser(id: string, data: Partial<User>): Promise<User> {
-    const user = await this.getUser(id);
+  async updateUser(id: string, tenantId: string, data: Partial<User>): Promise<User> {
+    const user = await this.getUser(id, tenantId);
     if (!user) throw createAuthError(AuthErrors.USER_NOT_FOUND.code);
 
     const updatedUser = { ...user, ...data, updatedAt: new Date() };
@@ -47,9 +49,12 @@ export class MemoryAdapter implements AuthAdapter {
     return updatedUser;
   }
 
-  async deleteUser(id: string): Promise<void> {
-    this.users.delete(id);
-    this.deleteUserSessions(id);
+  async deleteUser(id: string, tenantId: string): Promise<void> {
+    const user = await this.getUser(id, tenantId);
+    if (user) {
+        this.users.delete(id);
+        this.deleteUserSessions(id, tenantId);
+    }
   }
 
   async createSession(session: Omit<Session, 'id' | 'createdAt'>): Promise<Session> {
@@ -76,9 +81,9 @@ export class MemoryAdapter implements AuthAdapter {
     this.sessions.delete(token);
   }
 
-  async deleteUserSessions(userId: string): Promise<void> {
+  async deleteUserSessions(userId: string, tenantId: string): Promise<void> {
     for (const [token, session] of this.sessions.entries()) {
-      if (session.userId === userId) {
+      if (session.userId === userId && session.tenantId === tenantId) {
         this.sessions.delete(token);
       }
     }

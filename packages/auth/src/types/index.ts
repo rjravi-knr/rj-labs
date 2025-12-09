@@ -12,6 +12,7 @@ export interface User {
 
 export interface Session {
   id: string;
+  tenantId: string;
   userId: string;
   expiresAt: Date;
   token: string;
@@ -48,16 +49,16 @@ export interface AuthAdapter {
   
   // User Management
   createUser(user: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User>;
-  getUser(id: string): Promise<User | null>;
+  getUser(id: string, tenantId: string): Promise<User | null>;
   getUserByEmail(email: string, tenantId: string): Promise<User | null>;
-  updateUser(id: string, data: Partial<User>): Promise<User>;
-  deleteUser(id: string): Promise<void>;
+  updateUser(id: string, tenantId: string, data: Partial<User>): Promise<User>;
+  deleteUser(id: string, tenantId: string): Promise<void>;
 
   // Session Management
   createSession(session: Omit<Session, 'id' | 'createdAt'>): Promise<Session>;
   getSession(token: string): Promise<Session | null>;
   deleteSession(token: string): Promise<void>;
-  deleteUserSessions(userId: string): Promise<void>;
+  deleteUserSessions(userId: string, tenantId: string): Promise<void>;
   
   // Verification
   createVerificationToken?(identifier: string, token: string, expires: Date): Promise<void>;

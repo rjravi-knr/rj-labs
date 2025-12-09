@@ -38,7 +38,7 @@ async function validateAndRestoreSession(token: string) {
     const session = await sessionManager.validateSession(token);
     if (session) {
         currentSession = session;
-        currentUser = await authAdapter.getUser(session.userId);
+        currentUser = await authAdapter.getUser(session.userId, session.tenantId);
         notifyListeners();
     } else {
         // Invalid session, clear local storage
