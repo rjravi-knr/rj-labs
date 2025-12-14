@@ -1,6 +1,8 @@
 "use client";
 
 
+
+
 import { AuthProvider } from "@labs/auth/client";
 import { Toaster } from "@labs/ui/sonner";
 

@@ -276,12 +276,11 @@ app.openapi(
             providerConfig: body.providerConfig,
             mfaEnabled: body.mfaEnabled,
             termsUrl: body.termsUrl,
-            privacyUrl: body.privacyUrl,
-            name: body.name,
-            // @ts-ignore
-            settings: body.settings
         }).returning();
-        return c.json({ success: true, id: newConfig.id });
+  
+      if (!newConfig) return c.json({ error: 'Failed to update config' }, 500);
+
+      return c.json({ success: true, id: newConfig.id.toString() } as any);
       }
     } catch (e: any) {
       console.error(e);
@@ -357,7 +356,11 @@ app.openapi(
           updatedAt: new Date()
       }).returning();
       
-      return c.json({ id: newUser.id.toString(), email: newUser.email });
+
+      if (!newUser) return c.json({ error: 'Failed to create user' }, 400); // Should not happen given logic
+      
+
+      return c.json({ id: newUser.id.toString(), email: newUser.email } as any);
   }
 );
 
@@ -372,10 +375,12 @@ app.openapi(
         content: {
           'application/json': {
             schema: z.object({
+
               user: z.object({
                 id: z.string(),
                 email: z.string(),
-                tenantId: z.string()
+                tenantId: z.string(),
+                isSuperAdmin: z.boolean().optional()
               })
             })
           }
@@ -399,17 +404,19 @@ app.openapi(
         const session = await validateSession(token);
         if (!session) return c.json({ error: 'Invalid token' }, 401);
 
-        const user = await getUser(session.userId, session.tenantId);
+
+        const user = await getUser(session.userId, String(session.tenantId || 'default'));
         if (!user) return c.json({ error: 'User not found' }, 401);
 
-        // 2. Authorization Check (Back to Super Admin Flag)
-        if (!user || user.isSuperAdmin !== true) {
-            return c.json({ error: 'Forbidden: Only super admins can modify settings.' }, 403);
-        }
 
-        console.log(`[PATCH Config] Super Admin Authorized: ${user.email} (ID: ${user.id})`);
-
-        return c.json({ user: { id: user.id, email: user.email, tenantId: user.tenantId } });
+        return c.json({ 
+            user: { 
+                id: user.id, 
+                email: user.email, 
+                tenantId: user.tenantId,
+                isSuperAdmin: user.isSuperAdmin 
+            } 
+        });
     } catch (e) {
         return c.json({ error: 'Validation failed' }, 401);
     }
@@ -425,16 +432,8 @@ app.doc('/doc', {
     description: 'Authentication service powered by Hono and @labs/auth.',
 
   },
-  components: {
-    securitySchemes: {
-      BearerAuth: {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-      },
-    },
-  },
-  security: [], // Global security (optional, can be empty)
+  // components defined implicitly by registry
+  security: [], 
 });
 
 // Scalar UI

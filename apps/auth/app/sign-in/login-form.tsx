@@ -17,10 +17,14 @@ interface LoginFormProps {
 
 
 
+
+
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@labs/auth/client';
 
 export function LoginForm({ tenantId }: LoginFormProps) {
     const router = useRouter();
+    const { signIn } = useAuth();
     const [isLoading, setIsLoading] = React.useState(false);
     const [showPassword, setShowPassword] = React.useState(false);
 
@@ -32,43 +36,35 @@ export function LoginForm({ tenantId }: LoginFormProps) {
         const email = formData.get('email') as string;
         const password = formData.get('password') as string;
 
+
         try {
-            const apiBase = process.env.NEXT_PUBLIC_AUTH_API_URL;
-            const res = await fetch(`${apiBase}/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    email,
-                    password,
-                    tenantId
-                })
+            // Use Auth SDK
+            // cast result to any because strict type might be void depending on recent build details
+            // but we returned data in implemented AuthContext
+            const data: any = await signIn('email_password', {
+                email,
+                password,
+                tenantId
             });
-
-            const data = await res.json();
-
-
-            if (!res.ok) {
-                throw new Error(data.error || 'Invalid credentials');
-            }
-
-            console.log('[LoginForm] Login Response:', data);
 
             toast.success("Login Successful", {
                 description: "You have successfully signed in."
             });
             
             // Check for Super Admin
-            if (data.user?.isSuperAdmin) {
-                router.push(`/settings?tenantId=${tenantId}`);
+            if (data?.user?.isSuperAdmin) {
+                // Force reload to ensure Auth SDK re-initializes (if passing via query param isn't enough)
+                // But since we used the hook, state MIGHT be updated.
+                // However, navigation ensures clean slate.
+                window.location.href = `/settings?tenantId=${tenantId}`;
             } else {
-                 // Regular user redirect (e.g. to dashboard or home)
-                 // For now, maybe just stay or go to root
-                 router.push(`/?tenantId=${tenantId}`);
+                 window.location.href = `/?tenantId=${tenantId}`;
             }
 
         } catch (e: any) {
+             const msg = e.message || "Login failed";
             toast.error("Login Failed", {
-                description: e.message
+                description: msg
             });
         } finally {
             setIsLoading(false);

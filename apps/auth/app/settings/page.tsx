@@ -1,8 +1,10 @@
 
 "use client";
 
+
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+
 import { useAuth } from "@labs/auth/client";
 import { Button } from "@labs/ui/button";
 import { Input } from "@labs/ui/input";
@@ -14,7 +16,7 @@ import { toast } from "@labs/ui/sonner";
 import { Loader2, ArrowLeft, Save, ShieldAlert } from "lucide-react";
 
 export default function SettingsPage() {
-    const { user, session, isLoading: isAuthLoading } = useAuth();
+    const { user, session, loading: isAuthLoading } = useAuth();
     const router = useRouter();
     const searchParams = useSearchParams();
     const tenantId = searchParams.get("tenantId") || "acme-corp";

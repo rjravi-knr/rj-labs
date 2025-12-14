@@ -1,1 +1,0 @@
-export { tenants } from './sql';
