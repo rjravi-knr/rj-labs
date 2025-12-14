@@ -14,8 +14,10 @@ import { DrizzleAdapter } from '@labs/auth/adapters';
 
 import { authConfig, users } from '@labs/database/auth';
 
+
 import { getTenantDb } from '@labs/database';
-import { eq } from 'drizzle-orm';
+import { eq, and, gt } from 'drizzle-orm';
+import bcrypt from 'bcryptjs';
 
 extendZodWithOpenApi(z);
 
@@ -462,7 +464,159 @@ app.get('/api/auth/google', async (c) => {
     } catch (e: any) {
         return c.json({ error: e.message }, 500);
     }
-});
+  }
+);
+
+
+// Forgot Password Endpoint
+app.openapi(
+  createRoute({
+    method: 'post',
+    path: '/api/auth/forgot-password',
+    request: {
+      body: {
+        content: {
+          'application/json': {
+            schema: z.object({
+              email: z.string().email(),
+              tenantId: z.string().min(1)
+            })
+          }
+        }
+      }
+    },
+    responses: {
+      200: {
+        description: 'Password reset link sent',
+        content: {
+          'application/json': {
+            schema: z.object({
+              success: z.boolean(),
+              message: z.string()
+            })
+          }
+        }
+      },
+      400: {
+        description: 'Invalid request',
+        content: {
+          'application/json': {
+            schema: z.object({ error: z.string() })
+          }
+        }
+      }
+    }
+  }),
+  async (c) => {
+    const { email, tenantId } = c.req.valid('json');
+    const db = getTenantDb(tenantId);
+    
+    try {
+        const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+        
+        if (!user) {
+            // Return success even if user not found to prevent enumeration
+            return c.json({ success: true, message: 'If an account exists, a reset link has been sent.' });
+        }
+
+        // Generate simple random token
+        const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        const expiresAt = new Date(Date.now() + 3600 * 1000); // 1 hour
+
+        await db.update(users)
+            .set({ 
+                resetToken,
+                resetTokenExpires: expiresAt,
+                updatedAt: new Date()
+            })
+            .where(eq(users.id, user.id));
+
+        // Mock Email Sending
+        const resetLink = `http://localhost:3002/reset-password?token=${resetToken}&tenantId=${tenantId}`;
+        console.log(`\n[EMAIL MOCK] Password Reset Link for ${email}: ${resetLink}\n`);
+
+        return c.json({ success: true, message: 'If an account exists, a reset link has been sent.' });
+
+    } catch (e: any) {
+        console.error(e);
+        return c.json({ error: 'Failed to process request' }, 500);
+    }
+  }
+);
+
+
+// Reset Password Endpoint
+app.openapi(
+  createRoute({
+    method: 'post',
+    path: '/api/auth/reset-password',
+    request: {
+      body: {
+        content: {
+          'application/json': {
+            schema: z.object({
+              token: z.string().min(1),
+              password: z.string().min(8), // Enforce min length
+              tenantId: z.string().min(1)
+            })
+          }
+        }
+      }
+    },
+    responses: {
+      200: {
+        description: 'Password reset successful',
+        content: {
+          'application/json': {
+            schema: z.object({ success: z.boolean(), message: z.string() })
+          }
+        }
+      },
+      400: {
+        description: 'Invalid or expired token',
+        content: {
+          'application/json': {
+            schema: z.object({ error: z.string() })
+          }
+        }
+      }
+    }
+  }),
+  async (c) => {
+    const { token, password, tenantId } = c.req.valid('json');
+    const db = getTenantDb(tenantId);
+
+    try {
+        const [user] = await db.select().from(users)
+            .where(and(
+                eq(users.resetToken, token),
+                gt(users.resetTokenExpires, new Date()) // Token must be future expiry
+            ))
+            .limit(1);
+
+        if (!user) {
+            return c.json({ error: 'Invalid or expired reset token' }, 400);
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        await db.update(users)
+            .set({ 
+                passwordHash: hashedPassword,
+                resetToken: null,
+                resetTokenExpires: null,
+                updatedAt: new Date()
+            })
+            .where(eq(users.id, user.id));
+
+        return c.json({ success: true, message: 'Password has been reset successfully.' });
+
+    } catch (e: any) {
+        console.error(e);
+        return c.json({ error: 'Failed to reset password' }, 500);
+    }
+  }
+);
 
 app.get('/api/auth/google/callback', async (c) => {
     const code = c.req.query('code');

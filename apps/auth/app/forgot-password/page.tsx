@@ -1,8 +1,6 @@
+
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { Button } from '@labs/ui/button';
-import { Input } from '@labs/ui/input';
-import { Label } from '@labs/ui/label';
 import {
   Card,
   CardContent,
@@ -11,49 +9,45 @@ import {
   CardTitle,
 } from '@labs/ui/card';
 import { AuthLayout } from '../components/auth-layout';
+import { ForgotPasswordForm } from './form';
 
 export const metadata: Metadata = {
-  title: 'Forgot Password - RJ SaaS',
+  title: 'Forgot Password - RJ Studio',
   description: 'Reset your password',
 };
 
-export default function ForgotPasswordPage() {
+interface PageProps {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function ForgotPasswordPage(props: PageProps) {
+  const searchParams = await props.searchParams;
+  let tenantId = typeof searchParams.tenantId === 'string' ? searchParams.tenantId : undefined;
+  
+  if (!tenantId) {
+      tenantId = process.env.NEXT_PUBLIC_DEFAULT_TENANT_ID;
+  }
+
   return (
     <AuthLayout>
       <Card className="border-none shadow-none sm:border sm:shadow-sm">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl font-bold tracking-tight">
-            Forgot password?
+            Forgot Password
           </CardTitle>
           <CardDescription>
-            Enter your email address and we'll send you a link to reset your
-            password.
+            Enter your email to receive a password reset link
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                placeholder="name@example.com"
-                type="email"
-                autoCapitalize="none"
-                autoComplete="email"
-                autoCorrect="off"
-              />
-            </div>
-            <Button className="w-full">
-              Send Reset Link
-            </Button>
-          </div>
+          <ForgotPasswordForm tenantId={tenantId} />
+          
           <div className="mt-4 text-center text-sm text-muted-foreground">
-            Remember your password?{' '}
             <Link
-              href="/sign-in"
-              className="font-semibold text-primary underline-offset-4 hover:underline"
+              href={`/sign-in?tenantId=${tenantId || ''}`}
+              className="font-medium text-primary underline-offset-4 hover:underline"
             >
-              Sign in
+              Back to Sign In
             </Link>
           </div>
         </CardContent>
