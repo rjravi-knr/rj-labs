@@ -3,9 +3,6 @@ import { Metadata } from 'next';
 import { SocialButtons } from './social-buttons';
 import { TenantSelectionForm } from './tenant-selection-form';
 import Link from 'next/link';
-import { Button } from '@labs/ui/button';
-import { Input } from '@labs/ui/input';
-import { Label } from '@labs/ui/label';
 import {
   Card,
   CardContent,
@@ -13,7 +10,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@labs/ui/card';
+
 import { AuthLayout } from '../components/auth-layout';
+import { LoginForm } from './login-form';
 
 export const metadata: Metadata = {
   title: 'Sign In - RJ Studio',
@@ -127,32 +126,8 @@ export default async function SignInPage(props: PageProps) {
                 </div>
             )}
 
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                placeholder="name@example.com"
-                type="email"
-                autoCapitalize="none"
-                autoComplete="email"
-                autoCorrect="off"
-              />
-            </div>
-            <div className="grid gap-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                <Link
-                  href="/forgot-password"
-                  className="text-xs font-medium text-primary underline-offset-4 hover:underline"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-              <Input id="password" type="password" />
-            </div>
-            <Button type="submit" className="w-full">
-              Sign In
-            </Button>
+
+            <LoginForm tenantId={tenantId} />
           </div>
           
           {(termsUrl || privacyUrl) && (
