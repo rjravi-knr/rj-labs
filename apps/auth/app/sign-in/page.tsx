@@ -1,5 +1,7 @@
+
 import { Metadata } from 'next';
 import { SocialButtons } from './social-buttons';
+import { TenantSelectionForm } from './tenant-selection-form';
 import Link from 'next/link';
 import { Button } from '@labs/ui/button';
 import { Input } from '@labs/ui/input';
@@ -14,19 +16,93 @@ import {
 import { AuthLayout } from '../components/auth-layout';
 
 export const metadata: Metadata = {
-  title: 'Sign In - RJ SaaS',
+  title: 'Sign In - RJ Studio',
   description: 'Sign in to your account',
 };
 
+async function getAuthConfig(tenantId: string) {
+    const apiBase = process.env.NEXT_PUBLIC_AUTH_API_URL;
+    if (!apiBase) throw new Error("NEXT_PUBLIC_AUTH_API_URL is not defined");
+
+    try {
+        console.log(`[SignInPage] Fetching config from: ${apiBase}/config?tenantId=${tenantId}`);
+        const res = await fetch(`${apiBase}/config?tenantId=${tenantId}`, { cache: 'no-store' });
+        if (!res.ok) {
+            console.error(`[SignInPage] Config fetch failed: ${res.status} ${res.statusText}`);
+            const body = await res.text().catch(() => 'No body');
+            console.error(`[SignInPage] Error Body: ${body}`);
+            return null;
+        }
+        return res.json();
+    } catch (e) {
+        console.error('[SignInPage] Failed to fetch auth config (Network Error):', e);
+        return null;
+    }
+}
 
 
-export default function SignInPage() {
+import { Alert, AlertDescription, AlertTitle } from '@labs/ui/alert';
+import { AlertCircle } from 'lucide-react';
+
+interface PageProps {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function SignInPage(props: PageProps) {
+  const searchParams = await props.searchParams;
+  
+
+  // 1. Resolve Tenant ID
+  // Priority: URL Query -> Env Var
+  let tenantId = typeof searchParams.tenantId === 'string' ? searchParams.tenantId : undefined;
+  
+  if (!tenantId) {
+      tenantId = process.env.NEXT_PUBLIC_DEFAULT_TENANT_ID;
+  }
+
+  console.log('[SignInPage] Resolved Tenant ID:', tenantId);
+
+  // 2. If no tenant resolved, show selection form
+  if (!tenantId || tenantId === 'default') {
+      console.log('[SignInPage] No tenant ID resolved, showing selection form.');
+      return (
+          <AuthLayout>
+              <TenantSelectionForm />
+          </AuthLayout>
+      );
+  }
+
+  // 3. Fetch Config
+  const authConfig = await getAuthConfig(tenantId);
+  console.log('[SignInPage] Auth Config Fetch Result:', authConfig ? 'Success' : 'Failed');
+
+  // If invalid tenant ID (config fetch failed), fallback to selection with Alert
+  if (!authConfig) {
+       return (
+          <AuthLayout>
+              <TenantSelectionForm />
+              <div className="mt-6">
+                <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>
+                        Tenant not found or configuration could not be loaded. Please try again.
+                    </AlertDescription>
+                </Alert>
+              </div>
+          </AuthLayout>
+      );
+  }
+
+
+  const { enabledProviders = [], name: tenantName, selfRegistrationEnabled, termsUrl, privacyUrl } = authConfig;
+
   return (
     <AuthLayout>
       <Card className="border-none shadow-none sm:border sm:shadow-sm">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl font-bold tracking-tight">
-            Welcome back
+            Sign In to {tenantName || tenantId}
           </CardTitle>
           <CardDescription>
             Enter your details to sign in to your account
@@ -35,19 +111,21 @@ export default function SignInPage() {
         <CardContent>
           <div className="grid gap-4">
 
+            <SocialButtons enabledProviders={enabledProviders} tenantId={tenantId} />
 
-            <SocialButtons />
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                  Or continue with
-                </span>
-              </div>
-            </div>
+            {/* Separator if both Social and Email are present (or if we assume Email is always there for now) */}
+            {(enabledProviders.length > 0) && (
+                <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                    Or continue with
+                    </span>
+                </div>
+                </div>
+            )}
 
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
@@ -76,35 +154,46 @@ export default function SignInPage() {
               Sign In
             </Button>
           </div>
-          <div className="mt-4 text-center text-xs text-muted-foreground">
-            By clicking continue, you agree to our{' '}
-            <Link
-              href="/terms"
-              className="underline underline-offset-4 hover:text-primary"
-            >
-              Terms of Service
-            </Link>{' '}
-            and{' '}
-            <Link
-              href="/privacy"
-              className="underline underline-offset-4 hover:text-primary"
-            >
-              Privacy Policy
-            </Link>
-            .
-          </div>
+          
+          {(termsUrl || privacyUrl) && (
+            <div className="mt-4 text-center text-xs text-muted-foreground">
+                By clicking continue, you agree to our{' '}
+                {termsUrl && (
+                <Link
+                    href={termsUrl}
+                    className="underline underline-offset-4 hover:text-primary"
+                    target="_blank"
+                >
+                    Terms of Service
+                </Link>
+                )}{' '}
+                {termsUrl && privacyUrl && 'and '}{' '}
+                {privacyUrl && (
+                <Link
+                    href={privacyUrl}
+                    className="underline underline-offset-4 hover:text-primary"
+                    target="_blank"
+                >
+                    Privacy Policy
+                </Link>
+                )}
+                .
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      <div className="mt-6 text-center text-sm text-muted-foreground">
-        Don&apos;t have an account?{' '}
-        <Link
-          href="/sign-up"
-          className="font-semibold text-primary underline-offset-4 hover:underline"
-        >
-          Sign up
-        </Link>
-      </div>
+      {selfRegistrationEnabled && (
+        <div className="mt-6 text-center text-sm text-muted-foreground">
+            Don&apos;t have an account?{' '}
+            <Link
+            href={`/sign-up?tenantId=${tenantId}`}
+            className="font-semibold text-primary underline-offset-4 hover:underline"
+            >
+            Sign up
+            </Link>
+        </div>
+      )}
     </AuthLayout>
   );
 }

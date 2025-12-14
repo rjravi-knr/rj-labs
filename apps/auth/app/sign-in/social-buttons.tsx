@@ -29,29 +29,43 @@ function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-export function SocialButtons() {
-    const searchParams = useSearchParams();
-    const tenantId = searchParams.get('tenantId') || process.env.NEXT_PUBLIC_DEFAULT_TENANT_ID || 'default';
-    const baseUrl = process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:3002/api/auth';
+
+export function SocialButtons({ enabledProviders = [], tenantId }: { enabledProviders: string[], tenantId: string }) {
+    const baseUrl = process.env.NEXT_PUBLIC_AUTH_API_URL;
+    if (!baseUrl) {
+        console.error("NEXT_PUBLIC_AUTH_API_URL is missing");
+        return null;
+    }
 
     const handleGoogleLogin = () => {
         window.location.href = `${baseUrl}/google?tenantId=${tenantId}`;
     };
 
+    if (enabledProviders.length === 0) return null;
+
+
+    const gridCols = enabledProviders.length === 1 ? 'grid-cols-1' : 'grid-cols-2';
+
     return (
-        <div className="grid grid-cols-2 gap-3">
-            <Button variant="outline" className="w-full">
-            <Github className="mr-2 h-4 w-4" />
-            GitHub
-            </Button>
-            <Button 
-            variant="outline" 
-            className="w-full"
-            onClick={handleGoogleLogin}
-            >
-            <GoogleIcon className="mr-2 h-4 w-4" />
-            Google
-            </Button>
+        <div className={`grid ${gridCols} gap-3 mb-4`}>
+            {/* GitHub - Placeholder / Implementation Pending */}
+            {enabledProviders.includes('github') && (
+                <Button variant="outline" className="w-full">
+                    <Github className="mr-2 h-4 w-4" />
+                    GitHub
+                </Button>
+            )}
+
+            {enabledProviders.includes('google') && (
+                <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={handleGoogleLogin}
+                >
+                    <GoogleIcon className="mr-2 h-4 w-4" />
+                    Google
+                </Button>
+            )}
         </div>
     );
 }

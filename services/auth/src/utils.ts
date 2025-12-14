@@ -11,7 +11,8 @@ export async function getConfiguredGoogleProvider(tenantId: string): Promise<Goo
 
     let clientId = process.env.GOOGLE_CLIENT_ID;
     let clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-    let redirectUri = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3002/api/auth/google/callback';
+
+    let redirectUri = process.env.GOOGLE_REDIRECT_URI;
 
     if (config?.providerConfig) {
         const providers = config.providerConfig as any;

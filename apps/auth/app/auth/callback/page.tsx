@@ -19,7 +19,8 @@ function CallbackContent() {
             
             try {
                 // Verify against the Service API
-                const apiBase = process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:3002/api/auth';
+                const apiBase = process.env.NEXT_PUBLIC_AUTH_API_URL;
+                if (!apiBase) throw new Error("NEXT_PUBLIC_AUTH_API_URL is missing");
                 const res = await fetch(`${apiBase}/me`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });

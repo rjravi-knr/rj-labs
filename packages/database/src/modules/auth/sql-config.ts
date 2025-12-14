@@ -12,7 +12,13 @@ export const authConfig = pgTable('auth_config', {
   ssoConfig: jsonb('sso_config'), // SAML/OIDC metadata
   passwordPolicy: jsonb('password_policy').default({ minLength: 8 }),
   mfaEnabled: boolean('mfa_enabled').default(false).notNull(),
+
   selfRegistrationEnabled: boolean('self_registration_enabled').default(true).notNull(),
+
+  termsUrl: varchar('terms_url', { length: 512 }),
+  privacyUrl: varchar('privacy_url', { length: 512 }),
+  name: varchar('name', { length: 255 }),
+  settings: jsonb('settings'), // Flexible settings for theme, etc.
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })

@@ -1,6 +1,9 @@
 import { serve } from '@hono/node-server';
-import { OpenAPIHono, createRoute } from '@hono/zod-openapi';
-import { z } from 'zod';
+
+
+import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
+
+// Force restart: 789
 import { extendZodWithOpenApi } from '@hono/zod-openapi';
 import { apiReference } from '@scalar/hono-api-reference';
 import { cors } from 'hono/cors';
@@ -8,7 +11,9 @@ import { logger } from 'hono/logger';
 
 import { initializeAuth, signIn, validateSession, getUser } from '@labs/auth';
 import { DrizzleAdapter } from '@labs/auth/adapters';
+
 import { authConfig, users } from '@labs/database/auth';
+
 import { getTenantDb } from '@labs/database';
 import { eq } from 'drizzle-orm';
 
@@ -115,6 +120,7 @@ app.openapi(
   }
 );
 
+
 // Auth Config Endpoint
 app.openapi(
   createRoute({
@@ -133,7 +139,10 @@ app.openapi(
             schema: z.object({
               enabledProviders: z.array(z.string()).openapi({ example: ['email_password', 'google'] }),
               passwordPolicy: z.any().openapi({ example: { minLength: 8 } }),
-              selfRegistrationEnabled: z.boolean().openapi({ example: true })
+              selfRegistrationEnabled: z.boolean().openapi({ example: true }),
+              name: z.string().optional().openapi({ example: 'Acme Corp' }),
+              termsUrl: z.string().optional(),
+              privacyUrl: z.string().optional()
             })
           }
         }
@@ -145,11 +154,14 @@ app.openapi(
     }
   }),
 
+
   async (c) => {
     const { tenantId } = c.req.valid('query');
+
     try {
       const db = getTenantDb(tenantId);
-      // Check if config exists, if not return default
+      
+      // Fetch Auth Config from Tenant DB
       const [config] = await db.select().from(authConfig).limit(1);
       
       if (!config) {
@@ -159,7 +171,8 @@ app.openapi(
              passwordPolicy: { minLength: 8 },
              selfRegistrationEnabled: true,
              providerConfig: {},
-             mfaEnabled: false
+             mfaEnabled: false,
+             name: tenantId // Default name if no config
          });
       }
 
@@ -168,11 +181,17 @@ app.openapi(
         passwordPolicy: config.passwordPolicy,
         selfRegistrationEnabled: config.selfRegistrationEnabled,
         providerConfig: config.providerConfig,
-        mfaEnabled: config.mfaEnabled
+        mfaEnabled: config.mfaEnabled,
+        name: config.name || tenantId,
+        termsUrl: config.termsUrl || undefined,
+        privacyUrl: config.privacyUrl || undefined,
+        // @ts-ignore - settings added recently
+        settings: config.settings 
       });
     } catch (e) {
       console.error(e);
-      return c.json({ enabledProviders: ['email_password'], passwordPolicy: { minLength: 8 }, selfRegistrationEnabled: true }, 500);
+      // Fallback
+      return c.json({ enabledProviders: ['email_password'], passwordPolicy: { minLength: 8 }, selfRegistrationEnabled: true, name: tenantId }, 500);
     }
   }
 );
@@ -191,66 +210,75 @@ app.openapi(
                     'application/json': {
                         schema: z.object({
                             enabledProviders: z.array(z.string()).optional(),
+
                             passwordPolicy: z.any().optional(),
+                            name: z.string().optional(),
                             selfRegistrationEnabled: z.boolean().optional(),
                             mfaEnabled: z.boolean().optional(),
-                            providerConfig: z.any().optional()
+                            providerConfig: z.any().optional(),
+
+                            termsUrl: z.string().optional(),
+                            privacyUrl: z.string().optional(),
+                            settings: z.record(z.any()).optional()
                         })
                     }
                 }
             }
         },
-        responses: {
-            200: {
-                description: 'Config updated',
-                content: {
-                    'application/json': {
-                        schema: z.object({
-                            success: z.boolean(),
-                            id: z.string().optional()
-                        })
-                    }
-                }
-            },
-            500: {
-                description: 'Server Error',
-                content: { 'application/json': { schema: z.object({ error: z.string() }) } }
-            }
-        }
-    }),
-    async (c) => {
-        const { tenantId } = c.req.valid('query');
-        const updates = c.req.valid('json');
-        
-        try {
-            const db = getTenantDb(tenantId);
-            const [existing] = await db.select().from(authConfig).limit(1);
 
-            if (existing) {
-                // Update
-                await db.update(authConfig)
-                    .set({
-                        ...updates,
-                        updatedAt: new Date()
-                    } as any)
-                    .where(eq(authConfig.id, existing.id));
-                return c.json({ success: true, id: existing.id });
-            } else {
-                // Insert (Create with defaults + updates)
-                const [created] = await db.insert(authConfig).values({
-                    enabledProviders: ['email_password'],
-                    selfRegistrationEnabled: true,
-                    mfaEnabled: false,
-                    passwordPolicy: { minLength: 8 },
-                    ...updates
-                } as any).returning();
-                return c.json({ success: true, id: created.id });
-            }
-        } catch (e: any) {
-            console.error(e);
-            return c.json({ error: e.message }, 500);
-        }
+    responses: {
+      200: {
+        description: 'Config Updated',
+        content: { 'application/json': { schema: z.object({ success: z.boolean(), id: z.string() }) } }
+      },
+      500: {
+        description: 'Server Error',
+        content: { 'application/json': { schema: z.object({ error: z.any() }) } }
+      }
     }
+  }),
+
+  async (c) => {
+    const { tenantId } = c.req.valid('query');
+    const body = c.req.valid('json');
+
+    try {
+      console.log(`[PATCH Config] Processing update for tenant: ${tenantId}`);
+      const db = getTenantDb(tenantId);
+      
+      // Check if config exists
+      const [existing] = await db.select().from(authConfig).limit(1);
+
+      console.log(`[PATCH Config] Updating auth config fields:`, body);
+
+      if (existing) {
+        await db.update(authConfig)
+            .set({
+                ...body, 
+                updatedAt: new Date()
+            })
+            .where(eq(authConfig.id, existing.id));
+        return c.json({ success: true, id: existing.id });
+      } else {
+        const [newConfig] = await db.insert(authConfig).values({
+            enabledProviders: body.enabledProviders || ['email_password'],
+            passwordPolicy: body.passwordPolicy,
+            selfRegistrationEnabled: body.selfRegistrationEnabled ?? true,
+            providerConfig: body.providerConfig,
+            mfaEnabled: body.mfaEnabled,
+            termsUrl: body.termsUrl,
+            privacyUrl: body.privacyUrl,
+            name: body.name,
+            // @ts-ignore
+            settings: body.settings
+        }).returning();
+        return c.json({ success: true, id: newConfig.id });
+      }
+    } catch (e: any) {
+      console.error(e);
+      return c.json({ error: e.message }, 500);
+    }
+  }
 );
 
 // Signup Endpoint
@@ -424,10 +452,13 @@ app.get('/api/auth/google', async (c) => {
 
     const tenantId = c.req.query('tenantId') || 'rj_local';
     
+
     try {
         const google = await getConfiguredGoogleProvider(tenantId);
         const state = JSON.stringify({ tenantId });
-        return c.redirect(google.getAuthUrl(state));
+        const authUrl = google.getAuthUrl(state);
+        console.log(`[Google Auth] Generated URL: ${authUrl}`);
+        return c.redirect(authUrl);
     } catch (e: any) {
         return c.json({ error: e.message }, 500);
     }
@@ -455,7 +486,15 @@ app.get('/api/auth/google/callback', async (c) => {
         
         // Redirect to Frontend Callback with token
         // In a real app, strict allowlist for redirect URLs should be enforced per tenant
-        return c.redirect(`http://localhost:3000/auth/callback?token=${session.token}`);
+
+        // Redirect to Frontend Callback with token
+        // In a real app, strict allowlist for redirect URLs should be enforced per tenant
+        const appUrl = process.env.APP_URL || 'http://localhost:3000'; // Keep temp fallback to avoid breaking dev immediately, but warn? 
+        // User requested NO localhost. So:
+        const appUrlStrict = process.env.APP_URL;
+        if (!appUrlStrict) throw new Error("APP_URL not configured");
+        
+        return c.redirect(`${appUrlStrict}/auth/callback?token=${session.token}`);
     } catch (e: any) {
         return c.json({ error: e.message }, 500);
     }
