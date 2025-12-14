@@ -32,8 +32,9 @@ export async function getConfiguredGoogleProvider(tenantId: string): Promise<Goo
 
     const adapter = getAuthAdapter();
     return new GoogleProvider(adapter, {
+
         clientId,
         clientSecret,
-        redirectUri
+        redirectUri: redirectUri || 'http://localhost:3000/auth/callback'
     });
 }

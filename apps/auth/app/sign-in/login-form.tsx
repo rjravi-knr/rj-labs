@@ -16,7 +16,11 @@ interface LoginFormProps {
 }
 
 
+
+import { useRouter } from 'next/navigation';
+
 export function LoginForm({ tenantId }: LoginFormProps) {
+    const router = useRouter();
     const [isLoading, setIsLoading] = React.useState(false);
     const [showPassword, setShowPassword] = React.useState(false);
 
@@ -42,15 +46,25 @@ export function LoginForm({ tenantId }: LoginFormProps) {
 
             const data = await res.json();
 
+
             if (!res.ok) {
                 throw new Error(data.error || 'Invalid credentials');
             }
+
+            console.log('[LoginForm] Login Response:', data);
 
             toast.success("Login Successful", {
                 description: "You have successfully signed in."
             });
             
-            console.log('Login Token:', data.token);
+            // Check for Super Admin
+            if (data.user?.isSuperAdmin) {
+                router.push(`/settings?tenantId=${tenantId}`);
+            } else {
+                 // Regular user redirect (e.g. to dashboard or home)
+                 // For now, maybe just stay or go to root
+                 router.push(`/?tenantId=${tenantId}`);
+            }
 
         } catch (e: any) {
             toast.error("Login Failed", {

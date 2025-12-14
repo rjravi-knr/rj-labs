@@ -1,8 +1,10 @@
 export interface User {
   id: string;
   tenantId: string;
+
   email: string;
   name?: string;
+  isSuperAdmin?: boolean;
   emailVerified: Date | null;
   image?: string;
   createdAt: Date;

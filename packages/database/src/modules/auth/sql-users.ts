@@ -9,8 +9,10 @@ export const users = pgTable('users', {
   tenantId: varchar('tenant_id', { length: 32 }).notNull(),
   email: varchar('email', { length: 255 }).notNull(),
   name: varchar('name', { length: 255 }),
-  passwordHash: varchar('password_hash', { length: 255 }),
 
+  passwordHash: varchar('password_hash', { length: 255 }),
+  
+  isSuperAdmin: boolean('is_super_admin').default(false).notNull(),
   isActive: boolean('is_active').default(true).notNull(),
   emailVerified: timestamp('email_verified', { mode: 'date' }),
   resetToken: varchar('reset_token', { length: 255 }),

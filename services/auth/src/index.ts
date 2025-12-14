@@ -91,12 +91,14 @@ app.openapi(
           'application/json': {
             schema: z.object({
               token: z.string().openapi({ example: 'acme-corp.token123' }),
+
               user: z.object({
                 id: z.string().openapi({ example: '1' }),
                 email: z.string().openapi({ example: 'admin@acme-corp.com' }),
-                tenantId: z.string().openapi({ example: 'acme-corp' })
-              }).openapi({ example: { id: '1', email: 'admin@acme-corp.com', tenantId: 'acme-corp' } })
-            }).openapi({ example: { token: '...', user: { id: '1', email: '...', tenantId: '...' } } }),
+                tenantId: z.string().openapi({ example: 'acme-corp' }),
+                isSuperAdmin: z.boolean().optional().openapi({ example: true })
+              }).openapi({ example: { id: '1', email: 'admin@acme-corp.com', tenantId: 'acme-corp', isSuperAdmin: true } })
+            }).openapi({ example: { token: '...', user: { id: '1', email: '...', tenantId: '...', isSuperAdmin: true } } }),
           },
         },
       },
@@ -114,7 +116,12 @@ app.openapi(
       
       return c.json({
         token: session.token,
-        user: { id: user.id, email: user.email, tenantId: user.tenantId }
+        user: { 
+            id: user.id, 
+            email: user.email, 
+            tenantId: user.tenantId,
+            isSuperAdmin: user.isSuperAdmin
+        }
       });
     } catch (err: any) {
       return c.json({ error: err.message || 'Login failed' }, 401);
@@ -395,6 +402,13 @@ app.openapi(
         const user = await getUser(session.userId, session.tenantId);
         if (!user) return c.json({ error: 'User not found' }, 401);
 
+        // 2. Authorization Check (Back to Super Admin Flag)
+        if (!user || user.isSuperAdmin !== true) {
+            return c.json({ error: 'Forbidden: Only super admins can modify settings.' }, 403);
+        }
+
+        console.log(`[PATCH Config] Super Admin Authorized: ${user.email} (ID: ${user.id})`);
+
         return c.json({ user: { id: user.id, email: user.email, tenantId: user.tenantId } });
     } catch (e) {
         return c.json({ error: 'Validation failed' }, 401);
@@ -497,6 +511,7 @@ app.openapi(
           }
         }
       },
+
       400: {
         description: 'Invalid request',
         content: {
@@ -504,6 +519,14 @@ app.openapi(
             schema: z.object({ error: z.string() })
           }
         }
+      },
+      500: {
+         description: 'Server error',
+         content: {
+           'application/json': {
+             schema: z.object({ error: z.string() })
+           }
+         }
       }
     }
   }),
@@ -516,7 +539,7 @@ app.openapi(
         
         if (!user) {
             // Return success even if user not found to prevent enumeration
-            return c.json({ success: true, message: 'If an account exists, a reset link has been sent.' });
+            return c.json({ success: true, message: 'If an account exists, a reset link has been sent.' }, 200);
         }
 
         // Generate simple random token
@@ -535,7 +558,7 @@ app.openapi(
         const resetLink = `http://localhost:3002/reset-password?token=${resetToken}&tenantId=${tenantId}`;
         console.log(`\n[EMAIL MOCK] Password Reset Link for ${email}: ${resetLink}\n`);
 
-        return c.json({ success: true, message: 'If an account exists, a reset link has been sent.' });
+        return c.json({ success: true, message: 'If an account exists, a reset link has been sent.' }, 200);
 
     } catch (e: any) {
         console.error(e);
@@ -572,6 +595,7 @@ app.openapi(
           }
         }
       },
+
       400: {
         description: 'Invalid or expired token',
         content: {
@@ -579,6 +603,14 @@ app.openapi(
             schema: z.object({ error: z.string() })
           }
         }
+      },
+      500: {
+         description: 'Server error',
+         content: {
+           'application/json': {
+             schema: z.object({ error: z.string() })
+           }
+         }
       }
     }
   }),
@@ -609,7 +641,8 @@ app.openapi(
             })
             .where(eq(users.id, user.id));
 
-        return c.json({ success: true, message: 'Password has been reset successfully.' });
+
+        return c.json({ success: true, message: 'Password has been reset successfully.' }, 200);
 
     } catch (e: any) {
         console.error(e);
