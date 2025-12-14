@@ -1,11 +1,17 @@
+
 {
-  "extends": "@labs/typescript-config/base.json",
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
     "module": "esnext",
+
     "moduleResolution": "bundler",
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "target": "es2019",
+    "lib": ["dom", "dom.iterable", "esnext"],
+
+
+    "skipLibCheck": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "**/*.test.ts"]

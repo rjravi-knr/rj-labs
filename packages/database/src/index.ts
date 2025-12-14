@@ -16,7 +16,9 @@ export * from './core/errors'
 export * from './modules/tenancy'
 
 // Database adapters
+
 export * from './sql'
+export * from 'drizzle-orm';
 export * from './mongo'
 export * from './cache'
 

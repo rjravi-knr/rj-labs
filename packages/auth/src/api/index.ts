@@ -152,6 +152,12 @@ export function getCurrentUser(): User | null {
     return currentUser;
 }
 
+
+export async function createSession(user: User): Promise<Session> {
+    if (!sessionManager) throw createAuthError(AuthErrors.INTERNAL_ERROR.code, 'Auth SDK not initialized');
+    return sessionManager.createSession(user);
+}
+
 function notifyListeners() {
     listeners.forEach(cb => cb(currentUser));
 }

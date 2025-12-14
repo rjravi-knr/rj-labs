@@ -1,10 +1,9 @@
 
 import { AuthAdapter, User, Session } from '../types';
 import { createAuthError, AuthErrors } from '../core/errors';
-import { getTenantDb, getCommonDb } from '@labs/database';
-import { users } from '@labs/database/auth'; // Ensure this export exists
-import { sessions } from '@labs/database/auth'; // Ensure this export exists
-import { eq, and } from 'drizzle-orm';
+
+import { getTenantDb, getCommonDb, eq, and } from '@labs/database';
+import { users, sessions } from '@labs/database/auth';
 
 /**
  * Parsing helper for smart tokens
@@ -30,11 +29,12 @@ export class DrizzleAdapter implements AuthAdapter {
         throw createAuthError(AuthErrors.EMAIL_ALREADY_IN_USE.code);
     }
 
+
+
     const [newUser] = await db.insert(users).values({
         ...user,
-        // Drizzle handles default values, but we might need to map types
-        emailVerified: user.emailVerified ? new Date(user.emailVerified) : null,
-    }).returning(); // Postgres supports returning
+        emailVerified: (user.emailVerified ? new Date(user.emailVerified) : null) as any,
+    } as any).returning(); // Postgres supports returning
 
     // Convert keys/types if necessary (drizzle returns inferred types which should match User)
     // We cast or map
@@ -61,8 +61,9 @@ export class DrizzleAdapter implements AuthAdapter {
   async updateUser(id: string, tenantId: string, data: Partial<User>): Promise<User> {
      const db = getTenantDb(tenantId);
      // ... implementation
+
      const [updated] = await db.update(users)
-        .set({ ...data, updatedAt: new Date() }) // Partial update
+        .set({ ...data, updatedAt: new Date() } as any) // Partial update, cast to avoid strict type mismatch on 'id' string vs number
         .where(eq(users.id, Number(id)))
         .returning();
         

@@ -7,7 +7,8 @@
     "exports": {
         ".": "./dist/index.js",
         "./adapters": "./dist/adapters/index.js",
-        "./types": "./dist/types/index.js"
+        "./types": "./dist/types/index.js",
+        "./client": "./dist/ui/index.js"
     },
     "source": "src/index.ts",
     "scripts": {
@@ -24,7 +25,8 @@
     "author": "RJ Suite",
     "license": "MIT",
     "dependencies": {
-        "zod": "^3.22.0"
+        "zod": "^3.22.0",
+        "@labs/database": "workspace:*"
     },
     "peerDependencies": {
         "react": ">=18",

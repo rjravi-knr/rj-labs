@@ -21,7 +21,8 @@ export const accounts = pgTable('accounts', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (t) => ({
-  providerUnique: uniqueIndex('provider_unique_idx').on(t.provider, t.providerAccountId),
+
+  providerUnique: uniqueIndex('accounts_provider_providerAccountId_unique_idx').on(t.provider, t.providerAccountId),
 }))
 
 export type Account = typeof accounts.$inferSelect

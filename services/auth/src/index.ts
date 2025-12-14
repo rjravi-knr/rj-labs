@@ -262,10 +262,59 @@ app.get(
   })
 );
 
+
 const port = 3002;
 console.log(`Server is running on http://localhost:${port}`);
 
 serve({
   fetch: app.fetch,
   port,
+});
+
+/*
+ * Google OAuth Routes
+ */
+
+import { createSession } from '@labs/auth';
+import { getConfiguredGoogleProvider } from './utils';
+
+app.get('/api/auth/google', async (c) => {
+
+    const tenantId = c.req.query('tenantId') || 'rj_local';
+    
+    try {
+        const google = await getConfiguredGoogleProvider(tenantId);
+        const state = JSON.stringify({ tenantId });
+        return c.redirect(google.getAuthUrl(state));
+    } catch (e: any) {
+        return c.json({ error: e.message }, 500);
+    }
+});
+
+app.get('/api/auth/google/callback', async (c) => {
+    const code = c.req.query('code');
+    const stateStr = c.req.query('state');
+    
+    if (!code) return c.json({ error: 'No code provided' }, 400);
+
+
+    let tenantId = 'rj_local';
+    try {
+        if (stateStr) {
+            const state = JSON.parse(stateStr);
+            if (state.tenantId) tenantId = state.tenantId;
+        }
+    } catch(e) { /* ignore */ }
+    
+    try {
+        const google = await getConfiguredGoogleProvider(tenantId);
+        const user = await google.signIn({ code, tenantId });
+        const session = await createSession(user);
+        
+        // Redirect to Frontend Callback with token
+        // In a real app, strict allowlist for redirect URLs should be enforced per tenant
+        return c.redirect(`http://localhost:3000/auth/callback?token=${session.token}`);
+    } catch (e: any) {
+        return c.json({ error: e.message }, 500);
+    }
 });
