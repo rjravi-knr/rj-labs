@@ -2,7 +2,9 @@
 "use client";
 
 import { Github } from 'lucide-react';
+
 import { Button } from '@labs/ui/button';
+import { useSearchParams } from 'next/navigation';
 
 function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -28,6 +30,14 @@ function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
 }
 
 export function SocialButtons() {
+    const searchParams = useSearchParams();
+    const tenantId = searchParams.get('tenantId') || process.env.NEXT_PUBLIC_DEFAULT_TENANT_ID || 'default';
+    const baseUrl = process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:3002/api/auth';
+
+    const handleGoogleLogin = () => {
+        window.location.href = `${baseUrl}/google?tenantId=${tenantId}`;
+    };
+
     return (
         <div className="grid grid-cols-2 gap-3">
             <Button variant="outline" className="w-full">
@@ -37,8 +47,7 @@ export function SocialButtons() {
             <Button 
             variant="outline" 
             className="w-full"
-
-            onClick={() => window.location.href = 'http://localhost:3002/api/auth/google?tenantId=rj_local'}
+            onClick={handleGoogleLogin}
             >
             <GoogleIcon className="mr-2 h-4 w-4" />
             Google
