@@ -5,7 +5,8 @@ import { extendZodWithOpenApi } from '@hono/zod-openapi';
 import { apiReference } from '@scalar/hono-api-reference';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
-import { initializeAuth, signIn } from '@labs/auth';
+
+import { initializeAuth, signIn, validateSession, getUser } from '@labs/auth';
 import { DrizzleAdapter } from '@labs/auth/adapters';
 import { authConfig, users } from '@labs/database/auth';
 import { getTenantDb } from '@labs/database';
@@ -143,6 +144,7 @@ app.openapi(
       }
     }
   }),
+
   async (c) => {
     const { tenantId } = c.req.valid('query');
     try {
@@ -155,20 +157,100 @@ app.openapi(
          return c.json({
              enabledProviders: ['email_password'],
              passwordPolicy: { minLength: 8 },
-             selfRegistrationEnabled: true
+             selfRegistrationEnabled: true,
+             providerConfig: {},
+             mfaEnabled: false
          });
       }
 
       return c.json({
         enabledProviders: config.enabledProviders as string[],
         passwordPolicy: config.passwordPolicy,
-        selfRegistrationEnabled: config.selfRegistrationEnabled
+        selfRegistrationEnabled: config.selfRegistrationEnabled,
+        providerConfig: config.providerConfig,
+        mfaEnabled: config.mfaEnabled
       });
     } catch (e) {
       console.error(e);
-      return c.json({ enabledProviders: ['email_password'], passwordPolicy: { minLength: 8 }, selfRegistrationEnabled: true }); // Fallback
+      return c.json({ enabledProviders: ['email_password'], passwordPolicy: { minLength: 8 }, selfRegistrationEnabled: true }, 500);
     }
   }
+);
+
+// Update Auth Config Endpoint (UPSERT)
+app.openapi(
+    createRoute({
+        method: 'patch',
+        path: '/api/auth/config',
+        request: {
+            query: z.object({
+                tenantId: z.string().openapi({ example: 'acme-corp' })
+            }),
+            body: {
+                content: {
+                    'application/json': {
+                        schema: z.object({
+                            enabledProviders: z.array(z.string()).optional(),
+                            passwordPolicy: z.any().optional(),
+                            selfRegistrationEnabled: z.boolean().optional(),
+                            mfaEnabled: z.boolean().optional(),
+                            providerConfig: z.any().optional()
+                        })
+                    }
+                }
+            }
+        },
+        responses: {
+            200: {
+                description: 'Config updated',
+                content: {
+                    'application/json': {
+                        schema: z.object({
+                            success: z.boolean(),
+                            id: z.string().optional()
+                        })
+                    }
+                }
+            },
+            500: {
+                description: 'Server Error',
+                content: { 'application/json': { schema: z.object({ error: z.string() }) } }
+            }
+        }
+    }),
+    async (c) => {
+        const { tenantId } = c.req.valid('query');
+        const updates = c.req.valid('json');
+        
+        try {
+            const db = getTenantDb(tenantId);
+            const [existing] = await db.select().from(authConfig).limit(1);
+
+            if (existing) {
+                // Update
+                await db.update(authConfig)
+                    .set({
+                        ...updates,
+                        updatedAt: new Date()
+                    } as any)
+                    .where(eq(authConfig.id, existing.id));
+                return c.json({ success: true, id: existing.id });
+            } else {
+                // Insert (Create with defaults + updates)
+                const [created] = await db.insert(authConfig).values({
+                    enabledProviders: ['email_password'],
+                    selfRegistrationEnabled: true,
+                    mfaEnabled: false,
+                    passwordPolicy: { minLength: 8 },
+                    ...updates
+                } as any).returning();
+                return c.json({ success: true, id: created.id });
+            }
+        } catch (e: any) {
+            console.error(e);
+            return c.json({ error: e.message }, 500);
+        }
+    }
 );
 
 // Signup Endpoint
@@ -234,10 +316,59 @@ app.openapi(
           tenantId,
           name,
           passwordHash: password, // Storing as plaintext for Demo MVP. Should be hashed!
+
           updatedAt: new Date()
       }).returning();
       
       return c.json({ id: newUser.id.toString(), email: newUser.email });
+  }
+);
+
+// Verify Session Endpoint
+app.openapi(
+  createRoute({
+    method: 'get',
+    path: '/api/auth/me',
+    responses: {
+      200: {
+        description: 'Current User',
+        content: {
+          'application/json': {
+            schema: z.object({
+              user: z.object({
+                id: z.string(),
+                email: z.string(),
+                tenantId: z.string()
+              })
+            })
+          }
+        }
+
+      },
+      401: { description: 'Unauthorized' }
+    },
+    security: [
+        {
+            BearerAuth: []
+        }
+    ]
+  }),
+  async (c) => {
+    const authHeader = c.req.header('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) return c.json({ error: 'Missing token' }, 401);
+    
+    const token = authHeader.split(' ')[1];
+    try {
+        const session = await validateSession(token);
+        if (!session) return c.json({ error: 'Invalid token' }, 401);
+
+        const user = await getUser(session.userId, session.tenantId);
+        if (!user) return c.json({ error: 'User not found' }, 401);
+
+        return c.json({ user: { id: user.id, email: user.email, tenantId: user.tenantId } });
+    } catch (e) {
+        return c.json({ error: 'Validation failed' }, 401);
+    }
   }
 );
 
@@ -248,7 +379,18 @@ app.doc('/doc', {
     version: '1.0.0',
     title: 'RJ Suite Auth Service API',
     description: 'Authentication service powered by Hono and @labs/auth.',
+
   },
+  components: {
+    securitySchemes: {
+      BearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+      },
+    },
+  },
+  security: [], // Global security (optional, can be empty)
 });
 
 // Scalar UI

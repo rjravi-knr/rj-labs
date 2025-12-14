@@ -153,9 +153,20 @@ export function getCurrentUser(): User | null {
 }
 
 
+
 export async function createSession(user: User): Promise<Session> {
     if (!sessionManager) throw createAuthError(AuthErrors.INTERNAL_ERROR.code, 'Auth SDK not initialized');
     return sessionManager.createSession(user);
+}
+
+export async function validateSession(token: string): Promise<Session | null> {
+    if (!sessionManager) throw createAuthError(AuthErrors.INTERNAL_ERROR.code, 'Auth SDK not initialized');
+    return sessionManager.validateSession(token);
+}
+
+export async function getUser(userId: string, tenantId: string): Promise<User | null> {
+     if (!authAdapter) throw createAuthError(AuthErrors.INTERNAL_ERROR.code, 'Auth SDK not initialized');
+     return authAdapter.getUser(userId, tenantId);
 }
 
 function notifyListeners() {

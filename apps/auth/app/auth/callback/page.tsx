@@ -9,17 +9,41 @@ function CallbackContent() {
     const searchParams = useSearchParams();
     const token = searchParams.get('token');
 
+
     useEffect(() => {
+        const verifySession = async () => {
+            if (!token) {
+                 router.push('/sign-in?error=authentication_failed');
+                 return;
+            }
+            
+            try {
+                // Verify against the Service API
+                const apiBase = process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:3002/api/auth';
+                const res = await fetch(`${apiBase}/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    console.log('Authentication Successful!', data);
+                    localStorage.setItem('auth_token', token);
+                    localStorage.setItem('user_info', JSON.stringify(data.user));
+                    // Success! Redirect to Profile or Dashboard
+                    // Using a query param to demo the success for the user
+                    router.push('/?status=success&user=' + data.user.email);
+                } else {
+                    console.error('Session validation failed', await res.text());
+                    router.push('/sign-in?error=invalid_session');
+                }
+            } catch (err) {
+                 console.error('Error verifying session', err);
+                 router.push('/sign-in?error=network_error');
+            }
+        };
+
         if (token) {
-            // Persist token
-            localStorage.setItem('auth_token', token);
-            // Redirect to home or dashboard
-            // TODO: Decode token or check state for return URL
-            // For now, redirect to sign-in page to refresh state or dashboard
-            router.push('/');
-        } else {
-           // Error or no token
-           router.push('/sign-in?error=oauth_failed');
+            verifySession();
         }
     }, [token, router]);
 
