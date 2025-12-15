@@ -155,8 +155,11 @@ function SocialConnectorsView() {
     const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
 
     const getRedirectUri = (provider: string) => {
-        if (typeof window === 'undefined') return '';
-        return `${window.location.origin}/api/auth/callback/${provider}`;
+        // Use auth service URL (e.g. http://localhost:3002) for OAuth callbacks
+        const authApiBase = process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:3002';
+        // Remove trailing "/api/auth" if present to get the base URL
+        const baseUrl = authApiBase.replace(/\/api\/auth$/, '');
+        return `${baseUrl}/api/auth/${provider}/callback`;
     };
 
     const copyToClipboard = (text: string) => {

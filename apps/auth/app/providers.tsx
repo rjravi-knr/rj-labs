@@ -9,7 +9,7 @@ import { Toaster } from "@labs/ui/sonner";
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
 
-    <AuthProvider baseUrl="/api/auth">
+    <AuthProvider baseUrl={process.env.NEXT_PUBLIC_AUTH_API_URL || "/api/auth"}>
       {children}
       <Toaster />
     </AuthProvider>

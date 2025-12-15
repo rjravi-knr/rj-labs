@@ -30,9 +30,9 @@ function CallbackContent() {
                     console.log('Authentication Successful!', data);
                     localStorage.setItem('auth_token', token);
                     localStorage.setItem('user_info', JSON.stringify(data.user));
-                    // Success! Redirect to Profile or Dashboard
-                    // Using a query param to demo the success for the user
-                    router.push('/?status=success&user=' + data.user.email);
+                    // Success! Redirect to home page with tenantId
+                    const tenantId = data.user.tenantId || 'acme-corp';
+                    router.push(`/?tenantId=${tenantId}`);
                 } else {
                     console.error('Session validation failed', await res.text());
                     router.push('/sign-in?error=invalid_session');

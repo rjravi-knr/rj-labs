@@ -1,8 +1,8 @@
 
 import { Metadata } from 'next';
-import { SocialButtons } from './social-buttons';
-import { TenantSelectionForm } from './tenant-selection-form';
-import { AuthRedirect } from './auth-redirect';
+import { SocialButtons } from '../components/social-buttons';
+import { TenantSelectionForm } from '../components/tenant-selection-form';
+import { AuthRedirect } from '../components/auth-redirect';
 import Link from 'next/link';
 import {
   Card,

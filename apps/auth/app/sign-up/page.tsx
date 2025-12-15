@@ -9,9 +9,9 @@ import {
   CardTitle,
 } from '@labs/ui/card';
 import { AuthLayout } from '../components/auth-layout';
-import { TenantSelectionForm } from '../sign-in/tenant-selection-form';
-import { SocialButtons } from '../sign-in/social-buttons'; // Reusing from sign-in
-import { AuthRedirect } from '../sign-in/auth-redirect';
+import { TenantSelectionForm } from '../components/tenant-selection-form';
+import { SocialButtons } from '../components/social-buttons';
+import { AuthRedirect } from '../components/auth-redirect';
 import { SignUpForm } from './signup-form';
 import { Alert, AlertDescription, AlertTitle } from '@labs/ui/alert';
 import { AlertCircle } from 'lucide-react';
