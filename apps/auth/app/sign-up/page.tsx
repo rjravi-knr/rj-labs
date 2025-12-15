@@ -8,11 +8,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@labs/ui/card';
-import { AuthLayout } from '../components/auth-layout';
-import { TenantSelectionForm } from '../components/tenant-selection-form';
-import { SocialButtons } from '../components/social-buttons';
-import { AuthRedirect } from '../components/auth-redirect';
-import { SignUpForm } from './signup-form';
+import { AuthLayout } from '../../components/auth-layout';
+import { TenantSelectionForm } from '../../components/tenant-selection-form';
+import { SocialButtons } from '../../components/social-buttons';
+import { AuthRedirect } from '../../components/auth-redirect';
+import { SignUpForm } from '../../components/signup-form';
 import { Alert, AlertDescription, AlertTitle } from '@labs/ui/alert';
 import { AlertCircle } from 'lucide-react';
 

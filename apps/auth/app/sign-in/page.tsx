@@ -1,8 +1,8 @@
 
 import { Metadata } from 'next';
-import { SocialButtons } from '../components/social-buttons';
-import { TenantSelectionForm } from '../components/tenant-selection-form';
-import { AuthRedirect } from '../components/auth-redirect';
+import { SocialButtons } from '../../components/social-buttons';
+import { TenantSelectionForm } from '../../components/tenant-selection-form';
+import { AuthRedirect } from '../../components/auth-redirect';
 import Link from 'next/link';
 import {
   Card,
@@ -12,8 +12,8 @@ import {
   CardTitle,
 } from '@labs/ui/card';
 
-import { AuthLayout } from '../components/auth-layout';
-import { LoginForm } from './login-form';
+import { AuthLayout } from '../../components/auth-layout';
+import { LoginForm } from '../../components/login-form';
 
 export const metadata: Metadata = {
   title: 'Sign In - RJ Studio',
