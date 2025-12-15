@@ -17,6 +17,7 @@ import { SettingsProvider, useSettings } from "./settings/context";
 import { Sidebar, ViewType } from "./settings/sidebar";
 import { PasswordStrengthMeter } from "../components/password-strength-meter";
 import { generateExamplePasswords, validatePassword } from "@labs/auth/password-policy";
+import { LoginMethodMatrix } from "../components/login-method-matrix";
 
 // --- VIEWS ---
 
@@ -137,8 +138,18 @@ function AuthConfigView() {
                             onCheckedChange={(checked) => updateConfig({ selfRegistrationEnabled: checked })}
                         />
                     </div>
-                    <div className="p-4 border border-dashed rounded-lg text-center text-muted-foreground">
-                        Advanced Login Combinations (Email+OTP, Phone+PIN, etc.) are under development.
+                    
+                    <div className="space-y-2">
+                        <Label className="text-base">Login Method Configuration</Label>
+                        <p className="text-sm text-muted-foreground mb-4">
+                            Define allowed combinations of Identity (Email/Phone) and Factor (Password/OTP/PIN).
+                        </p>
+                        {config.loginMethods && ( // Guard check
+                            <LoginMethodMatrix 
+                                config={config.loginMethods}
+                                onChange={(methods) => updateConfig({ loginMethods: methods })}
+                            />
+                        )}
                     </div>
                 </CardContent>
             </Card>

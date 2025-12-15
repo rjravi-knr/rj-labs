@@ -24,12 +24,41 @@ export interface Session {
   userAgent?: string;
 }
 
+export interface OtpSession {
+  identifier: string; // email or phone
+  code: string;       
+  type: 'login' | 'verification' | 'reset';
+  channel: 'email' | 'sms' | 'whatsapp';
+  expiresAt: Date;
+  attempts: number;
+}
+
 export type AuthProviderType = 'email_password' | 'google' | 'github' | 'twitter' | 'microsoft' | 'phone' | 'passwordless';
+
+export interface FactorDetails {
+  enabled: boolean;
+  length?: number;      // e.g. 4, 6, 8
+  expiry?: number;      // in seconds
+  maxAttempts?: number; // Retry limit
+}
+
+export interface LoginMethodConfig {
+  password: boolean;
+  otp: FactorDetails;
+  pin: FactorDetails; // Fixed numeric PIN
+} 
+
+export interface LoginMethods {
+  email: LoginMethodConfig;
+  phone: LoginMethodConfig;
+}
+
 
 export interface AuthConfig {
   apiKey?: string;
   authDomain?: string;
   providers: AuthProviderType[];
+  loginMethods?: LoginMethods; 
   autoSignIn?: boolean;
   sessionDuration?: number; // in milliseconds
   persistence?: 'local' | 'session' | 'none';
@@ -57,6 +86,12 @@ export interface AuthAdapter {
   getUserByEmail(email: string, tenantId: string): Promise<User | null>;
   updateUser(id: string, tenantId: string, data: Partial<User>): Promise<User>;
   deleteUser(id: string, tenantId: string): Promise<void>;
+
+  // OTP Management
+  createOtp(session: OtpSession): Promise<void>;
+  getOtp(identifier: string, type: string): Promise<OtpSession | null>;
+  incrementOtpAttempts(identifier: string, type: string): Promise<void>;
+  deleteOtp(identifier: string, type: string): Promise<void>;
 
   // Session Management
   createSession(session: Omit<Session, 'id' | 'createdAt'>): Promise<Session>;

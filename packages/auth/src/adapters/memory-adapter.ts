@@ -95,4 +95,31 @@ export class MemoryAdapter implements AuthAdapter {
       if (user) return user;
       return null;
   }
+
+  // OTP Management (In-Memory)
+  private otps = new Map<string, any>(); 
+
+  async createOtp(session: any): Promise<void> {
+    const key = `${session.identifier}:${session.type}`;
+    this.otps.set(key, session);
+  }
+
+  async getOtp(identifier: string, type: string): Promise<any | null> {
+    const key = `${identifier}:${type}`;
+    return this.otps.get(key) || null;
+  }
+
+  async incrementOtpAttempts(identifier: string, type: string): Promise<void> {
+    const key = `${identifier}:${type}`;
+    const otp = this.otps.get(key);
+    if (otp) {
+        otp.attempts += 1;
+        this.otps.set(key, otp);
+    }
+  }
+
+  async deleteOtp(identifier: string, type: string): Promise<void> {
+    const key = `${identifier}:${type}`;
+    this.otps.delete(key);
+  }
 }

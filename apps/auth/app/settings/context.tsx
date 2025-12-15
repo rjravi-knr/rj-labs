@@ -43,6 +43,19 @@ export interface AuthConfig {
             clientSecret?: string;
             redirectUri?: string;
         };
+
+    };
+    loginMethods: {
+        email: {
+            password: boolean;
+            otp: { enabled: boolean; length?: number; expiry?: number; maxAttempts?: number };
+            pin: { enabled: boolean; length?: number; expiry?: number; maxAttempts?: number };
+        };
+        phone: {
+            password: boolean;
+            otp: { enabled: boolean; length?: number; expiry?: number; maxAttempts?: number };
+            pin: { enabled: boolean; length?: number; expiry?: number; maxAttempts?: number };
+        };
     };
     settings?: Record<string, any>;
 }
@@ -81,6 +94,18 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         enabledProviders: ['email_password'],
         passwordPolicy: { minLength: 8 },
         providerConfig: {},
+        loginMethods: {
+            email: {
+                password: true,
+                otp: { enabled: true, length: 6, expiry: 300, maxAttempts: 3 },
+                pin: { enabled: false, length: 4, expiry: 0, maxAttempts: 5 }
+            },
+            phone: {
+                password: false,
+                otp: { enabled: false, length: 6, expiry: 300, maxAttempts: 3 },
+                pin: { enabled: false, length: 4, expiry: 0, maxAttempts: 5 }
+            }
+        },
         settings: {}
     });
 
@@ -100,6 +125,18 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
                 enabledProviders: data.enabledProviders || ['email_password'],
                 passwordPolicy: data.passwordPolicy || { minLength: 8 },
                 providerConfig: data.providerConfig || {},
+                loginMethods: data.loginMethods || {
+                    email: {
+                        password: true,
+                        otp: { enabled: true, length: 6, expiry: 300, maxAttempts: 3 },
+                        pin: { enabled: false, length: 4, expiry: 0, maxAttempts: 5 }
+                    },
+                    phone: {
+                        password: false,
+                        otp: { enabled: false, length: 6, expiry: 300, maxAttempts: 3 },
+                        pin: { enabled: false, length: 4, expiry: 0, maxAttempts: 5 }
+                    }
+                },
                 settings: data.settings || {}
             });
             setHasUnsavedChanges(false);

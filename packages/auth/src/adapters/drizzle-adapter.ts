@@ -141,4 +141,17 @@ export class DrizzleAdapter implements AuthAdapter {
     
     return null;
   }
+
+  async createOtp(session: any): Promise<void> {
+      throw new Error("Method not implemented.");
+  }
+  async getOtp(identifier: string, type: string): Promise<any | null> {
+      throw new Error("Method not implemented.");
+  }
+  async incrementOtpAttempts(identifier: string, type: string): Promise<void> {
+      throw new Error("Method not implemented.");
+  }
+  async deleteOtp(identifier: string, type: string): Promise<void> {
+      throw new Error("Method not implemented.");
+  }
 }
