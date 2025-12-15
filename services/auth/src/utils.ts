@@ -17,24 +17,22 @@ export async function getConfiguredGoogleProvider(tenantId: string): Promise<Goo
     if (config?.providerConfig) {
         const providers = config.providerConfig as any;
         if (providers.google) {
-            if (providers.google.clientId) clientId = providers.google.clientId;
-            if (providers.google.clientSecret) clientSecret = providers.google.clientSecret;
-            if (providers.google.redirectUri) redirectUri = providers.google.redirectUri;
+            clientId = providers.google.clientId || providers.google.client_id || clientId;
+            clientSecret = providers.google.clientSecret || providers.google.client_secret || clientSecret;
+            redirectUri = providers.google.redirectUri || providers.google.redirect_uri || redirectUri;
         }
     }
 
-    if (!clientId || !clientSecret) {
-        // Warning or Error? For now logging warning and using mock if explicit
-        console.warn(`Missing Google Config for tenant ${tenantId}, using defaults/env`);
-        clientId = clientId || 'mock';
-        clientSecret = clientSecret || 'mock';
+    if (!clientId || !clientSecret || !redirectUri) {
+        throw new Error(`Missing Google Config for tenant ${tenantId}. clientId, clientSecret, and redirectUri are required.`);
     }
+
 
     const adapter = getAuthAdapter();
     return new GoogleProvider(adapter, {
 
         clientId,
         clientSecret,
-        redirectUri: redirectUri || 'http://localhost:3000/auth/callback'
+        redirectUri
     });
 }
