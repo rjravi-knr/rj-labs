@@ -1,7 +1,7 @@
 
 import { getTenantDb } from '@labs/database';
 import { authConfig } from '@labs/database/auth';
-import { getAuthAdapter, GoogleProvider } from '@labs/auth';
+import { getAuthAdapter, GoogleProvider, GitHubProvider } from '@labs/auth';
 
 export async function getConfiguredGoogleProvider(tenantId: string): Promise<GoogleProvider> {
     const db = getTenantDb(tenantId);
@@ -31,6 +31,37 @@ export async function getConfiguredGoogleProvider(tenantId: string): Promise<Goo
     const adapter = getAuthAdapter();
     return new GoogleProvider(adapter, {
 
+        clientId,
+        clientSecret,
+        redirectUri
+    });
+}
+
+export async function getConfiguredGitHubProvider(tenantId: string): Promise<GitHubProvider> {
+    const db = getTenantDb(tenantId);
+    
+    // Fetch auth config for tenant
+    const [config] = await db.select().from(authConfig).limit(1);
+
+    let clientId = process.env.GITHUB_CLIENT_ID;
+    let clientSecret = process.env.GITHUB_CLIENT_SECRET;
+    let redirectUri = process.env.GITHUB_REDIRECT_URI;
+
+    if (config?.providerConfig) {
+        const providers = config.providerConfig as any;
+        if (providers.github) {
+            clientId = providers.github.clientId || providers.github.client_id || clientId;
+            clientSecret = providers.github.clientSecret || providers.github.client_secret || clientSecret;
+            redirectUri = providers.github.redirectUri || providers.github.redirect_uri || redirectUri;
+        }
+    }
+
+    if (!clientId || !clientSecret || !redirectUri) {
+        throw new Error(`Missing GitHub Config for tenant ${tenantId}. clientId, clientSecret, and redirectUri are required.`);
+    }
+
+    const adapter = getAuthAdapter();
+    return new GitHubProvider(adapter, {
         clientId,
         clientSecret,
         redirectUri

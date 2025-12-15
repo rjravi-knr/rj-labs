@@ -37,5 +37,8 @@ export * from './url';
 // Crypto utilities
 export * from './crypto';
 
+// HTTP utilities
+export * from './http';
+
 // TypeScript types
 export * from './types';

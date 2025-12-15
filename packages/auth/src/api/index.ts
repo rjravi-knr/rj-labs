@@ -154,9 +154,9 @@ export function getCurrentUser(): User | null {
 
 
 
-export async function createSession(user: User, authMethod?: string): Promise<Session> {
+export async function createSession(user: User, authMethod?: string, ipAddress?: string, userAgent?: string): Promise<Session> {
     if (!sessionManager) throw createAuthError(AuthErrors.INTERNAL_ERROR.code, 'Auth SDK not initialized');
-    return sessionManager.createSession(user, authMethod);
+    return sessionManager.createSession(user, authMethod, ipAddress, userAgent);
 }
 
 export async function validateSession(token: string): Promise<Session | null> {

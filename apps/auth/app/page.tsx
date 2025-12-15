@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@labs/auth/client";
 import { Button } from "@labs/ui/button";
@@ -408,6 +408,13 @@ function DashboardLayout() {
     const { isLoading, isSaving, hasUnsavedChanges, saveConfig } = useSettings();
     const [activeView, setActiveView] = useState<ViewType>("dashboard");
 
+    // Handle redirect in useEffect to avoid render-time state updates
+    useEffect(() => {
+        if (!isAuthLoading && !user) {
+            router.push(`/sign-in?tenantId=${tenantId}`);
+        }
+    }, [isAuthLoading, user, router, tenantId]);
+
     if (isAuthLoading) {
         return (
              <div className="flex min-h-screen items-center justify-center">
@@ -417,9 +424,12 @@ function DashboardLayout() {
     }
     
     if (!user) {
-         // Redirecting... (handled by useEffect usually, but for safe rendering)
-         router.push(`/sign-in?tenantId=${tenantId}`);
-         return null; 
+         // Redirect is handled by useEffect above
+         return (
+             <div className="flex min-h-screen items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+         );
     }
 
     if (!user.isSuperAdmin) {

@@ -9,7 +9,7 @@ import { apiReference } from '@scalar/hono-api-reference';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 
-import { initializeAuth, signIn, validateSession, getUser } from '@labs/auth';
+import { initializeAuth, signIn, validateSession, getUser, getAuthAdapter } from '@labs/auth';
 import { DrizzleAdapter } from '@labs/auth/adapters';
 
 import { authConfig, users } from '@labs/database/auth';
@@ -112,7 +112,23 @@ app.openapi(
     try {
       const { email, password, tenantId } = c.req.valid('json');
       
-      const { user, session } = await signIn('email_password', { email, password }, tenantId);
+      // Verify credentials using the adapter directly
+      const adapter = getAuthAdapter();
+      const user = await adapter.verifyPassword(email, tenantId, password);
+      
+      if (!user) {
+        return c.json({ error: 'Invalid email or password' }, 401);
+      }
+      
+      // Extract IP and User-Agent from request headers
+      const ipAddress = c.req.header('x-forwarded-for')?.split(',')[0].trim() || 
+                       c.req.header('x-real-ip') || 
+                       '127.0.0.1'; // localhost in development
+      const rawUserAgent = c.req.header('user-agent') || 'unknown';
+      const userAgent = parseUserAgent(rawUserAgent); // Parse to readable format
+      
+      // Create session with HTTP context
+      const session = await createSession(user, 'email_password', ipAddress, userAgent);
       
       return c.json({
         token: session.token,
@@ -461,7 +477,8 @@ serve({
  */
 
 import { createSession } from '@labs/auth';
-import { getConfiguredGoogleProvider } from './utils';
+import { getConfiguredGoogleProvider, getConfiguredGitHubProvider } from './utils';
+import { parseUserAgent } from '@labs/utils';
 
 app.get('/api/auth/google', async (c) => {
 
@@ -668,15 +685,16 @@ app.get('/api/auth/google/callback', async (c) => {
     try {
         const google = await getConfiguredGoogleProvider(tenantId);
         const user = await google.signIn({ code, tenantId });
-        const session = await createSession(user, 'google'); // Track OAuth provider
         
-        // Redirect to Frontend Callback with token
-        // In a real app, strict allowlist for redirect URLs should be enforced per tenant
-
-        // Redirect to Frontend Callback with token
-        // In a real app, strict allowlist for redirect URLs should be enforced per tenant
-        const appUrl = process.env.APP_URL || 'http://localhost:3000'; // Keep temp fallback to avoid breaking dev immediately, but warn? 
-        // User requested NO localhost. So:
+        // Extract IP and User-Agent from request headers
+        const ipAddress = c.req.header('x-forwarded-for')?.split(',')[0].trim() || 
+                         c.req.header('x-real-ip') || 
+                         '127.0.0.1'; // localhost in development
+        const rawUserAgent = c.req.header('user-agent') || 'unknown';
+        const userAgent = parseUserAgent(rawUserAgent); // Parse to readable format
+        
+        const session = await createSession(user, 'google', ipAddress, userAgent);
+        
         const appUrlStrict = process.env.APP_URL;
         if (!appUrlStrict) throw new Error("APP_URL not configured");
         
@@ -685,3 +703,57 @@ app.get('/api/auth/google/callback', async (c) => {
         return c.json({ error: e.message }, 500);
     }
 });
+
+// GitHub OAuth Initiate
+app.get('/api/auth/github', async (c) => {
+    const tenantId = c.req.query('tenantId') || 'rj_local';
+    
+    try {
+        const github = await getConfiguredGitHubProvider(tenantId);
+        const state = JSON.stringify({ tenantId });
+        const authUrl = github.getAuthUrl(state);
+        console.log(`[GitHub Auth] Generated URL: ${authUrl}`);
+        return c.redirect(authUrl);
+    } catch (e: any) {
+        return c.json({ error: e.message }, 500);
+    }
+});
+
+// GitHub OAuth Callback
+app.get('/api/auth/github/callback', async (c) => {
+    const code = c.req.query('code');
+    const stateStr = c.req.query('state');
+    
+    if (!code) return c.json({ error: 'No code provided' }, 400);
+
+    let tenantId = 'rj_local';
+    try {
+        if (stateStr) {
+            const state = JSON.parse(stateStr);
+            if (state.tenantId) tenantId = state.tenantId;
+        }
+    } catch(e) { /* ignore */ }
+    
+    try {
+        const github = await getConfiguredGitHubProvider(tenantId);
+        const user = await github.signIn({ code, tenantId });
+        
+        // Extract IP and User-Agent from request headers
+        const ipAddress = c.req.header('x-forwarded-for')?.split(',')[0].trim() || 
+                         c.req.header('x-real-ip') || 
+                         '127.0.0.1'; // localhost in development
+        const rawUserAgent = c.req.header('user-agent') || 'unknown';
+        const userAgent = parseUserAgent(rawUserAgent); // Parse to readable format
+        
+        const session = await createSession(user, 'github', ipAddress, userAgent);
+        
+        const appUrlStrict = process.env.APP_URL;
+        if (!appUrlStrict) throw new Error("APP_URL not configured");
+        
+        return c.redirect(`${appUrlStrict}/auth/callback?token=${session.token}`);
+    } catch (e: any) {
+        return c.json({ error: e.message }, 500);
+    }
+});
+
+export default app;

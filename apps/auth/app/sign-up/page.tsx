@@ -11,6 +11,7 @@ import {
 import { AuthLayout } from '../components/auth-layout';
 import { TenantSelectionForm } from '../sign-in/tenant-selection-form';
 import { SocialButtons } from '../sign-in/social-buttons'; // Reusing from sign-in
+import { AuthRedirect } from '../sign-in/auth-redirect';
 import { SignUpForm } from './signup-form';
 import { Alert, AlertDescription, AlertTitle } from '@labs/ui/alert';
 import { AlertCircle } from 'lucide-react';
@@ -82,6 +83,7 @@ export default async function SignUpPage(props: PageProps) {
 
   return (
     <AuthLayout>
+      <AuthRedirect />
       <Card className="border-none shadow-none sm:border sm:shadow-sm w-full max-w-xl">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl font-bold tracking-tight">

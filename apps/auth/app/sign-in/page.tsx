@@ -2,6 +2,7 @@
 import { Metadata } from 'next';
 import { SocialButtons } from './social-buttons';
 import { TenantSelectionForm } from './tenant-selection-form';
+import { AuthRedirect } from './auth-redirect';
 import Link from 'next/link';
 import {
   Card,
@@ -98,6 +99,7 @@ export default async function SignInPage(props: PageProps) {
 
   return (
     <AuthLayout>
+      <AuthRedirect />
       <Card className="border-none shadow-none sm:border sm:shadow-sm w-full max-w-xl">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl font-bold tracking-tight">
