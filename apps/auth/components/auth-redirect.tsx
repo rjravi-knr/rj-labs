@@ -9,11 +9,14 @@ export function AuthRedirect() {
     const { user, loading } = useAuth();
     const router = useRouter();
     const searchParams = useSearchParams();
-    const tenantId = searchParams.get('tenantId') || 'acme-corp';
+    const tenantId = searchParams.get('tenantId') ;
 
     useEffect(() => {
-        if (!loading && user) {
-            // User is already authenticated, redirect to home
+        // Check if user is authenticated via SDK or has token in storage (fast path for redirects)
+        const hasToken = typeof window !== 'undefined' && localStorage.getItem('auth_token');
+        
+        if ((!loading && user) || hasToken) {
+            // User is already authenticated (or has token), redirect to home
             router.push(`/?tenantId=${tenantId}`);
         }
     }, [loading, user, router, tenantId]);

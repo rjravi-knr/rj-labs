@@ -412,13 +412,20 @@ function DashboardLayout() {
     const [activeView, setActiveView] = useState<ViewType>("dashboard");
 
     // Handle redirect in useEffect to avoid render-time state updates
+    // Handle redirect in useEffect to avoid render-time state updates
     useEffect(() => {
-        if (!isAuthLoading && !user) {
+        // Double check localStorage - if we have a token, don't redirect yet!
+        // We might be waiting for the AuthProvider to validate the new token.
+        const hasToken = typeof window !== 'undefined' && localStorage.getItem('auth_token');
+
+        if (!isAuthLoading && !user && !hasToken) {
             router.push(`/sign-in?tenantId=${tenantId}`);
         }
     }, [isAuthLoading, user, router, tenantId]);
 
-    if (isAuthLoading) {
+    // Show loading if SDK is loading OR if we have a token but no user yet (waiting for SDK)
+    const hasToken = typeof window !== 'undefined' && localStorage.getItem('auth_token');
+    if (isAuthLoading || (hasToken && !user)) {
         return (
              <div className="flex min-h-screen items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -427,12 +434,8 @@ function DashboardLayout() {
     }
     
     if (!user) {
-         // Redirect is handled by useEffect above
-         return (
-             <div className="flex min-h-screen items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-         );
+         // Redirect is handled by useEffect above, render null or loading
+         return null;
     }
 
     if (!user.isSuperAdmin) {

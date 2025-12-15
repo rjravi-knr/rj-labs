@@ -31,8 +31,9 @@ function CallbackContent() {
                     localStorage.setItem('auth_token', token);
                     localStorage.setItem('user_info', JSON.stringify(data.user));
                     // Success! Redirect to home page with tenantId
-                    const tenantId = data.user.tenantId || 'acme-corp';
-                    router.push(`/?tenantId=${tenantId}`);
+                    const tenantId = data.user.tenantId ;
+                    // Force full reload to ensure AuthProvider picks up the new token from localStorage
+                    window.location.href = `/?tenantId=${tenantId}`;
                 } else {
                     console.error('Session validation failed', await res.text());
                     router.push('/sign-in?error=invalid_session');

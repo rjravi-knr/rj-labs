@@ -5,7 +5,7 @@ import { ArrowRight, LayoutDashboard, ShieldCheck } from "lucide-react";
 
 export default function Home() {
   // Use config or env for tenant ID
-  const defaultTenantId = process.env.NEXT_PUBLIC_DEFAULT_TENANT_ID || 'acme-corp';
+  const defaultTenantId = process.env.NEXT_PUBLIC_DEFAULT_TENANT_ID ;
   const loginUrl = `http://localhost:3000/sign-in?tenantId=${defaultTenantId}`; // Hardcoded 3000/auth for now
 
   return (

@@ -92,6 +92,9 @@ export const AuthProvider = ({ children, baseUrl = '/api/auth' }: AuthProviderPr
             // Success
             if (data.token) {
                 localStorage.setItem('auth_token', data.token);
+                if (data.user) {
+                    localStorage.setItem('user_info', JSON.stringify(data.user));
+                }
                 setSession({ token: data.token });
                 setUser(data.user);
                 // window.location.reload(); // Optional: handled by consumer or next page load
@@ -135,6 +138,7 @@ export const AuthProvider = ({ children, baseUrl = '/api/auth' }: AuthProviderPr
     const signOut = async () => {
         try {
              localStorage.removeItem('auth_token');
+             localStorage.removeItem('user_info');
              setUser(null);
              setSession(null);
              // Optional: call API to invalidate on server too
