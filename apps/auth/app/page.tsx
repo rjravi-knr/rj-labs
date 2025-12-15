@@ -16,7 +16,7 @@ import { storage } from "@labs/utils";
 import { SettingsProvider, useSettings } from "./settings/context";
 import { Sidebar, ViewType } from "./settings/sidebar";
 import { PasswordStrengthMeter } from "../components/password-strength-meter";
-import { generateExamplePasswords } from "@labs/auth/password-policy";
+import { generateExamplePasswords, validatePassword } from "@labs/auth/password-policy";
 
 // --- VIEWS ---
 
@@ -518,19 +518,46 @@ function SecuritySetupView() {
                                 Based on your current settings, these passwords check out:
                             </p>
                             <div className="space-y-2 pt-1">
-                                {suggestions.map((example, i) => (
-                                    <div key={i} className="flex items-center justify-between text-xs bg-background p-2 rounded border">
-                                        <code className="font-mono">{example}</code>
-                                        <Button 
-                                            variant="ghost" 
-                                            size="sm" 
-                                            className="h-6 px-2"
-                                            onClick={() => setTestPassword(example)}
-                                        >
-                                            Try
-                                        </Button>
-                                    </div>
-                                ))}
+                                {suggestions.map((example, i) => {
+                                    // Calculate simple strength score for badge
+                                    const result = validatePassword(example, config.passwordPolicy as any);
+                                    let score = 0;
+                                    if (result.isValid) score += 2;
+                                    // Bonus for length
+                                    if (example.length >= (config.passwordPolicy.minLength || 8) + 2) score += 1;
+                                    // Bonus for special chars
+                                    if (/[!@#$%^&*]/.test(example)) score += 1;
+                                    
+                                    let strengthLabel = "Good";
+                                    let strengthColor = "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400";
+                                    
+                                    if (score >= 4) {
+                                        strengthLabel = "Strong";
+                                        strengthColor = "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
+                                    } else if (score <= 2) { // Changed from < 2 to <= 2 to capture minimal valid passwords
+                                         strengthLabel = "Weak";
+                                         strengthColor = "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
+                                    }
+
+                                    return (
+                                        <div key={i} className="flex items-center justify-between text-xs bg-background p-2 rounded border">
+                                           <div className="flex items-center gap-2">
+                                                <code className="font-mono">{example}</code>
+                                                <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${strengthColor}`}>
+                                                    {strengthLabel}
+                                                </span>
+                                           </div>
+                                            <Button 
+                                                variant="ghost" 
+                                                size="sm" 
+                                                className="h-6 px-2"
+                                                onClick={() => setTestPassword(example)}
+                                            >
+                                                Try
+                                            </Button>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
                     </CardContent>

@@ -19,31 +19,42 @@ export function PasswordStrengthMeter({ password, policy = DEFAULT_PASSWORD_POLI
   let score = 0;
   
   if (result.isValid) {
-      // Base score for simply passing requirements
-      score = 60;
+      // Base score for simply passing requirements (Start at 50)
+      score = 50;
       
-      // Bonus for exceeding minLength
+      // Bonus for Length (up to 25 points)
+      // Example: min 8. If pwd is 13, (13-8)*5 = 25.
       const extraLength = password.length - policy.minLength;
-      if (extraLength > 0) score += Math.min(20, extraLength * 5); // +5 per extra char, max 20
+      if (extraLength > 0) score += Math.min(25, extraLength * 5);
 
-      // Bonus for extra variety (e.g. using special chars when not required)
-      if (!policy.requireSpecial && /[!@#$%^&*(),.?":{}|<>]/.test(password)) score += 10;
-      if (!policy.requireNumbers && /[0-9]/.test(password)) score += 10;
+      // Bonus for Variety (up to 25 points)
+      // Check for presence regardless of whether it's required or not
+      let varietyScore = 0;
+      if (/[A-Z]/.test(password)) varietyScore += 5;
+      if (/[a-z]/.test(password)) varietyScore += 5;
+      if (/[0-9]/.test(password)) varietyScore += 10; // Numbers weighted
+      if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) varietyScore += 10; // Special weighted
       
-      score = Math.min(100, score);
+      score += Math.min(25, varietyScore); 
+
+      // Ensure 100 is reachable for decent passwords
+      if (score > 100) score = 100;
   } else {
-      // If invalid, cap score at 40 (Weak/Red)
-      // Give some credit for length
-      const lengthScore = Math.min(30, (password.length / policy.minLength) * 30);
-      score = lengthScore;
+      // If invalid, cap score based on progress towards validity
+      // But keep it "Weak" zone (<50)
+      const lengthScore = Math.min(20, (password.length / policy.minLength) * 20);
+      let varietyScore = 0;
+      if (/[A-Z]/.test(password)) varietyScore += 5;
+      if (/[0-9]/.test(password)) varietyScore += 5;
+      score = Math.min(45, lengthScore + varietyScore);
   }
   
   const strength = Math.round(score);
   
   // Status Color
-  let colorClass = '[&>div]:bg-red-500'; // Default Weak
+  let colorClass = '[&>div]:bg-red-500'; 
   if (strength >= 80) colorClass = '[&>div]:bg-green-500'; // Strong
-  else if (strength >= 50) colorClass = '[&>div]:bg-yellow-500'; // Medium
+  else if (strength >= 50) colorClass = '[&>div]:bg-yellow-500'; // Good/Medium
 
   return (
     <div className="space-y-2">

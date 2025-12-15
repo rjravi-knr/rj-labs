@@ -4,6 +4,7 @@
 import * as React from 'react';
 import { Button } from '@labs/ui/button';
 import { Input } from '@labs/ui/input';
+import { PasswordInput } from './password-input';
 import { Label } from '@labs/ui/label';
 import { toast } from '@labs/ui/sonner';
 import Link from 'next/link';
@@ -126,48 +127,20 @@ export function SignUpForm({ tenantId }: SignUpFormProps) {
             </div>
             <div className="grid gap-2">
                 <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                    <Input 
-                        id="password" 
-                        name="password" 
-                        type={showPassword ? "text" : "password"}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        disabled={isLoading} 
-                        required 
-                        className="pr-10"
-                    />
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => setShowPassword(!showPassword)}
-                    >
-                        {showPassword ? (
-                            <EyeOff className="h-4 w-4 text-muted-foreground" />
-                        ) : (
-                            <Eye className="h-4 w-4 text-muted-foreground" />
-                        )}
-                        <span className="sr-only">
-                            {showPassword ? "Hide password" : "Show password"}
-                        </span>
-                    </Button>
-                </div>
+                <PasswordInput
+                    id="password"
+                    name="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={isLoading}
+                    required
+                    policy={policy}
+                    showStrengthMeter
+                />
             </div>
             <Button disabled={isLoading} type="submit" className="w-full">
                 {isLoading ? 'Creating Account...' : 'Create Account'}
             </Button>
-            
-            {/* Password Strength Meter */}
-            <div className="mt-2">
-                 <PasswordStrengthMeter 
-                    password={password} 
-                    policy={policy} 
-                    // We can try to grab email/name from form if we wanted real-time user data calculation, 
-                    // but for now simpler is fine.
-                 />
-            </div>
 
         </form>
     );

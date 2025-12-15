@@ -5,6 +5,7 @@ import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@labs/ui/button';
 import { Input } from '@labs/ui/input';
+import { PasswordInput } from '../../components/password-input';
 import { Label } from '@labs/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@labs/ui/alert';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
@@ -96,24 +97,24 @@ export function ResetPasswordForm({ token, tenantId }: ResetPasswordFormProps) {
             )}
             <div className="grid gap-2">
                 <Label htmlFor="password">New Password</Label>
-                <Input
+                <PasswordInput
                     id="password"
                     name="password"
-                    type="password"
-                    autoCapitalize="none"
                     disabled={isLoading}
                     required
+                    showStrengthMeter
+                    // Reset form doesn't explicitly fetch policy yet, but strength meter has default. 
+                    // Ideally pass policy prop if available.
                 />
             </div>
             <div className="grid gap-2">
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input
+                <PasswordInput
                     id="confirmPassword"
                     name="confirmPassword"
-                    type="password"
-                    autoCapitalize="none"
                     disabled={isLoading}
                     required
+                    showStrengthMeter={false} // No meter needed for confirm
                 />
             </div>
             <Button disabled={isLoading} type="submit" className="w-full">

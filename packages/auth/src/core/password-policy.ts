@@ -115,44 +115,47 @@ export function generateExamplePasswords(policy: PasswordPolicy = DEFAULT_PASSWO
     const specials = '!@#$%^&*';
     const pick = (chars: string) => chars[Math.floor(Math.random() * chars.length)];
 
-    // Helper to generate a single valid password
-    const generateOne = () => {
+// Helper to generate a single password with specific strength target
+    // strength: 0 = minimum reqs, 1 = moderate, 2 = strong
+    const generateTiered = (strength: number) => {
         let password = "";
-        // Ensure required types are present
+        
+        // 1. Must likely meet all strict requirements first
         if (policy.requireUppercase) password += pick(uppers);
         if (policy.requireLowercase) password += pick(lowers);
         if (policy.requireNumbers) password += pick(numbers);
         if (policy.requireSpecial) password += pick(specials);
 
-        // Fill remaining length
-        while (password.length < policy.minLength) {
-            const pools = [];
-            if (policy.requireUppercase) pools.push(uppers);
-            if (policy.requireLowercase) pools.push(lowers);
-            if (policy.requireNumbers) pools.push(numbers);
-            if (policy.requireSpecial) pools.push(specials);
-            // Fallback if no specific requirements but length needed (e.g. only numeric? or none)
-            if (pools.length === 0) pools.push(lowers + uppers + numbers);
+        // 2. Determine target length
+        const minL = policy.minLength;
+        const maxL = policy.maxLength || 20;
+        let targetLen = minL;
+        
+        if (strength === 1) targetLen = Math.min(maxL, minL + 2);
+        if (strength === 2) targetLen = Math.min(maxL, minL + 6);
 
+        // 3. Determine allowed pools based on strength
+        const pools = [];
+        if (policy.requireUppercase || strength > 0) pools.push(uppers); // Add uppers for med/high even if not req
+        if (policy.requireLowercase || strength >= 0) pools.push(lowers);
+        if (policy.requireNumbers || strength > 0) pools.push(numbers);
+        if (policy.requireSpecial || strength > 1) pools.push(specials); // Add specials for high
+        
+        if (pools.length === 0) pools.push(lowers + uppers + numbers);
+
+        // Fill
+        while (password.length < targetLen) {
             const randomPool = pools[Math.floor(Math.random() * pools.length)];
             password += pick(randomPool);
         }
 
-        // Shuffle to avoid predictable patterns (like always starting with Upper)
-        password = password.split('').sort(() => 0.5 - Math.random()).join('');
+        // Shuffle
+        return password.split('').sort(() => 0.5 - Math.random()).join('');
+    };
 
-        // Truncate if over max length (unlikely with this logic unless minLength > maxLength which is invalid config)
-        if (policy.maxLength && password.length > policy.maxLength) {
-            password = password.substring(0, policy.maxLength);
-        }
-        return password;
-    }
-
-    // Generate 3 unique examples
-    while (examples.length < 3) {
-        const p = generateOne();
-        if (!examples.includes(p)) examples.push(p);
-    }
-
-    return examples;
+    return [
+        generateTiered(0), // Weak/Minimum
+        generateTiered(1), // Good
+        generateTiered(2)  // Strong
+    ];
 }
