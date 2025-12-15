@@ -34,7 +34,7 @@ export function TenantSelectionForm() {
             <Label htmlFor="tenantId">Workspace / Company ID</Label>
             <Input
               id="tenantId"
-              placeholder="acme-corp"
+              placeholder="MyCompany"
               value={tenantId}
               onChange={(e) => setTenantId(e.target.value)}
               autoCapitalize="none"

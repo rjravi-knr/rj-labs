@@ -74,7 +74,7 @@ export function SignUpForm({ tenantId }: SignUpFormProps) {
                 <Input
                     id="name"
                     name="name"
-                    placeholder="Ravi Kiran J"
+                    placeholder="My Full Name"
                     type="text"
                     autoCapitalize="words"
                     autoCorrect="off"

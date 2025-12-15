@@ -405,7 +405,7 @@ function DashboardLayout() {
     const { user, loading: isAuthLoading, signOut } = useAuth();
     const router = useRouter();
     const searchParams = useSearchParams();
-    const tenantId = searchParams.get("tenantId") || "acme-corp";
+    const tenantId = searchParams.get("tenantId");
     
     // Hooks exist but access might be denied
     const { isLoading, isSaving, hasUnsavedChanges, saveConfig } = useSettings();

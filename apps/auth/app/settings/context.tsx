@@ -56,7 +56,7 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 export function SettingsProvider({ children }: { children: ReactNode }) {
     const { user, session, loading: isAuthLoading } = useAuth();
     const searchParams = useSearchParams();
-    const tenantId = searchParams.get("tenantId") || "acme-corp";
+    const tenantId = searchParams.get("tenantId");
 
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
