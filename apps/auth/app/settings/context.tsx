@@ -62,7 +62,9 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 export function SettingsProvider({ children }: { children: ReactNode }) {
     const { user, session, loading: isAuthLoading } = useAuth();
     const searchParams = useSearchParams();
-    const tenantId = searchParams.get("tenantId");
+    
+    // Resolve Tenant ID: URL > User Context > LocalStorage
+    const tenantId = searchParams.get("tenantId") || user?.tenantId || (typeof window !== 'undefined' ? localStorage.getItem('tenantId') : null);
 
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -82,7 +84,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     });
 
     const fetchConfig = async () => {
-        if (!session?.token) return;
+        if (!session?.token || !tenantId) return;
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL}/config?tenantId=${tenantId}`);
             if (!res.ok) throw new Error("Failed to load config");

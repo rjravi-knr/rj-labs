@@ -545,21 +545,41 @@ function DashboardLayout() {
     const { user, loading: isAuthLoading, signOut } = useAuth();
     const router = useRouter();
     const searchParams = useSearchParams();
-    const tenantId = searchParams.get("tenantId");
+    
+    // Resolve Tenant ID: User Context > URL Param > LocalStorage
+    const [tenantId, setTenantId] = useState<string | null>(
+        searchParams.get("tenantId") || (typeof window !== 'undefined' ? localStorage.getItem('tenantId') : null)
+    );
+
+    useEffect(() => {
+        const paramId = searchParams.get("tenantId");
+        if (paramId) {
+            setTenantId(paramId);
+             if (typeof window !== 'undefined') localStorage.setItem('tenantId', paramId);
+        } else if (user?.tenantId) {
+             setTenantId(user.tenantId);
+        } else {
+             // Try local storage if not already set
+             const stored = typeof window !== 'undefined' ? localStorage.getItem('tenantId') : null;
+             if (stored) setTenantId(stored);
+        }
+    }, [searchParams, user]);
     
     // Hooks exist but access might be denied
     const { isLoading, isSaving, hasUnsavedChanges, saveConfig } = useSettings();
     const [activeView, setActiveView] = useState<ViewType>("dashboard");
 
     // Handle redirect in useEffect to avoid render-time state updates
-    // Handle redirect in useEffect to avoid render-time state updates
     useEffect(() => {
         // Double check localStorage - if we have a token, don't redirect yet!
         // We might be waiting for the AuthProvider to validate the new token.
         const hasToken = typeof window !== 'undefined' && localStorage.getItem('auth_token');
 
-        if (!isAuthLoading && !user && !hasToken) {
+        if (!isAuthLoading && !user && !hasToken && tenantId) {
             router.push(`/sign-in?tenantId=${tenantId}`);
+        } else if (!isAuthLoading && !user && !hasToken && !tenantId) {
+            // No tenant context at all? Maybe go to a generic login or landing
+             router.push(`/sign-in`); 
         }
     }, [isAuthLoading, user, router, tenantId]);
 

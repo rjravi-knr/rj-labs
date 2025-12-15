@@ -51,6 +51,11 @@ export function LoginForm({ tenantId }: LoginFormProps) {
                 description: "You have successfully signed in."
             });
             
+            // Persist tenantId for future sessions
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('tenantId', tenantId);
+            }
+            
             // Check for Super Admin
             if (data?.user?.isSuperAdmin) {
                 // Force reload to ensure Auth SDK re-initializes (if passing via query param isn't enough)

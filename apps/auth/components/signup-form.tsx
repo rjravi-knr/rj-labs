@@ -79,6 +79,11 @@ export function SignUpForm({ tenantId }: SignUpFormProps) {
                 description: "You have successfully registered. Please sign in."
             });
 
+            // Persist tenantId
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('tenantId', tenantId);
+            }
+
             // Redirect to Sign In after short delay or immediately
             // For better UX, we could auto-login, but let's stick to simple flow first.
             router.push(`/sign-in?tenantId=${tenantId}`);
