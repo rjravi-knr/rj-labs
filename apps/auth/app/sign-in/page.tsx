@@ -98,7 +98,7 @@ export default async function SignInPage(props: PageProps) {
 
   return (
     <AuthLayout>
-      <Card className="border-none shadow-none sm:border sm:shadow-sm">
+      <Card className="border-none shadow-none sm:border sm:shadow-sm w-full max-w-xl">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl font-bold tracking-tight">
             Sign In to {tenantName || tenantId}
@@ -107,8 +107,8 @@ export default async function SignInPage(props: PageProps) {
             Enter your details to sign in to your account
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="grid gap-4">
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
 
             <SocialButtons enabledProviders={enabledProviders} tenantId={tenantId} />
 

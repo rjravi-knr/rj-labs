@@ -5,7 +5,7 @@ import { createAuthError, AuthErrors } from './errors';
 export class SessionManager {
   constructor(private adapter: AuthAdapter) {}
 
-  async createSession(user: User): Promise<Session> {
+  async createSession(user: User, authMethod?: string): Promise<Session> {
     const config = getAuthConfig();
     const now = new Date();
     const expiresAt = new Date(now.getTime() + (config.sessionDuration || 3600000));
@@ -20,6 +20,7 @@ export class SessionManager {
       tenantId: user.tenantId,
       expiresAt,
       token,
+      authMethod: authMethod || user.authMethod, // Use provided method or fall back to user's authMethod
       // ipAddress and userAgent can be added if context is available
     });
 

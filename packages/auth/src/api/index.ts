@@ -72,7 +72,7 @@ export async function signIn(providerId: string, credentials: any, tenantId?: st
     const enhancedCredentials = { ...credentials, tenantId: effectiveTenantId };
 
     const user = await provider.signIn(enhancedCredentials);
-    const session = await sessionManager.createSession(user);
+    const session = await sessionManager.createSession(user, providerId); // Pass providerId as authMethod
 
     currentUser = user;
     currentSession = session;
@@ -107,7 +107,7 @@ export async function signUp(providerId: string, credentials: any, tenantId?: st
          const enhancedCredentials = { ...credentials, tenantId: effectiveTenantId };
          
          const user = await emailProvider.signUp(enhancedCredentials);
-         const session = await sessionManager.createSession(user);
+         const session = await sessionManager.createSession(user, providerId); // Pass providerId as authMethod
          
          currentUser = user;
          currentSession = session;
@@ -154,9 +154,9 @@ export function getCurrentUser(): User | null {
 
 
 
-export async function createSession(user: User): Promise<Session> {
+export async function createSession(user: User, authMethod?: string): Promise<Session> {
     if (!sessionManager) throw createAuthError(AuthErrors.INTERNAL_ERROR.code, 'Auth SDK not initialized');
-    return sessionManager.createSession(user);
+    return sessionManager.createSession(user, authMethod);
 }
 
 export async function validateSession(token: string): Promise<Session | null> {

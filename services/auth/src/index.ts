@@ -668,7 +668,7 @@ app.get('/api/auth/google/callback', async (c) => {
     try {
         const google = await getConfiguredGoogleProvider(tenantId);
         const user = await google.signIn({ code, tenantId });
-        const session = await createSession(user);
+        const session = await createSession(user, 'google'); // Track OAuth provider
         
         // Redirect to Frontend Callback with token
         // In a real app, strict allowlist for redirect URLs should be enforced per tenant

@@ -7,6 +7,7 @@ export interface User {
   isSuperAdmin?: boolean;
   emailVerified: Date | null;
   image?: string;
+  authMethod?: string; // Track which provider was used for authentication
   createdAt: Date;
   updatedAt: Date;
   metadata?: Record<string, any>;
@@ -18,6 +19,7 @@ export interface Session {
   userId: string;
   expiresAt: Date;
   token: string;
+  authMethod?: string; // Track which provider was used for this session
   ipAddress?: string;
   userAgent?: string;
 }
