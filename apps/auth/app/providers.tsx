@@ -10,7 +10,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
 
     <AuthProvider baseUrl={process.env.NEXT_PUBLIC_AUTH_API_URL || "/api/auth"}>
-      {children}
+      {children as any}
       <Toaster />
     </AuthProvider>
   );

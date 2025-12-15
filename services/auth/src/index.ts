@@ -10,7 +10,7 @@ import { apiReference } from '@scalar/hono-api-reference';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 
-import { initializeAuth, signIn, validateSession, getUser, getAuthAdapter } from '@labs/auth';
+import { initializeAuth, signIn, validateSession, getUser, getAuthAdapter, validatePassword, DEFAULT_PASSWORD_POLICY } from '@labs/auth';
 import { DrizzleAdapter } from '@labs/auth/adapters';
 
 import { authConfig, users } from '@labs/database/auth';
@@ -350,10 +350,13 @@ app.openapi(
           if (!config.selfRegistrationEnabled) {
               return c.json({ error: 'Registration is disabled for this tenant.' }, 400);
           }
+
            // Validate Password Policy
-           const policy = config.passwordPolicy as any;
-           if (policy?.minLength && password.length < policy.minLength) {
-                return c.json({ error: `Password must be at least ${policy.minLength} characters.` }, 400);
+           const policy = { ...DEFAULT_PASSWORD_POLICY, ...(config.passwordPolicy as any) };
+           const validation = validatePassword(password, policy, { email, name });
+           
+           if (!validation.isValid) {
+               return c.json({ error: validation.errors[0] }, 400); // Return first error
            }
       }
       
@@ -645,6 +648,21 @@ app.openapi(
 
         if (!user) {
             return c.json({ error: 'Invalid or expired reset token' }, 400);
+        }
+
+        // Validate Password Policy
+        const [config] = await db.select().from(authConfig).limit(1);
+        const policy = config ? { ...DEFAULT_PASSWORD_POLICY, ...(config.passwordPolicy as any) } : DEFAULT_PASSWORD_POLICY;
+        
+        // Context for reset is trickier as we might not have all user details readily loaded besides ID
+        // But we can try to use what we match. We have 'user' object from basic select.
+        const validation = validatePassword(password, policy, { 
+             email: user.email,
+             name: user.name || undefined
+        });
+
+        if (!validation.isValid) {
+            return c.json({ error: validation.errors[0] }, 400);
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);

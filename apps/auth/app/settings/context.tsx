@@ -13,6 +13,12 @@ export interface AuthConfig {
     enabledProviders: string[];
     passwordPolicy: {
         minLength: number;
+        maxLength?: number;
+        requireUppercase?: boolean;
+        requireLowercase?: boolean;
+        requireNumbers?: boolean;
+        requireSpecial?: boolean;
+        preventUserData?: boolean;
     };
     providerConfig: {
         google?: {

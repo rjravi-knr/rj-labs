@@ -14,10 +14,35 @@ interface SignUpFormProps {
     tenantId: string;
 }
 
+import { PasswordStrengthMeter } from './password-strength-meter';
+import { PasswordPolicy } from '@labs/auth/password-policy';
+
+
 export function SignUpForm({ tenantId }: SignUpFormProps) {
     const [isLoading, setIsLoading] = React.useState(false);
     const [showPassword, setShowPassword] = React.useState(false);
+    const [policy, setPolicy] = React.useState<PasswordPolicy | undefined>(undefined);
+    const [password, setPassword] = React.useState("");
     const router = useRouter();
+
+    React.useEffect(() => {
+        const fetchConfig = async () => {
+            try {
+                const apiBase = process.env.NEXT_PUBLIC_AUTH_API_URL;
+                if (!apiBase) return;
+                const res = await fetch(`${apiBase}/config?tenantId=${tenantId}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.passwordPolicy) {
+                        setPolicy(data.passwordPolicy);
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to fetch auth config", e);
+            }
+        };
+        fetchConfig();
+    }, [tenantId]);
 
     async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -102,6 +127,8 @@ export function SignUpForm({ tenantId }: SignUpFormProps) {
                         id="password" 
                         name="password" 
                         type={showPassword ? "text" : "password"}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
                         disabled={isLoading} 
                         required 
                         className="pr-10"
@@ -127,6 +154,17 @@ export function SignUpForm({ tenantId }: SignUpFormProps) {
             <Button disabled={isLoading} type="submit" className="w-full">
                 {isLoading ? 'Creating Account...' : 'Create Account'}
             </Button>
+            
+            {/* Password Strength Meter */}
+            <div className="mt-2">
+                 <PasswordStrengthMeter 
+                    password={password} 
+                    policy={policy} 
+                    // We can try to grab email/name from form if we wanted real-time user data calculation, 
+                    // but for now simpler is fine.
+                 />
+            </div>
+
         </form>
     );
 }

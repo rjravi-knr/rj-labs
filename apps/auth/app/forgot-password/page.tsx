@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@labs/ui/card';
-import { AuthLayout } from '../components/auth-layout';
+import { AuthLayout } from '../../components/auth-layout';
 import { ForgotPasswordForm } from './form';
 
 export const metadata: Metadata = {

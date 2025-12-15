@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@labs/auth/client";
 import { Button } from "@labs/ui/button";
 import { Input } from "@labs/ui/input";
+import { Slider } from "@labs/ui/slider";
 import { Label } from "@labs/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@labs/ui/card";
 import { Switch } from "@labs/ui/switch";
@@ -13,6 +14,8 @@ import { toast } from "@labs/ui/sonner";
 
 import { SettingsProvider, useSettings } from "./settings/context";
 import { Sidebar, ViewType } from "./settings/sidebar";
+import { PasswordStrengthMeter } from "../components/password-strength-meter";
+import { generateExamplePasswords } from "@labs/auth/password-policy";
 
 // --- VIEWS ---
 
@@ -351,50 +354,187 @@ function SocialConnectorsView() {
 
 function SecuritySetupView() {
     const { config, updateConfig } = useSettings();
-    return (
-        <div className="space-y-6">
-            <Card>
-                 <CardHeader>
-                    <CardTitle>Password Policy</CardTitle>
-                    <CardDescription>Set requirements for user passwords.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                     <div className="grid gap-2">
-                        <Label htmlFor="minLength">Minimum Length</Label>
-                        <Input 
-                            id="minLength" 
-                            type="number"
-                            min={6}
-                            max={32}
-                            value={config.passwordPolicy.minLength}
-                            onChange={(e) => updateConfig({ 
-                                passwordPolicy: { ...config.passwordPolicy, minLength: parseInt(e.target.value) || 8 } 
-                            })}
-                        />
-                    </div>
-                </CardContent>
-            </Card>
+    const [testPassword, setTestPassword] = useState("");
+    const suggestions = generateExamplePasswords(config.passwordPolicy as any);
 
-             <Card>
-                 <CardHeader>
-                    <CardTitle>Multi-Factor Authentication (MFA)</CardTitle>
-                    <CardDescription>Enhance security with second-factor verification.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                     <div className="flex items-center justify-between">
-                        <div className="space-y-0.5">
-                            <Label className="text-base">Enforce MFA</Label>
-                            <p className="text-sm text-muted-foreground">
-                                Require all users to set up 2FA.
-                            </p>
+    return (
+        <div className="grid gap-6 lg:grid-cols-12">
+            <div className="space-y-6 lg:col-span-8">
+                <Card>
+                     <CardHeader>
+                        <CardTitle>Password Policy</CardTitle>
+                        <CardDescription>Set requirements for user passwords.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        <div className="grid gap-4">
+                             <div className="flex items-center justify-between">
+                                <Label htmlFor="length-slider">Password Length</Label>
+                                <span className="text-sm font-medium font-mono bg-muted px-2 py-0.5 rounded">
+                                    {config.passwordPolicy.minLength} - {config.passwordPolicy.maxLength || 20} chars
+                                </span>
+                             </div>
+                             <Slider 
+                                id="length-slider"
+                                value={[
+                                    config.passwordPolicy.minLength, 
+                                    Math.min(20, config.passwordPolicy.maxLength || 20)
+                                ]}
+                                onValueChange={([min, max]) => updateConfig({ 
+                                    passwordPolicy: { ...config.passwordPolicy, minLength: min ?? 5, maxLength: max ?? 20 } 
+                                })}
+                                min={1}
+                                max={20}
+                                step={1}
+                                className="py-4"
+                             />
+                             <p className="text-xs text-muted-foreground">
+                                Define the minimum and maximum character count allowed (1-20).
+                             </p>
                         </div>
-                        <Switch 
-                            checked={config.mfaEnabled}
-                            onCheckedChange={(checked) => updateConfig({ mfaEnabled: checked })}
-                        />
-                    </div>
-                </CardContent>
-            </Card>
+
+                        <div className="space-y-4">
+                            <h4 className="text-sm font-medium">Complexity Requirements</h4>
+                            
+                            <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
+                                <div className="space-y-0.5">
+                                    <Label>Require Uppercase</Label>
+                                    <p className="text-xs text-muted-foreground">Must contain at least one uppercase letter (A-Z)</p>
+                                </div>
+                                <Switch 
+                                    checked={config.passwordPolicy.requireUppercase ?? false}
+                                    onCheckedChange={(c) => updateConfig({ 
+                                        passwordPolicy: { ...config.passwordPolicy, requireUppercase: c } 
+                                    })}
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
+                                <div className="space-y-0.5">
+                                    <Label>Require Lowercase</Label>
+                                    <p className="text-xs text-muted-foreground">Must contain at least one lowercase letter (a-z)</p>
+                                </div>
+                                <Switch 
+                                    checked={config.passwordPolicy.requireLowercase ?? false}
+                                    onCheckedChange={(c) => updateConfig({ 
+                                        passwordPolicy: { ...config.passwordPolicy, requireLowercase: c } 
+                                    })}
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
+                                <div className="space-y-0.5">
+                                    <Label>Require Numbers</Label>
+                                    <p className="text-xs text-muted-foreground">Must contain at least one number (0-9)</p>
+                                </div>
+                                <Switch 
+                                    checked={config.passwordPolicy.requireNumbers ?? false}
+                                    onCheckedChange={(c) => updateConfig({ 
+                                        passwordPolicy: { ...config.passwordPolicy, requireNumbers: c } 
+                                    })}
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
+                                <div className="space-y-0.5">
+                                    <Label>Require Special Characters</Label>
+                                    <p className="text-xs text-muted-foreground">Must contain at least one special character (!@#...)</p>
+                                </div>
+                                <Switch 
+                                    checked={config.passwordPolicy.requireSpecial ?? false}
+                                    onCheckedChange={(c) => updateConfig({ 
+                                        passwordPolicy: { ...config.passwordPolicy, requireSpecial: c } 
+                                    })}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <h4 className="text-sm font-medium">Advanced Security</h4>
+                             <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
+                                <div className="space-y-0.5">
+                                    <Label>Prevent User Data</Label>
+                                    <p className="text-xs text-muted-foreground">Passwords cannot contain the user&apos;s email or name</p>
+                                </div>
+                                <Switch 
+                                    checked={config.passwordPolicy.preventUserData ?? false}
+                                    onCheckedChange={(c) => updateConfig({ 
+                                        passwordPolicy: { ...config.passwordPolicy, preventUserData: c } 
+                                    })}
+                                />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                 <Card>
+                     <CardHeader>
+                        <CardTitle>Multi-Factor Authentication (MFA)</CardTitle>
+                        <CardDescription>Enhance security with second-factor verification.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                         <div className="flex items-center justify-between">
+                            <div className="space-y-0.5">
+                                <Label className="text-base">Enforce MFA</Label>
+                                <p className="text-sm text-muted-foreground">
+                                    Require all users to set up 2FA.
+                                </p>
+                            </div>
+                            <Switch 
+                                checked={config.mfaEnabled}
+                                onCheckedChange={(checked) => updateConfig({ mfaEnabled: checked })}
+                            />
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+            
+            <div className="space-y-6 lg:col-span-4">
+                <Card className="sticky top-24">
+                    <CardHeader>
+                        <CardTitle>Policy Playground</CardTitle>
+                        <CardDescription>Test your password rules in real-time.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        <div className="space-y-2">
+                            <Label>Test Input</Label>
+                            <Input 
+                                value={testPassword}
+                                onChange={(e) => setTestPassword(e.target.value)}
+                                placeholder="Type a password..."
+                            />
+                             <PasswordStrengthMeter 
+                                password={testPassword} 
+                                policy={config.passwordPolicy as any} 
+                             />
+                        </div>
+                        
+                        <div className="rounded-lg bg-muted/50 p-4 space-y-3">
+                            <h4 className="text-sm font-medium flex items-center gap-2">
+                                <span className="h-2 w-2 rounded-full bg-blue-500" />
+                                Admin Suggestions
+                            </h4>
+                            <p className="text-xs text-muted-foreground">
+                                Based on your current settings, these passwords check out:
+                            </p>
+                            <div className="space-y-2 pt-1">
+                                {suggestions.map((example, i) => (
+                                    <div key={i} className="flex items-center justify-between text-xs bg-background p-2 rounded border">
+                                        <code className="font-mono">{example}</code>
+                                        <Button 
+                                            variant="ghost" 
+                                            size="sm" 
+                                            className="h-6 px-2"
+                                            onClick={() => setTestPassword(example)}
+                                        >
+                                            Try
+                                        </Button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
         </div>
     );
 }
@@ -535,8 +675,10 @@ function DashboardLayout() {
 
 export default function Home() {
     return (
-        <SettingsProvider>
-            <DashboardLayout />
-        </SettingsProvider>
+        <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
+            <SettingsProvider>
+                <DashboardLayout />
+            </SettingsProvider>
+        </Suspense>
     );
 }

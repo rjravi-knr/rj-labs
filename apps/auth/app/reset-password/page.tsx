@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@labs/ui/card';
-import { AuthLayout } from '../components/auth-layout';
+import { AuthLayout } from '../../components/auth-layout';
 import { ResetPasswordForm } from './form';
 import { Alert, AlertDescription, AlertTitle } from '@labs/ui/alert';
 import { AlertCircle } from 'lucide-react';
