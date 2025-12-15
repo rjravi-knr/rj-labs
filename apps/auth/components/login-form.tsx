@@ -21,6 +21,7 @@ interface LoginFormProps {
 
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@labs/auth/client';
+import { storage } from '@labs/utils';
 
 export function LoginForm({ tenantId }: LoginFormProps) {
     const router = useRouter();
@@ -52,9 +53,7 @@ export function LoginForm({ tenantId }: LoginFormProps) {
             });
             
             // Persist tenantId for future sessions
-            if (typeof window !== 'undefined') {
-                localStorage.setItem('tenantId', tenantId);
-            }
+            storage.set('tenantId', tenantId);
             
             // Check for Super Admin
             if (data?.user?.isSuperAdmin) {

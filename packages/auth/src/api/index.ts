@@ -1,3 +1,4 @@
+import { storage } from '@labs/utils';
 import { AuthConfig, User, Session, AuthAdapter, AuthProvider } from '../types';
 import { initializeAuth as initConfig, getAuthConfig } from '../core/config';
 import { SessionManager } from '../core/session';
@@ -20,8 +21,8 @@ export function initializeAuth(config: Partial<AuthConfig>, adapter?: AuthAdapte
   sessionManager = new SessionManager(authAdapter);
   
   // Check for stored session (mock implementation for 'local' persistence)
-  if (typeof window !== 'undefined' && finalConfig.persistence === 'local') {
-      const token = localStorage.getItem('auth_token');
+  if (finalConfig.persistence === 'local') {
+      const token = storage.get('auth_token');
       if (token) {
           validateAndRestoreSession(token);
       }
@@ -42,9 +43,7 @@ async function validateAndRestoreSession(token: string) {
         notifyListeners();
     } else {
         // Invalid session, clear local storage
-        if (typeof window !== 'undefined') {
-             localStorage.removeItem('auth_token');
-        }
+        storage.remove('auth_token');
     }
 }
 
@@ -78,8 +77,8 @@ export async function signIn(providerId: string, credentials: any, tenantId?: st
     currentSession = session;
     
     // Persist token
-    if (getAuthConfig().persistence === 'local' && typeof window !== 'undefined') {
-        localStorage.setItem('auth_token', session.token);
+    if (getAuthConfig().persistence === 'local') {
+        storage.set('auth_token', session.token);
     }
 
     notifyListeners();
@@ -111,8 +110,8 @@ export async function signUp(providerId: string, credentials: any, tenantId?: st
          
          currentUser = user;
          currentSession = session;
-          if (getAuthConfig().persistence === 'local' && typeof window !== 'undefined') {
-            localStorage.setItem('auth_token', session.token);
+          if (getAuthConfig().persistence === 'local') {
+             storage.set('auth_token', session.token);
           }
          notifyListeners();
          return { user, session };
@@ -128,9 +127,7 @@ export async function signOut(): Promise<void> {
     currentUser = null;
     currentSession = null;
     
-    if (typeof window !== 'undefined') {
-        localStorage.removeItem('auth_token');
-    }
+    storage.remove('auth_token');
     
     notifyListeners();
 }

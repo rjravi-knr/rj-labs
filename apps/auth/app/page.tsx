@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@labs
 import { Switch } from "@labs/ui/switch";
 import { Loader2, Shield, Save, Copy, LogOut, Eye, EyeOff } from "lucide-react";
 import { toast } from "@labs/ui/sonner";
+import { storage } from "@labs/utils";
 
 import { SettingsProvider, useSettings } from "./settings/context";
 import { Sidebar, ViewType } from "./settings/sidebar";
@@ -548,19 +549,19 @@ function DashboardLayout() {
     
     // Resolve Tenant ID: User Context > URL Param > LocalStorage
     const [tenantId, setTenantId] = useState<string | null>(
-        searchParams.get("tenantId") || (typeof window !== 'undefined' ? localStorage.getItem('tenantId') : null)
+        searchParams.get("tenantId") || user?.tenantId || storage.get('tenantId')
     );
 
     useEffect(() => {
         const paramId = searchParams.get("tenantId");
         if (paramId) {
             setTenantId(paramId);
-             if (typeof window !== 'undefined') localStorage.setItem('tenantId', paramId);
+             storage.set('tenantId', paramId);
         } else if (user?.tenantId) {
              setTenantId(user.tenantId);
         } else {
              // Try local storage if not already set
-             const stored = typeof window !== 'undefined' ? localStorage.getItem('tenantId') : null;
+             const stored = storage.get('tenantId');
              if (stored) setTenantId(stored);
         }
     }, [searchParams, user]);
@@ -573,7 +574,7 @@ function DashboardLayout() {
     useEffect(() => {
         // Double check localStorage - if we have a token, don't redirect yet!
         // We might be waiting for the AuthProvider to validate the new token.
-        const hasToken = typeof window !== 'undefined' && localStorage.getItem('auth_token');
+        const hasToken = storage.get('auth_token');
 
         if (!isAuthLoading && !user && !hasToken && tenantId) {
             router.push(`/sign-in?tenantId=${tenantId}`);
@@ -584,7 +585,7 @@ function DashboardLayout() {
     }, [isAuthLoading, user, router, tenantId]);
 
     // Show loading if SDK is loading OR if we have a token but no user yet (waiting for SDK)
-    const hasToken = typeof window !== 'undefined' && localStorage.getItem('auth_token');
+    const hasToken = storage.get('auth_token');
     if (isAuthLoading || (hasToken && !user)) {
         return (
              <div className="flex min-h-screen items-center justify-center">

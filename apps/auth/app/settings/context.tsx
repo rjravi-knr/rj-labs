@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { useAuth } from "@labs/auth/client";
 import { toast } from "@labs/ui/sonner";
 import { useSearchParams, useRouter } from "next/navigation";
+import { storage } from "@labs/utils";
 
 // Types matching the backend config
 export interface AuthConfig {
@@ -64,7 +65,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     const searchParams = useSearchParams();
     
     // Resolve Tenant ID: URL > User Context > LocalStorage
-    const tenantId = searchParams.get("tenantId") || user?.tenantId || (typeof window !== 'undefined' ? localStorage.getItem('tenantId') : null);
+    const tenantId = searchParams.get("tenantId") || user?.tenantId || storage.get('tenantId');
 
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);

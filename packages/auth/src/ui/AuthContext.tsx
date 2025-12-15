@@ -1,6 +1,6 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, AuthError } from '../types';
+import { storage } from '@labs/utils';
 
 interface Session {
     token: string;
@@ -31,10 +31,8 @@ export const AuthProvider = ({ children, baseUrl = '/api/auth' }: AuthProviderPr
 
     const checkSession = async () => {
         try {
-            // Check localStorage
-            if (typeof window === 'undefined') return;
-            
-            const token = localStorage.getItem('auth_token');
+            // Check storage (wrapper handles window check)
+            const token = storage.get('auth_token');
             if (!token) {
                 setLoading(false);
                 return;
@@ -55,14 +53,15 @@ export const AuthProvider = ({ children, baseUrl = '/api/auth' }: AuthProviderPr
                 setSession({ token });
             } else {
                  // Invalid token
-                 localStorage.removeItem('auth_token');
+                 storage.remove('auth_token');
+                 storage.remove('user_info');
                  setUser(null);
                  setSession(null);
             }
 
         } catch (err: any) {
             console.error('Auth Check Failed', err);
-            localStorage.removeItem('auth_token');
+            storage.remove('auth_token');
         } finally {
             setLoading(false);
         }
@@ -91,9 +90,9 @@ export const AuthProvider = ({ children, baseUrl = '/api/auth' }: AuthProviderPr
 
             // Success
             if (data.token) {
-                localStorage.setItem('auth_token', data.token);
+                storage.set('auth_token', data.token);
                 if (data.user) {
-                    localStorage.setItem('user_info', JSON.stringify(data.user));
+                    storage.setJSON('user_info', data.user);
                 }
                 setSession({ token: data.token });
                 setUser(data.user);
@@ -102,7 +101,7 @@ export const AuthProvider = ({ children, baseUrl = '/api/auth' }: AuthProviderPr
             
             // Return full data if needed by caller (but interface says void)
             // returning void for now to match interface
-            return data; 
+            // return data; 
 
         } catch (err: any) {
             setError(err);
@@ -127,7 +126,7 @@ export const AuthProvider = ({ children, baseUrl = '/api/auth' }: AuthProviderPr
             
             // Auto login logic usually follows, or redirect
             // For now, simple return
-            return data;
+            // return data;
             
         } catch (err: any) {
             setError(err);
@@ -137,8 +136,8 @@ export const AuthProvider = ({ children, baseUrl = '/api/auth' }: AuthProviderPr
 
     const signOut = async () => {
         try {
-             localStorage.removeItem('auth_token');
-             localStorage.removeItem('user_info');
+             storage.remove('auth_token');
+             storage.remove('user_info');
              setUser(null);
              setSession(null);
              // Optional: call API to invalidate on server too

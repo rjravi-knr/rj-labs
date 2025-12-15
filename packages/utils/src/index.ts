@@ -42,3 +42,6 @@ export * from './http';
 
 // TypeScript types
 export * from './types';
+
+// Storage utilities
+export * from './storage';

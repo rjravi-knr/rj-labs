@@ -1,8 +1,8 @@
-
 "use client";
 
 import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { storage } from '@labs/utils';
 
 function CallbackContent() {
     const router = useRouter();
@@ -28,11 +28,14 @@ function CallbackContent() {
                 if (res.ok) {
                     const data = await res.json();
                     console.log('Authentication Successful!', data);
-                    localStorage.setItem('auth_token', token);
-                    localStorage.setItem('user_info', JSON.stringify(data.user));
+                    
+                    // Use centralized storage
+                    storage.set('auth_token', token);
+                    storage.setJSON('user_info', data.user);
+                    
                     // Success! Redirect to home page with tenantId
-                    const tenantId = data.user.tenantId ;
-                    // Force full reload to ensure AuthProvider picks up the new token from localStorage
+                    const tenantId = data.user.tenantId;
+                    // Force full reload to ensure AuthProvider picks up the new token from storage
                     window.location.href = `/?tenantId=${tenantId}`;
                 } else {
                     console.error('Session validation failed', await res.text());

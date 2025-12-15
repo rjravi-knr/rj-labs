@@ -9,6 +9,7 @@ import { toast } from '@labs/ui/sonner';
 import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { storage } from '@labs/utils';
 
 interface SignUpFormProps {
     tenantId: string;
@@ -80,9 +81,7 @@ export function SignUpForm({ tenantId }: SignUpFormProps) {
             });
 
             // Persist tenantId
-            if (typeof window !== 'undefined') {
-                localStorage.setItem('tenantId', tenantId);
-            }
+            storage.set('tenantId', tenantId);
 
             // Redirect to Sign In after short delay or immediately
             // For better UX, we could auto-login, but let's stick to simple flow first.

@@ -27,7 +27,8 @@
     "license": "MIT",
     "dependencies": {
         "zod": "^3.22.0",
-        "@labs/database": "workspace:*"
+        "@labs/database": "workspace:*",
+        "@labs/utils": "workspace:*"
     },
     "peerDependencies": {
         "react": ">=18",
