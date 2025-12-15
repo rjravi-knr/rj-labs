@@ -8,7 +8,7 @@ import { Input } from "@labs/ui/input";
 import { Label } from "@labs/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@labs/ui/card";
 import { Switch } from "@labs/ui/switch";
-import { Loader2, Shield, Save, Copy, LogOut } from "lucide-react";
+import { Loader2, Shield, Save, Copy, LogOut, Eye, EyeOff } from "lucide-react";
 import { toast } from "@labs/ui/sonner";
 
 import { SettingsProvider, useSettings } from "./settings/context";
@@ -150,6 +150,9 @@ function SocialConnectorsView() {
         github: !!config.providerConfig.github?.clientId,
         linkedin: !!config.providerConfig.linkedin?.clientId,
     });
+    
+    // Track which secrets are visible
+    const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
 
     const getRedirectUri = (provider: string) => {
         if (typeof window === 'undefined') return '';
@@ -160,11 +163,24 @@ function SocialConnectorsView() {
         navigator.clipboard.writeText(text);
         toast.success("Copied to clipboard");
     };
+    
+    const toggleSecretVisibility = (provider: string) => {
+        setShowSecrets(prev => ({ ...prev, [provider]: !prev[provider] }));
+    };
 
     const toggleProvider = (provider: string, checked: boolean) => {
         setEnabledProviders(prev => ({ ...prev, [provider]: checked }));
+        
         if (!checked) {
-             // Optional: Clear config if disabled? Or keep it? keeping it for now.
+            // Clear the provider configuration when disabled
+            updateProviderConfig(provider as any, { clientId: '', clientSecret: '', redirectUri: '' });
+        } else {
+            // When enabling, ensure the provider exists in config (even if empty)
+            // This triggers "unsaved changes"
+            const currentConfig = config.providerConfig[provider as keyof typeof config.providerConfig];
+            if (!currentConfig || !currentConfig.clientId) {
+                updateProviderConfig(provider as any, {});
+            }
         }
     };
 
@@ -262,13 +278,29 @@ function SocialConnectorsView() {
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor={`${provider.id}-client-secret`}>Client Secret</Label>
-                                        <Input 
-                                            id={`${provider.id}-client-secret`}
-                                            type="password"
-                                            value={providerData.clientSecret || ""}
-                                            onChange={(e) => updateProviderConfig(provider.id as any, { clientSecret: e.target.value })}
-                                            placeholder="Paste Client Secret here"
-                                        />
+                                        <div className="relative">
+                                            <Input 
+                                                id={`${provider.id}-client-secret`}
+                                                type={showSecrets[provider.id] ? "text" : "password"}
+                                                value={providerData.clientSecret || ""}
+                                                onChange={(e) => updateProviderConfig(provider.id as any, { clientSecret: e.target.value })}
+                                                placeholder="Paste Client Secret here"
+                                                className="pr-10"
+                                            />
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="icon"
+                                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                                onClick={() => toggleSecretVisibility(provider.id)}
+                                            >
+                                                {showSecrets[provider.id] ? (
+                                                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                                ) : (
+                                                    <Eye className="h-4 w-4 text-muted-foreground" />
+                                                )}
+                                            </Button>
+                                        </div>
                                     </div>
                                     {provider.hasTenantId && (
                                          <div className="space-y-2 md:col-span-2">

@@ -10,6 +10,7 @@ export interface AuthConfig {
     termsUrl: string;
     privacyUrl: string;
     mfaEnabled: boolean;
+    enabledProviders: string[];
     passwordPolicy: {
         minLength: number;
     };
@@ -68,6 +69,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         termsUrl: "",
         privacyUrl: "",
         mfaEnabled: false,
+        enabledProviders: ['email_password'],
         passwordPolicy: { minLength: 8 },
         providerConfig: {},
         settings: {}
@@ -86,6 +88,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
                 termsUrl: data.termsUrl || "",
                 privacyUrl: data.privacyUrl || "",
                 mfaEnabled: data.mfaEnabled || false,
+                enabledProviders: data.enabledProviders || ['email_password'],
                 passwordPolicy: data.passwordPolicy || { minLength: 8 },
                 providerConfig: data.providerConfig || {},
                 settings: data.settings || {}
@@ -127,13 +130,28 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     const saveConfig = async () => {
         setIsSaving(true);
         try {
+            // Compute enabledProviders based on which providers have clientId configured
+            const enabledProviders = ['email_password']; // Always include email_password
+            
+            // Add social providers that have clientId set
+            Object.entries(config.providerConfig).forEach(([provider, settings]) => {
+                if (settings && settings.clientId) {
+                    enabledProviders.push(provider);
+                }
+            });
+
+            const payload = {
+                ...config,
+                enabledProviders
+            };
+
             const res = await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL}/config?tenantId=${tenantId}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${session?.token}`
                 },
-                body: JSON.stringify(config)
+                body: JSON.stringify(payload)
             });
 
             if (!res.ok) {
@@ -143,6 +161,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
             toast.success("Settings updated successfully!");
             setHasUnsavedChanges(false);
+            // Refresh to get the updated enabledProviders from server
+            await fetchConfig();
         } catch (error: any) {
             toast.error(error.message);
         } finally {
