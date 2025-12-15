@@ -13,7 +13,7 @@ export const users = pgTable('users', {
   passwordHash: varchar('password_hash', { length: 255 }),
   
 
-  isSuperAdmin: boolean('is_super_admin').default(true).notNull(),
+  isSuperAdmin: boolean('is_super_admin').default(false).notNull(),
   isActive: boolean('is_active').default(true).notNull(),
   emailVerified: timestamp('email_verified', { mode: 'date' }),
   resetToken: varchar('reset_token', { length: 255 }),
