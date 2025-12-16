@@ -9,607 +9,47 @@ import { Slider } from "@labs/ui/slider";
 import { Label } from "@labs/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@labs/ui/card";
 import { Switch } from "@labs/ui/switch";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@labs/ui/tabs";
-import { Loader2, Shield, Save, Copy, LogOut, Eye, EyeOff } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger } from "@labs/ui/sheet";
+import { 
+    Loader2, 
+    Shield, 
+    Save, 
+    Copy, 
+    LogOut, 
+    Eye, 
+    EyeOff, 
+    Bell, 
+    Search, 
+    ChevronRight,
+    Home,
+    UploadCloud,
+    Menu
+} from "lucide-react";
 import { toast } from "@labs/ui/sonner";
 import { storage } from "@labs/utils";
+import {
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList,
+    BreadcrumbPage,
+    BreadcrumbSeparator,
+} from "@labs/ui/breadcrumb";
+
 
 import { SettingsProvider, useSettings } from "./settings/context";
 import { Sidebar, ViewType } from "./settings/sidebar";
-import { PasswordStrengthMeter } from "../components/password-strength-meter";
-import { generateExamplePasswords, validatePassword } from "@labs/auth/password-policy";
-import { LoginMethodMatrix } from "../components/login-method-matrix";
-import { PolicyConfigCard } from "../components/policy-config-card";
+import { DashboardView } from "./views/dashboard-view";
+import { GeneralSettingsView } from "./views/general-settings-view";
+import { AuthConfigView } from "./views/auth-config-view";
+import { SocialConnectorsView } from "./views/social-connectors-view";
+import { SecuritySetupView } from "./views/security-setup-view";
 
 // --- VIEWS ---
 
-function DashboardView() {
-    const { config } = useSettings();
-    return (
-        <div className="space-y-6">
-            <div>
-                <h3 className="text-lg font-medium">Overview</h3>
-                <p className="text-sm text-muted-foreground">
-                    Welcome to the Auth Admin for <strong>{config.name || "your application"}</strong>.
-                </p>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Self Registration</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{config.selfRegistrationEnabled ? "Active" : "Disabled"}</div>
-                        <p className="text-xs text-muted-foreground">User sign-up status</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">MFA Status</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{config.mfaEnabled ? "Enforced" : "Optional"}</div>
-                        <p className="text-xs text-muted-foreground">Multi-factor authentication</p>
-                    </CardContent>
-                </Card>
-                 <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Active Providers</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{Object.keys(config.providerConfig).length + 1}</div>
-                        <p className="text-xs text-muted-foreground">Email + Social Connectors</p>
-                    </CardContent>
-                </Card>
-            </div>
-        </div>
-    );
-}
 
-function GeneralSettingsView() {
-    const { config, updateConfig } = useSettings();
-    return (
-        <div className="space-y-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Branding & Identity</CardTitle>
-                    <CardDescription>Configure how your application appears to users.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="grid gap-2">
-                        <Label htmlFor="appName">Application Name</Label>
-                        <Input 
-                            id="appName" 
-                            value={config.name}
-                            onChange={(e) => updateConfig({ name: e.target.value })}
-                            placeholder="e.g. Acme Corp Portal" 
-                        />
-                    </div>
-                </CardContent>
-            </Card>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle>Legal & Compliance</CardTitle>
-                    <CardDescription>Links to your terms and privacy policy.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="grid gap-2">
-                        <Label htmlFor="termsUrl">Terms of Service URL</Label>
-                        <Input 
-                            id="termsUrl" 
-                            value={config.termsUrl}
-                            onChange={(e) => updateConfig({ termsUrl: e.target.value })}
-                            placeholder="https://..." 
-                        />
-                    </div>
-                     <div className="grid gap-2">
-                        <Label htmlFor="privacyUrl">Privacy Policy URL</Label>
-                        <Input 
-                            id="privacyUrl" 
-                            value={config.privacyUrl}
-                            onChange={(e) => updateConfig({ privacyUrl: e.target.value })}
-                            placeholder="https://..." 
-                        />
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-    );
-}
-
-function AuthConfigView() {
-    const { config, updateConfig } = useSettings();
-    return (
-        <div className="space-y-6">
-             <Card>
-                <CardHeader>
-                    <CardTitle>Login Combinations</CardTitle>
-                    <CardDescription>Configure allowed login methods.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                     <div className="flex items-center justify-between rounded-lg border p-4 opacity-75">
-                        <div className="space-y-0.5">
-                            <Label className="text-base">Self-Registration</Label>
-                            <p className="text-sm text-muted-foreground">
-                                Allow users to create their own accounts via the Sign Up page.
-                            </p>
-                        </div>
-                        <Switch 
-                            checked={config.selfRegistrationEnabled}
-                            onCheckedChange={(checked) => updateConfig({ selfRegistrationEnabled: checked })}
-                        />
-                    </div>
-                    
-                    <div className="space-y-2">
-                        <Label className="text-base">Login Method Configuration</Label>
-                        <p className="text-sm text-muted-foreground mb-4">
-                            Enable specific authentication channels.
-                        </p>
-                        {config.loginMethods && (
-                            <LoginMethodMatrix 
-                                config={config.loginMethods}
-                                onChange={(methods) => updateConfig({ loginMethods: methods })}
-                            />
-                        )}
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-    );
-}
-
-function SocialConnectorsView() {
-    const { config, updateProviderConfig } = useSettings();
-    const [enabledProviders, setEnabledProviders] = useState<Record<string, boolean>>({
-        google: !!config.providerConfig.google?.clientId,
-        microsoft: !!config.providerConfig.microsoft?.clientId,
-        github: !!config.providerConfig.github?.clientId,
-        linkedin: !!config.providerConfig.linkedin?.clientId,
-    });
-    
-    // Track which secrets are visible
-    const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
-
-    const getRedirectUri = (provider: string) => {
-        // Use auth service URL (e.g. http://localhost:3002) for OAuth callbacks
-        const authApiBase = process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:3002';
-        // Remove trailing "/api/auth" if present to get the base URL
-        const baseUrl = authApiBase.replace(/\/api\/auth$/, '');
-        return `${baseUrl}/api/auth/${provider}/callback`;
-    };
-
-    const copyToClipboard = (text: string) => {
-        navigator.clipboard.writeText(text);
-        toast.success("Copied to clipboard");
-    };
-    
-    const toggleSecretVisibility = (provider: string) => {
-        setShowSecrets(prev => ({ ...prev, [provider]: !prev[provider] }));
-    };
-
-    const toggleProvider = (provider: string, checked: boolean) => {
-        setEnabledProviders(prev => ({ ...prev, [provider]: checked }));
-        
-        if (!checked) {
-            // Clear the provider configuration when disabled
-            updateProviderConfig(provider as any, { clientId: '', clientSecret: '', redirectUri: '' });
-        } else {
-            // When enabling, ensure the provider exists in config (even if empty)
-            // This triggers "unsaved changes"
-            const currentConfig = config.providerConfig[provider as keyof typeof config.providerConfig];
-            if (!currentConfig || !currentConfig.clientId) {
-                updateProviderConfig(provider as any, {});
-            }
-        }
-    };
-
-    const PROVIDERS = [
-        {
-            id: 'google',
-            name: 'Google Workspace',
-            description: 'Allow users to sign in with their Google / Gmail accounts.',
-            docs: 'https://developers.google.com/identity/protocols/oauth2',
-            icon: (props: any) => (
-               <svg viewBox="0 0 24 24" {...props}><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-            )
-        },
-        {
-            id: 'microsoft',
-            name: 'Microsoft Entra ID',
-            description: 'Enable login for Office 365 and Microsoft accounts.',
-            docs: 'https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app',
-            hasTenantId: true,
-            icon: (props: any) => (
-                 <svg viewBox="0 0 23 23" {...props}><path fill="#f35325" d="M1 1h10v10H1z"/><path fill="#81bc06" d="M12 1h10v10H12z"/><path fill="#05a6f0" d="M1 12h10v10H1z"/><path fill="#ffba08" d="M12 12h10v10H12z"/></svg>
-            )
-        },
-        {
-            id: 'github',
-            name: 'GitHub',
-            description: 'Essential for developer-focused applications.',
-            docs: 'https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app',
-            icon: (props: any) => (
-                <svg viewBox="0 0 98 96" {...props}><path fillRule="evenodd" clipRule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z" fill="#24292f"/></svg>
-            )
-        },
-        {
-            id: 'linkedin',
-            name: 'LinkedIn',
-            description: 'Professional identity verification.',
-            docs: 'https://learn.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow',
-             icon: (props: any) => (
-                <svg viewBox="0 0 24 24"  {...props}><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" fill="#0077B5"/></svg>
-             )
-        }
-    ];
-
-    return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h3 className="text-lg font-medium">Social Connectors</h3>
-                    <p className="text-sm text-muted-foreground">
-                        Enable third-party identity providers for your tenants.
-                    </p>
-                </div>
-            </div>
-
-            {PROVIDERS.map((provider) => {
-                const isEnabled = enabledProviders[provider.id];
-                 // @ts-ignore
-                const providerData = config.providerConfig[provider.id] || {};
-                const redirectUri = getRedirectUri(provider.id);
-
-                return (
-                    <Card key={provider.id} className={!isEnabled ? "opacity-75" : ""}>
-                        <CardHeader className="pb-4">
-                            <div className="flex items-start justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center p-2">
-                                        <provider.icon className="w-full h-full" />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <CardTitle className="text-base flex items-center gap-2">
-                                            {provider.name}
-                                        </CardTitle>
-                                        <CardDescription className="text-xs max-w-sm">
-                                            {provider.description}
-                                        </CardDescription>
-                                    </div>
-                                </div>
-                                <Switch 
-                                    checked={isEnabled}
-                                    onCheckedChange={(checked) => toggleProvider(provider.id, checked)}
-                                />
-                            </div>
-                        </CardHeader>
-                        {isEnabled && (
-                            <CardContent className="pt-0 space-y-4 animate-in slide-in-from-top-2 duration-200">
-                                <div className="grid gap-4 md:grid-cols-2">
-                                    <div className="space-y-2">
-                                        <Label htmlFor={`${provider.id}-client-id`}>Client ID / App ID</Label>
-                                        <Input 
-                                            id={`${provider.id}-client-id`}
-                                            value={providerData.clientId || ""}
-                                            onChange={(e) => updateProviderConfig(provider.id as any, { clientId: e.target.value })}
-                                            placeholder="Paste Client ID here"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor={`${provider.id}-client-secret`}>Client Secret</Label>
-                                        <div className="relative">
-                                            <Input 
-                                                id={`${provider.id}-client-secret`}
-                                                type={showSecrets[provider.id] ? "text" : "password"}
-                                                value={providerData.clientSecret || ""}
-                                                onChange={(e) => updateProviderConfig(provider.id as any, { clientSecret: e.target.value })}
-                                                placeholder="Paste Client Secret here"
-                                                className="pr-10"
-                                            />
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="icon"
-                                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                                                onClick={() => toggleSecretVisibility(provider.id)}
-                                            >
-                                                {showSecrets[provider.id] ? (
-                                                    <EyeOff className="h-4 w-4 text-muted-foreground" />
-                                                ) : (
-                                                    <Eye className="h-4 w-4 text-muted-foreground" />
-                                                )}
-                                            </Button>
-                                        </div>
-                                    </div>
-                                    {provider.hasTenantId && (
-                                         <div className="space-y-2 md:col-span-2">
-                                            <Label htmlFor={`${provider.id}-tenant-id`}>Tenant ID (Directory ID)</Label>
-                                            <Input 
-                                                id={`${provider.id}-tenant-id`}
-                                                value={providerData.tenantId || ""}
-                                                onChange={(e) => updateProviderConfig(provider.id as any, { tenantId: e.target.value })}
-                                                placeholder="e.g. 52c145..."
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="rounded-md bg-muted/50 p-3 space-y-2">
-                                    <div className="flex items-center justify-between">
-                                         <Label className="text-xs font-medium uppercase text-muted-foreground">Callback URL</Label>
-                                         <a 
-                                            href={provider.docs} 
-                                            target="_blank" 
-                                            rel="noopener noreferrer"
-                                            className="text-xs text-primary hover:underline flex items-center gap-1"
-                                         >
-                                            How to set up? 
-                                            <Copy className="h-3 w-3" />
-                                         </a>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <code className="flex-1 rounded bg-background px-2 py-1 font-mono text-xs border">
-                                           {redirectUri}
-                                        </code>
-                                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => copyToClipboard(redirectUri)}>
-                                            <Copy className="h-3.5 w-3.5" />
-                                        </Button>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        )}
-                    </Card>
-                );
-            })}
-        </div>
-    );
-}
-
-function SecuritySetupView() {
-    const { config, updateConfig } = useSettings();
-    const [testPassword, setTestPassword] = useState("");
-    const suggestions = generateExamplePasswords(config.passwordPolicy as any);
-
-    return (
-        <div className="grid gap-6 lg:grid-cols-12">
-            <div className="space-y-6 lg:col-span-8">
-                <Tabs defaultValue="password" className="w-full">
-                    <TabsList className="grid w-full grid-cols-4 mb-6">
-                        <TabsTrigger value="password">Password</TabsTrigger>
-                        <TabsTrigger value="mfa">MFA</TabsTrigger>
-                        <TabsTrigger value="otp">OTP</TabsTrigger>
-                        <TabsTrigger value="pin">PIN</TabsTrigger>
-                    </TabsList>
-                    
-                    <TabsContent value="password" className="mt-0">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Password Policy</CardTitle>
-                                <CardDescription>Set requirements for user passwords.</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-6">
-                                <div className="grid gap-4">
-                                     <div className="flex items-center justify-between">
-                                        <Label htmlFor="length-slider">Password Length</Label>
-                                        <span className="text-sm font-medium font-mono bg-muted px-2 py-0.5 rounded">
-                                            {config.passwordPolicy.minLength} - {config.passwordPolicy.maxLength || 20} chars
-                                        </span>
-                                     </div>
-                                     <Slider 
-                                        id="length-slider"
-                                        value={[
-                                            config.passwordPolicy.minLength, 
-                                            Math.min(20, config.passwordPolicy.maxLength || 20)
-                                        ]}
-                                        onValueChange={([min, max]) => updateConfig({ 
-                                            passwordPolicy: { ...config.passwordPolicy, minLength: min ?? 5, maxLength: max ?? 20 } 
-                                        })}
-                                        min={1}
-                                        max={20}
-                                        step={1}
-                                        className="py-4"
-                                     />
-                                     <p className="text-xs text-muted-foreground">
-                                        Define the minimum and maximum character count allowed (1-20).
-                                     </p>
-                                </div>
-
-                                <div className="space-y-4">
-                                    <h4 className="text-sm font-medium">Complexity Requirements</h4>
-                                    
-                                    <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
-                                        <div className="space-y-0.5">
-                                            <Label>Require Uppercase</Label>
-                                            <p className="text-xs text-muted-foreground">Must contain at least one uppercase letter (A-Z)</p>
-                                        </div>
-                                        <Switch 
-                                            checked={config.passwordPolicy.requireUppercase ?? false}
-                                            onCheckedChange={(c) => updateConfig({ 
-                                                passwordPolicy: { ...config.passwordPolicy, requireUppercase: c } 
-                                            })}
-                                        />
-                                    </div>
-
-                                    <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
-                                        <div className="space-y-0.5">
-                                            <Label>Require Lowercase</Label>
-                                            <p className="text-xs text-muted-foreground">Must contain at least one lowercase letter (a-z)</p>
-                                        </div>
-                                        <Switch 
-                                            checked={config.passwordPolicy.requireLowercase ?? false}
-                                            onCheckedChange={(c) => updateConfig({ 
-                                                passwordPolicy: { ...config.passwordPolicy, requireLowercase: c } 
-                                            })}
-                                        />
-                                    </div>
-
-                                    <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
-                                        <div className="space-y-0.5">
-                                            <Label>Require Numbers</Label>
-                                            <p className="text-xs text-muted-foreground">Must contain at least one number (0-9)</p>
-                                        </div>
-                                        <Switch 
-                                            checked={config.passwordPolicy.requireNumbers ?? false}
-                                            onCheckedChange={(c) => updateConfig({ 
-                                                passwordPolicy: { ...config.passwordPolicy, requireNumbers: c } 
-                                            })}
-                                        />
-                                    </div>
-
-                                    <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
-                                        <div className="space-y-0.5">
-                                            <Label>Require Special Characters</Label>
-                                            <p className="text-xs text-muted-foreground">Must contain at least one special character (!@#...)</p>
-                                        </div>
-                                        <Switch 
-                                            checked={config.passwordPolicy.requireSpecial ?? false}
-                                            onCheckedChange={(c) => updateConfig({ 
-                                                passwordPolicy: { ...config.passwordPolicy, requireSpecial: c } 
-                                            })}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-4">
-                                    <h4 className="text-sm font-medium">Advanced Security</h4>
-                                     <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
-                                        <div className="space-y-0.5">
-                                            <Label>Prevent User Data</Label>
-                                            <p className="text-xs text-muted-foreground">Passwords cannot contain the user&apos;s email or name</p>
-                                        </div>
-                                        <Switch 
-                                            checked={config.passwordPolicy.preventUserData ?? false}
-                                            onCheckedChange={(c) => updateConfig({ 
-                                                passwordPolicy: { ...config.passwordPolicy, preventUserData: c } 
-                                            })}
-                                        />
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                    <TabsContent value="mfa" className="mt-0">
-                         <Card>
-                             <CardHeader>
-                                <CardTitle>Multi-Factor Authentication (MFA)</CardTitle>
-                                <CardDescription>Enhance security with second-factor verification.</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                 <div className="flex items-center justify-between">
-                                    <div className="space-y-0.5">
-                                        <Label className="text-base">Enforce MFA</Label>
-                                        <p className="text-sm text-muted-foreground">
-                                            Require all users to set up 2FA.
-                                        </p>
-                                    </div>
-                                    <Switch 
-                                        checked={config.mfaEnabled}
-                                        onCheckedChange={(checked) => updateConfig({ mfaEnabled: checked })}
-                                    />
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                    <TabsContent value="otp" className="mt-0">
-                        <PolicyConfigCard 
-                            title="OTP Policy"
-                            description="Settings for One-Time Passwords (Email/SMS)."
-                            policy={config.otpPolicy || { length: 6, expiry: 300, maxAttempts: 3 }}
-                            onSave={(policy) => updateConfig({ otpPolicy: policy })}
-                        />
-                    </TabsContent>
-
-                    <TabsContent value="pin" className="mt-0">
-                        <PolicyConfigCard 
-                            title="PIN Policy"
-                            description="Settings for backup PINs."
-                            policy={config.pinPolicy || { length: 4, expiry: 0, maxAttempts: 5 }}
-                            onSave={(policy) => updateConfig({ pinPolicy: policy })}
-                        />
-                    </TabsContent>
-                </Tabs>
-            </div>
-            
-            <div className="space-y-6 lg:col-span-4">
-                <Card className="sticky top-24">
-                    <CardHeader>
-                        <CardTitle>Policy Playground</CardTitle>
-                        <CardDescription>Test your password rules in real-time.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="space-y-2">
-                            <Label>Test Input</Label>
-                            <Input 
-                                value={testPassword}
-                                onChange={(e) => setTestPassword(e.target.value)}
-                                placeholder="Type a password..."
-                            />
-                             <PasswordStrengthMeter 
-                                password={testPassword} 
-                                policy={config.passwordPolicy as any} 
-                             />
-                        </div>
-                        
-                        <div className="rounded-lg bg-muted/50 p-4 space-y-3">
-                            <h4 className="text-sm font-medium flex items-center gap-2">
-                                <span className="h-2 w-2 rounded-full bg-blue-500" />
-                                Admin Suggestions
-                            </h4>
-                            <p className="text-xs text-muted-foreground">
-                                Based on your current settings, these passwords check out:
-                            </p>
-                            <div className="space-y-2 pt-1">
-                                {suggestions.map((example, i) => {
-                                    // Calculate simple strength score for badge
-                                    const result = validatePassword(example, config.passwordPolicy as any);
-                                    let score = 0;
-                                    if (result.isValid) score += 2;
-                                    // Bonus for length
-                                    if (example.length >= (config.passwordPolicy.minLength || 8) + 2) score += 1;
-                                    // Bonus for special chars
-                                    if (/[!@#$%^&*]/.test(example)) score += 1;
-                                    
-                                    let strengthLabel = "Good";
-                                    let strengthColor = "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400";
-                                    
-                                    if (score >= 4) {
-                                        strengthLabel = "Strong";
-                                        strengthColor = "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
-                                    } else if (score <= 2) { // Changed from < 2 to <= 2 to capture minimal valid passwords
-                                         strengthLabel = "Weak";
-                                         strengthColor = "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400";
-                                    }
-
-                                    return (
-                                        <div key={i} className="flex items-center justify-between text-xs bg-background p-2 rounded border">
-                                           <div className="flex items-center gap-2">
-                                                <code className="font-mono">{example}</code>
-                                                <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${strengthColor}`}>
-                                                    {strengthLabel}
-                                                </span>
-                                           </div>
-                                            <Button 
-                                                variant="ghost" 
-                                                size="sm" 
-                                                className="h-6 px-2"
-                                                onClick={() => setTestPassword(example)}
-                                            >
-                                                Try
-                                            </Button>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-        </div>
-    );
-}
 
 // --- LAYOUT & MAIN PAGE ---
 
@@ -712,51 +152,121 @@ function DashboardLayout() {
 
     // --- ADMIN DASHBOARD VIEW ---
     return (
-        <div className="flex min-h-screen flex-col bg-slate-50/50 dark:bg-slate-950/50">
-             {/* Header */}
-             <div className="sticky top-0 z-30 flex h-16 items-center border-b bg-background px-6 shadow-sm">
-                <div className="flex flex-1 items-center justify-between">
-                    <div>
-                        <h2 className="text-lg font-semibold tracking-tight">Auth Admin</h2>
-                        <p className="text-xs text-muted-foreground font-mono">{tenantId}</p>
+        <div className="flex h-screen w-full overflow-hidden bg-slate-50/50 dark:bg-slate-950/50">
+            {/* LEFT: Sidebar (Full Height) */}
+            <aside className="hidden w-64 flex-col border-r bg-zinc-950 text-slate-300 lg:flex">
+                <div className="flex h-16 items-center px-6 border-b border-white/10">
+                    <div className="flex items-center gap-3">
+                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-lg shadow-glow">
+                            R
+                        </div>
+                        <span className="font-semibold text-lg tracking-tight text-white">RJ Studios</span>
                     </div>
-                    <div className="flex items-center gap-4">
-                        {hasUnsavedChanges && (
-                            <p className="text-xs text-amber-600 font-medium">Unsaved Changes</p>
-                        )}
-                        <Button onClick={saveConfig} disabled={isSaving || !hasUnsavedChanges} size="sm">
+                </div>
+                <Sidebar 
+                    activeView={activeView} 
+                    onChange={setActiveView} 
+                    className="flex-1"
+                    onSignOut={signOut}
+                    userEmail={user?.email || ""}
+                    tenantId={tenantId || ""}
+                />
+            </aside>
+
+            {/* RIGHT: Main Content Area */}
+            <div className="flex flex-col flex-1 overflow-hidden">
+                {/* Header */}
+                <header className="flex h-16 items-center gap-4 border-b bg-background px-4 lg:px-6 shadow-sm">
+                    {/* Mobile Menu Trigger */}
+                    <Sheet>
+                        <SheetTrigger asChild>
+                            <Button variant="ghost" size="icon" className="lg:hidden -ml-2">
+                                <Menu className="h-6 w-6" />
+                                <span className="sr-only">Toggle Menu</span>
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent side="left" className="w-72 p-0 bg-zinc-950 border-r border-white/10 text-slate-300">
+                             <div className="flex h-16 items-center px-6 border-b border-white/10">
+                                <div className="flex items-center gap-3">
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-lg shadow-glow">
+                                        R
+                                    </div>
+                                    <span className="font-semibold text-lg tracking-tight text-white">RJ Studios</span>
+                                </div>
+                            </div>
+                            <Sidebar 
+                                activeView={activeView} 
+                                onChange={setActiveView} 
+                                className="h-[calc(100vh-4rem)]" // Subtract header height
+                                onSignOut={signOut}
+                                userEmail={user?.email || ""}
+                                tenantId={tenantId || ""}
+                            />
+                        </SheetContent>
+                    </Sheet>
+
+                     {/* Search (Centered relative to content area mostly) */}
+                    <div className="flex flex-1 items-center justify-between">
+                         <div className="relative w-full max-w-md hidden md:block">
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                type="search"
+                                placeholder="Search settings..."
+                                className="w-full bg-muted/40 pl-9 h-9"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Right Actions */}
+                    <div className="flex items-center gap-3">
+                        <Button 
+                            onClick={saveConfig} 
+                            disabled={isSaving || !hasUnsavedChanges} 
+                            size="sm"
+                            className={hasUnsavedChanges ? "animate-pulse shadow-md" : ""}
+                        >
                             {isSaving ? (
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             ) : (
-                                <Save className="mr-2 h-4 w-4" />
+                                <UploadCloud className="mr-2 h-4 w-4" />
                             )}
-                            Save Changes
+                            Publish
+                            {hasUnsavedChanges && (
+                                <span className="ml-2 h-2 w-2 rounded-full bg-white animate-pulse" />
+                            )}
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => signOut()}>
-                            <LogOut className="mr-2 h-4 w-4" />
-                            Sign Out
+                        
+                        <Button variant="ghost" size="icon" className="relative text-muted-foreground hover:text-foreground">
+                            <Bell className="h-5 w-5" />
+                            <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500 border-2 border-background" />
                         </Button>
                     </div>
-                </div>
-            </div>
+                </header>
 
-            <div className="flex flex-1 items-start">
-                <aside className="fixed left-0 top-16 hidden h-[calc(100vh-4rem)] w-60 border-r bg-background lg:block pt-6 pl-6">
-                    <Sidebar activeView={activeView} onChange={setActiveView} />
-                </aside>
-                
-                <main className="flex-1 p-6 lg:pl-64 pt-6">
+                {/* Scrollable Main Content */}
+                <main className="flex-1 overflow-y-auto p-6 lg:p-10">
                     {isLoading ? (
                          <div className="flex h-40 items-center justify-center">
                             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                         </div>
                     ) : (
-                        <div className="max-w-4xl space-y-6">
+                        <div className="max-w-5xl mx-auto space-y-6 pb-20">
                             {activeView === 'dashboard' && <DashboardView />}
                             {activeView === 'general' && <GeneralSettingsView />}
                             {activeView === 'auth-config' && <AuthConfigView />}
                             {activeView === 'social' && <SocialConnectorsView />}
                             {activeView === 'security' && <SecuritySetupView />}
+                            
+                            {/* Placeholder for new views */}
+                            {['users', 'logs', 'access-control', 'user-model', 'sessions', 'jwt'].includes(activeView) && (
+                                <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed rounded-lg text-muted-foreground">
+                                    <div className="p-4 rounded-full bg-muted mb-4">
+                                        <Shield className="h-8 w-8 opacity-50" />
+                                    </div>
+                                    <h3 className="text-lg font-medium">Coming Soon</h3>
+                                    <p className="text-sm">{activeView} configuration is under development.</p>
+                                </div>
+                            )}
                         </div>
                     )}
                 </main>
@@ -765,7 +275,7 @@ function DashboardLayout() {
     );
 }
 
-export default function Home() {
+export default function AuthAdminPage() {
     return (
         <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
             <SettingsProvider>
