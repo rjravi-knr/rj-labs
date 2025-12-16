@@ -127,7 +127,7 @@ export class DrizzleAdapter implements AuthAdapter {
 
   async verifyPassword(email: string, tenantId: string, plainPassword: string): Promise<User | null> {
     const db = getTenantDb(tenantId);
-    const [user] = await db.select().from(users).where(and(eq(users.email, email), eq(users.tenantId, tenantId)));
+    const [user] = await db.select().from(users).where(eq(users.email, email));
     
     if (!user || !user.passwordHash) return null;
 

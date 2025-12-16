@@ -50,12 +50,12 @@ interface SettingsContextType {
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
-export function SettingsProvider({ children }: { children: ReactNode }) {
+export function SettingsProvider({ children, tenantId: propTenantId }: { children: ReactNode; tenantId?: string | null }) {
     const { user, session, loading: isAuthLoading } = useAuth();
     const searchParams = useSearchParams();
     
-    // Resolve Tenant ID: URL > User Context > LocalStorage
-    const tenantId = searchParams.get("tenantId") || user?.tenantId || storage.get('tenantId');
+    // Resolve Tenant ID: Prop > URL > User Context > LocalStorage
+    const tenantId = propTenantId || searchParams.get("tenantId") || user?.tenantId || storage.get('tenantId');
 
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);

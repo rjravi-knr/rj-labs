@@ -62,6 +62,7 @@ export class MemoryAdapter implements AuthAdapter {
     const newSession: Session = {
       ...session,
       id,
+      createdAt: new Date(),
     };
     this.sessions.set(newSession.token, newSession);
     return newSession;

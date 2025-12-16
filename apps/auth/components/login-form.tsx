@@ -136,11 +136,18 @@ export function LoginForm({ tenantId, config }: LoginFormProps) {
             
             toast.success("Login Successful");
             storage.set('tenantId', tenantId);
-             
+            if (data.token) {
+                storage.set('auth_token', data.token);
+            }
+            if (data.user) {
+                storage.set('user_info', JSON.stringify(data.user));
+            }
+
             if (data?.user?.isSuperAdmin) {
-                window.location.href = `/settings?tenantId=${tenantId}`;
+                // User asked to remove URL params as storage is set above
+                window.location.href = `/settings`;
             } else {
-                 window.location.href = `/?tenantId=${tenantId}`;
+                 window.location.href = `/`;
             }
 
         } catch (e: any) {

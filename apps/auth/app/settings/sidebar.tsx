@@ -66,10 +66,10 @@ const MENU_GROUPS: MenuGroup[] = [
         title: "Configure",
         items: [
             { id: "general", label: "Branding", icon: Globe },
-            { id: "auth-config", label: "Access Control", icon: Lock },
-            { id: "social", label: "SSO & Social", icon: Plug },
+            { id: "auth-config", label: "Access Control Config", icon: Lock },
+            { id: "social", label: "SSO & Social Connectors", icon: Plug },
             { id: "user-model", label: "User Model", icon: User }, // Placeholder
-            { id: "security", label: "Security", icon: ShieldCheck },
+            { id: "security", label: "Security Policy", icon: ShieldCheck },
             { id: "sessions", label: "Sessions", icon: KeyRound }, // Placeholder
             { id: "jwt", label: "JWT Config", icon: Settings }, // Placeholder
         ]
@@ -82,7 +82,7 @@ const MENU_GROUPS: MenuGroup[] = [
                 label: "Documentation", 
                 icon: FileText, 
                 external: true, 
-                href: "https://docs.rj-suite.com" // Example URL
+                href: process.env.NEXT_PUBLIC_AUTH_DOCS_URL || '/'
             },
         ]
     }

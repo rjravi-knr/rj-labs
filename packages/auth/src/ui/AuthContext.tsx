@@ -40,6 +40,12 @@ export const AuthProvider = ({ children, baseUrl = '/api/auth' }: AuthProviderPr
 
             // Optimistic set
             setSession({ token });
+            
+            // Hydrate user from storage immediately for fast UI
+            const storedUser = storage.getJSON('user_info');
+            if (storedUser) {
+                setUser(storedUser as User);
+            }
 
             // Validate with API
             const res = await fetch(`${baseUrl}/me`, {

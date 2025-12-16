@@ -1,6 +1,7 @@
 export interface User {
   id: string;
   tenantId: string;
+  username?: string | null; // Added
   email: string;
   name?: string;
   emailVerified: Date | null;
@@ -11,6 +12,7 @@ export interface User {
   updatedAt: Date;
   metadata?: Record<string, any>;
   passwordHash?: string;
+  isSuperAdmin?: boolean;
 }
 
 export interface Session {

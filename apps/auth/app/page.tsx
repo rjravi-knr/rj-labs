@@ -53,59 +53,32 @@ import { SecuritySetupView } from "./views/security-setup-view";
 
 // --- LAYOUT & MAIN PAGE ---
 
-function DashboardLayout() {
-    const { user, loading: isAuthLoading, signOut } = useAuth();
-    const router = useRouter();
-    const searchParams = useSearchParams();
-    
-    // Resolve Tenant ID: User Context > URL Param > LocalStorage
-    const [tenantId, setTenantId] = useState<string | null>(
-        searchParams.get("tenantId") || user?.tenantId || storage.get('tenantId')
-    );
+// --- LAYOUT & MAIN PAGE ---
 
-    useEffect(() => {
-        const paramId = searchParams.get("tenantId");
-        if (paramId) {
-            setTenantId(paramId);
-             storage.set('tenantId', paramId);
-        } else if (user?.tenantId) {
-             setTenantId(user.tenantId);
-        } else {
-             // Try local storage if not already set
-             const stored = storage.get('tenantId');
-             if (stored) setTenantId(stored);
-        }
-    }, [searchParams, user]);
-    
+// 1. Dashboard Content (Consumes Settings)
+function DashboardContent({ 
+    user, 
+    signOut, 
+    tenantId, 
+    activeView, 
+    setActiveView 
+}: { 
+    user: any; 
+    signOut: () => void; 
+    tenantId: string | null;
+    activeView: ViewType;
+    setActiveView: (view: ViewType) => void;
+}) {
     // Hooks exist but access might be denied
     const { isLoading, isSaving, hasUnsavedChanges, saveConfig } = useSettings();
-    const [activeView, setActiveView] = useState<ViewType>("dashboard");
-
-    // Handle redirect in useEffect to avoid render-time state updates
-    useEffect(() => {
-        // Double check localStorage - if we have a token, don't redirect yet!
-        // We might be waiting for the AuthProvider to validate the new token.
-        const hasToken = storage.get('auth_token');
-
-        if (!isAuthLoading && !user && !hasToken && tenantId) {
-            router.push(`/sign-in?tenantId=${tenantId}`);
-        } else if (!isAuthLoading && !user && !hasToken && !tenantId) {
-            // No tenant context at all? Maybe go to a generic login or landing
-             router.push(`/sign-in`); 
-        }
-    }, [isAuthLoading, user, router, tenantId]);
 
     // Show loading if SDK is loading OR if we have a token but no user yet (waiting for SDK)
     const hasToken = storage.get('auth_token');
-    if (isAuthLoading || (hasToken && !user)) {
-        return (
-             <div className="flex min-h-screen items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-        );
-    }
+    // We don't have isAuthLoading here, but user check handles it mostly
     
-    if (!user) {
+    // ... (rest of view logic)
+    
+     if (!user) {
          // Redirect is handled by useEffect above, render null or loading
          return null;
     }
@@ -275,12 +248,80 @@ function DashboardLayout() {
     );
 }
 
+// 2. Dashboard Wrapper (Resolves Tenant & Auth)
+function DashboardLayout() {
+    const { user, loading: isAuthLoading, signOut } = useAuth();
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const [activeView, setActiveView] = useState<ViewType>("dashboard");
+    
+    // Resolve Tenant ID with strict priority:
+    // 1. user_info in storage (Active Session)
+    // 2. tenantId in storage (Last Context)
+    // 3. URL Param (Fallback)
+    
+    const getResolvedTenantId = () => {
+        const userInfo = storage.getJSON<any>('user_info');
+        if (userInfo?.tenantId) return userInfo.tenantId;
+
+        const storedId = storage.get('tenantId');
+        if (storedId) return storedId;
+
+        return searchParams.get("tenantId");
+    };
+
+    const [tenantId, setTenantId] = useState<string | null>(getResolvedTenantId());
+
+    useEffect(() => {
+        const resolved = getResolvedTenantId();
+        
+        if (resolved && resolved !== tenantId) {
+            setTenantId(resolved);
+            storage.set('tenantId', resolved);
+        }
+    }, [searchParams, user]);
+    
+    // Handle redirect in useEffect to avoid render-time state updates
+    useEffect(() => {
+        const hasToken = storage.get('auth_token');
+
+        if (!isAuthLoading && !user && !hasToken && tenantId) {
+            router.push(`/sign-in?tenantId=${tenantId}`);
+        } else if (!isAuthLoading && !user && !hasToken && !tenantId) {
+             router.push(`/sign-in`); 
+        }
+    }, [isAuthLoading, user, router, tenantId]);
+
+    const hasToken = storage.get('auth_token');
+    if (isAuthLoading || (hasToken && !user)) {
+        return (
+             <div className="flex min-h-screen items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        );
+    }
+    
+    if (!user) {
+         return null;
+    }
+
+    return (
+        <SettingsProvider tenantId={tenantId}>
+            <DashboardContent 
+                user={user} 
+                signOut={signOut} 
+                tenantId={tenantId}
+                activeView={activeView}
+                setActiveView={setActiveView}
+            />
+        </SettingsProvider>
+    );
+}
+
 export default function AuthAdminPage() {
     return (
         <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
-            <SettingsProvider>
-                <DashboardLayout />
-            </SettingsProvider>
+            <DashboardLayout />
         </Suspense>
     );
 }

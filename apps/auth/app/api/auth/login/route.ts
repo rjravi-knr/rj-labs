@@ -80,7 +80,10 @@ export async function POST(req: NextRequest) {
 }
 
 async function createSession(user: any, tenantId: string, authMethod: string) {
-    const token = uuidv4();
+    // Generate "Smart Token" format: tenantId.uuid
+    // The "dot" separator is critical for DrizzleAdapter.getSession to parse the tenantId
+    // This token is stored in localStorage/cookies, NOT in the URL bar.
+    const token = `${tenantId}.${uuidv4()}`;
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 
@@ -98,6 +101,7 @@ async function createSession(user: any, tenantId: string, authMethod: string) {
             id: user.id,
             email: user.email,
             name: user.name,
+            tenantId: tenantId, // Critical: Return tenantId so client context knows it
             isSuperAdmin: user.isSuperAdmin,
             roles: user.roles
         }

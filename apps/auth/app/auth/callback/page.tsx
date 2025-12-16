@@ -36,7 +36,7 @@ function CallbackContent() {
                     // Success! Redirect to home page with tenantId
                     const tenantId = data.user.tenantId;
                     // Force full reload to ensure AuthProvider picks up the new token from storage
-                    window.location.href = `/?tenantId=${tenantId}`;
+                    window.location.href = `/`;
                 } else {
                     console.error('Session validation failed', await res.text());
                     router.push('/sign-in?error=invalid_session');

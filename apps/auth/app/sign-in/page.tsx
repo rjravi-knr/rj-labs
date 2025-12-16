@@ -20,22 +20,16 @@ export const metadata: Metadata = {
   description: 'Sign in to your account',
 };
 
-async function getAuthConfig(tenantId: string) {
-    const apiBase = process.env.NEXT_PUBLIC_AUTH_API_URL;
-    if (!apiBase) throw new Error("NEXT_PUBLIC_AUTH_API_URL is not defined");
+import { authAdapter } from '../../lib/adapter';
 
+async function getAuthConfig(tenantId: string) {
     try {
-        console.log(`[SignInPage] Fetching config from: ${apiBase}/config?tenantId=${tenantId}`);
-        const res = await fetch(`${apiBase}/config?tenantId=${tenantId}`, { cache: 'no-store' });
-        if (!res.ok) {
-            console.error(`[SignInPage] Config fetch failed: ${res.status} ${res.statusText}`);
-            const body = await res.text().catch(() => 'No body');
-            console.error(`[SignInPage] Error Body: ${body}`);
-            return null;
-        }
-        return res.json();
+        console.log(`[SignInPage] Fetching config for tenant: ${tenantId}`);
+        // Direct call to adapter - avoids network/fetch issues on server side
+        const config = await authAdapter.getAuthConfig(tenantId);
+        return config;
     } catch (e) {
-        console.error('[SignInPage] Failed to fetch auth config (Network Error):', e);
+        console.error('[SignInPage] Failed to fetch auth config:', e);
         return null;
     }
 }
