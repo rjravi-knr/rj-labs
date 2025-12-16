@@ -166,6 +166,11 @@ app.openapi(
               enabledProviders: z.array(z.string()).openapi({ example: ['email_password', 'google'] }),
               passwordPolicy: z.any().openapi({ example: { minLength: 8 } }),
               selfRegistrationEnabled: z.boolean().openapi({ example: true }),
+              selfRegistrationEnabled: z.boolean().openapi({ example: true }),
+              mfaEnabled: z.boolean().optional().openapi({ example: false }),
+              otpPolicy: z.any().optional(),
+              pinPolicy: z.any().optional(),
+              loginMethods: z.any().optional(),
               name: z.string().optional().openapi({ example: 'Acme Corp' }),
               termsUrl: z.string().optional(),
               privacyUrl: z.string().optional()
@@ -207,10 +212,13 @@ app.openapi(
         passwordPolicy: config.passwordPolicy,
         selfRegistrationEnabled: config.selfRegistrationEnabled,
         providerConfig: config.providerConfig,
-        mfaEnabled: config.mfaEnabled,
         name: config.name || tenantId,
         termsUrl: config.termsUrl || undefined,
         privacyUrl: config.privacyUrl || undefined,
+        mfaEnabled: config.mfaEnabled,
+        otpPolicy: config.otpPolicy,
+        pinPolicy: config.pinPolicy,
+        loginMethods: config.loginMethods,
         // @ts-ignore - settings added recently
         settings: config.settings 
       });
@@ -242,6 +250,9 @@ app.openapi(
                             selfRegistrationEnabled: z.boolean().optional(),
                             mfaEnabled: z.boolean().optional(),
                             providerConfig: z.any().optional(),
+                            otpPolicy: z.any().optional(),
+                            pinPolicy: z.any().optional(),
+                            loginMethods: z.any().optional(),
 
                             termsUrl: z.string().optional(),
                             privacyUrl: z.string().optional(),
@@ -292,6 +303,9 @@ app.openapi(
             selfRegistrationEnabled: body.selfRegistrationEnabled ?? true,
             providerConfig: body.providerConfig,
             mfaEnabled: body.mfaEnabled,
+            otpPolicy: body.otpPolicy,
+            pinPolicy: body.pinPolicy,
+            loginMethods: body.loginMethods,
             termsUrl: body.termsUrl,
         }).returning();
   

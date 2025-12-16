@@ -19,6 +19,7 @@ export function initializeAuth(config: Partial<AuthConfig>, adapter?: AuthAdapte
   // Use provided adapter or default to Memory (or throw in strict mode)
   authAdapter = adapter || new MemoryAdapter();
   sessionManager = new SessionManager(authAdapter);
+  otpManager = new OtpManager(authAdapter, finalConfig.loginMethods);
   
   // Check for stored session (mock implementation for 'local' persistence)
   if (finalConfig.persistence === 'local') {
@@ -166,6 +167,78 @@ export async function getUser(userId: string, tenantId: string): Promise<User | 
      return authAdapter.getUser(userId, tenantId);
 }
 
+
+// OTP Manager Instance
+import { OtpManager } from '../core/otp';
+let otpManager: OtpManager | null = null;
+
 function notifyListeners() {
     listeners.forEach(cb => cb(currentUser));
+}
+
+export async function requestOtp(identifier: string, channel: 'email' | 'sms' | 'whatsapp', type: 'login' | 'verification', tenantId?: string): Promise<string> {
+   if (!authAdapter) throw createAuthError(AuthErrors.INTERNAL_ERROR.code, 'Auth SDK not initialized');
+   if (!otpManager) {
+       // Lazy init if config passed in initAuth
+       // But initAuth initialized logic is simpler if we do it there.
+       // However, we need config.
+       const config = getAuthConfig();
+       otpManager = new OtpManager(authAdapter, config?.loginMethods);
+   }
+   
+   const effectiveTenantId = tenantId || 'default';
+   return otpManager.generate(effectiveTenantId, identifier, channel, type);
+}
+
+export async function verifyOtp(identifier: string, code: string, type: 'login' | 'verification', tenantId?: string): Promise<{ isValid: boolean; error?: string }> {
+   if (!authAdapter) throw createAuthError(AuthErrors.INTERNAL_ERROR.code, 'Auth SDK not initialized');
+   if (!otpManager) {
+       const config = getAuthConfig();
+       otpManager = new OtpManager(authAdapter, config?.loginMethods);
+   }
+   
+   const effectiveTenantId = tenantId || 'default';
+   return otpManager.verify(effectiveTenantId, identifier, code, type);
+}
+
+export async function signInWithOtp(identifier: string, code: string, type: 'login' | 'verification', tenantId?: string): Promise<{ user: User, session: Session }> {
+   if (!authAdapter || !sessionManager) throw createAuthError(AuthErrors.INTERNAL_ERROR.code, 'Auth SDK not initialized');
+   
+   // 1. Verify
+   const result = await verifyOtp(identifier, code, type, tenantId);
+   if (!result.isValid) throw createAuthError(AuthErrors.INVALID_OTP.code, result.error || 'Invalid OTP');
+
+   const effectiveTenantId = tenantId || 'default';
+
+   // 2. Get User
+   // We assume identifier is email for now. 
+   // TODO: Support phone number lookup
+   const user = await authAdapter.getUserByEmail(identifier, effectiveTenantId);
+   
+   if (!user) throw createAuthError(AuthErrors.USER_NOT_FOUND.code, 'User not found');
+
+   // 3. Create Session
+   const session = await sessionManager.createSession(user, 'otp');
+   
+   currentUser = user;
+   currentSession = session;
+   
+    if (getAuthConfig().persistence === 'local') {
+        storage.set('auth_token', session.token);
+    }
+   notifyListeners();
+
+   return { user, session };
+}
+
+export async function getConfig(tenantId?: string): Promise<AuthConfig | null> {
+    if (!authAdapter) throw createAuthError(AuthErrors.INTERNAL_ERROR.code, 'Auth SDK not initialized');
+    const effectiveTenantId = tenantId || 'default';
+    return authAdapter.getAuthConfig(effectiveTenantId);
+}
+
+export async function updateConfig(config: Partial<AuthConfig>, tenantId?: string): Promise<AuthConfig> {
+    if (!authAdapter) throw createAuthError(AuthErrors.INTERNAL_ERROR.code, 'Auth SDK not initialized');
+    const effectiveTenantId = tenantId || 'default';
+    return authAdapter.updateAuthConfig(effectiveTenantId, config);
 }

@@ -20,7 +20,7 @@ export class OtpManager {
     return { length: 6, expiry: 300, maxAttempts: 3 };
   }
 
-  async generate(identifier: string, channel: 'email' | 'sms' | 'whatsapp', type: 'login' | 'verification' = 'login'): Promise<string> {
+  async generate(tenantId: string, identifier: string, channel: 'email' | 'sms' | 'whatsapp', type: 'login' | 'verification' = 'login'): Promise<string> {
     const settings = this.getConfig(identifier, channel);
     if (settings && 'enabled' in settings && !settings.enabled) {
       throw new Error(`OTP logic disabled for ${channel}`);
@@ -35,6 +35,7 @@ export class OtpManager {
     const expiresAt = new Date(Date.now() + expirySeconds * 1000);
 
     const session: OtpSession = {
+      tenantId,
       identifier,
       code, // In production this should be hashed
       type,
@@ -49,15 +50,15 @@ export class OtpManager {
     return code;
   }
 
-  async verify(identifier: string, code: string, type: 'login' | 'verification' = 'login'): Promise<{ isValid: boolean; error?: string }> {
-     const session = await this.adapter.getOtp(identifier, type);
+  async verify(tenantId: string, identifier: string, code: string, type: 'login' | 'verification' = 'login'): Promise<{ isValid: boolean; error?: string }> {
+     const session = await this.adapter.getOtp(identifier, type, tenantId);
 
      if (!session) {
        return { isValid: false, error: 'INVALID_CODE' };
      }
 
      if (new Date() > new Date(session.expiresAt)) {
-       await this.adapter.deleteOtp(identifier, type);
+       await this.adapter.deleteOtp(identifier, type, tenantId);
        return { isValid: false, error: 'EXPIRED' };
      }
 
@@ -65,17 +66,17 @@ export class OtpManager {
      const maxAttempts = settings.maxAttempts || 3;
 
      if (session.attempts >= maxAttempts) {
-       await this.adapter.deleteOtp(identifier, type);
+       await this.adapter.deleteOtp(identifier, type, tenantId);
        return { isValid: false, error: 'TOO_MANY_ATTEMPTS' };
      }
 
      if (session.code !== code) {
-       await this.adapter.incrementOtpAttempts(identifier, type);
+       await this.adapter.incrementOtpAttempts(identifier, type, tenantId);
        return { isValid: false, error: 'INVALID_CODE' };
      }
 
      // Success - consume the OTP
-     await this.adapter.deleteOtp(identifier, type);
+     await this.adapter.deleteOtp(identifier, type, tenantId);
      return { isValid: true };
   }
 }

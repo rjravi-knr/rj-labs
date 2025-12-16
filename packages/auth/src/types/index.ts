@@ -25,6 +25,7 @@ export interface Session {
 }
 
 export interface OtpSession {
+  tenantId: string;   // Scope by tenant
   identifier: string; // email or phone
   code: string;       
   type: 'login' | 'verification' | 'reset';
@@ -35,22 +36,21 @@ export interface OtpSession {
 
 export type AuthProviderType = 'email_password' | 'google' | 'github' | 'twitter' | 'microsoft' | 'phone' | 'passwordless';
 
-export interface FactorDetails {
-  enabled: boolean;
-  length?: number;      // e.g. 4, 6, 8
-  expiry?: number;      // in seconds
-  maxAttempts?: number; // Retry limit
+export interface FactorPolicy {
+  length: number;      // e.g. 4, 6, 8
+  expiry: number;      // in seconds
+  maxAttempts: number; // Retry limit
 }
 
-export interface LoginMethodConfig {
+export interface LoginMethodEnablement {
   password: boolean;
-  otp: FactorDetails;
-  pin: FactorDetails; // Fixed numeric PIN
+  otp: boolean;
+  pin: boolean;
 } 
 
 export interface LoginMethods {
-  email: LoginMethodConfig;
-  phone: LoginMethodConfig;
+  email: LoginMethodEnablement;
+  phone: LoginMethodEnablement;
 }
 
 
@@ -58,7 +58,12 @@ export interface AuthConfig {
   apiKey?: string;
   authDomain?: string;
   providers: AuthProviderType[];
+  
+  // Policies
   loginMethods?: LoginMethods; 
+  otpPolicy?: FactorPolicy;
+  pinPolicy?: FactorPolicy;
+  
   autoSignIn?: boolean;
   sessionDuration?: number; // in milliseconds
   persistence?: 'local' | 'session' | 'none';
@@ -89,9 +94,9 @@ export interface AuthAdapter {
 
   // OTP Management
   createOtp(session: OtpSession): Promise<void>;
-  getOtp(identifier: string, type: string): Promise<OtpSession | null>;
-  incrementOtpAttempts(identifier: string, type: string): Promise<void>;
-  deleteOtp(identifier: string, type: string): Promise<void>;
+  getOtp(identifier: string, type: string, tenantId: string): Promise<OtpSession | null>;
+  incrementOtpAttempts(identifier: string, type: string, tenantId: string): Promise<void>;
+  deleteOtp(identifier: string, type: string, tenantId: string): Promise<void>;
 
   // Session Management
   createSession(session: Omit<Session, 'id' | 'createdAt'>): Promise<Session>;
@@ -105,6 +110,10 @@ export interface AuthAdapter {
 
   // Password Management
   verifyPassword(email: string, tenantId: string, password: string): Promise<User | null>; // Returns User on success
+
+  // Configuration Management
+  getAuthConfig(tenantId: string): Promise<AuthConfig | null>;
+  updateAuthConfig(tenantId: string, config: Partial<AuthConfig>): Promise<AuthConfig>;
 }
 
 export interface AuthProvider {

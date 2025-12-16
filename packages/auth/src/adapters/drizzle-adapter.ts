@@ -1,9 +1,8 @@
-
-import { AuthAdapter, User, Session } from '../types';
+import { AuthAdapter, User, Session, OtpSession, AuthConfig, LoginMethods, AuthProviderType } from '../types';
 import { createAuthError, AuthErrors } from '../core/errors';
 
-import { getTenantDb, getCommonDb, eq, and } from '@labs/database';
-import { users, sessions } from '@labs/database/auth';
+import { getTenantDb, eq, and } from '@labs/database';
+import { users, sessions, otpSessions, authConfig } from '@labs/database/auth';
 
 /**
  * Parsing helper for smart tokens
@@ -142,16 +141,118 @@ export class DrizzleAdapter implements AuthAdapter {
     return null;
   }
 
-  async createOtp(session: any): Promise<void> {
-      throw new Error("Method not implemented.");
+  async createOtp(session: OtpSession): Promise<void> {
+      const db = getTenantDb(session.tenantId);
+      // Clean up any existing OTPs for this identifier/type to prevent duplicates
+      await this.deleteOtp(session.identifier, session.type, session.tenantId);
+      
+      await db.insert(otpSessions).values({
+          tenantId: session.tenantId,
+          identifier: session.identifier,
+          code: session.code,
+          type: session.type,
+          channel: session.channel,
+          expiresAt: session.expiresAt,
+          attempts: session.attempts
+      } as any);
   }
-  async getOtp(identifier: string, type: string): Promise<any | null> {
-      throw new Error("Method not implemented.");
+
+  async getOtp(identifier: string, type: string, tenantId: string): Promise<OtpSession | null> {
+      const db = getTenantDb(tenantId);
+      const [otp] = await db.select().from(otpSessions).where(
+          and(
+              eq(otpSessions.tenantId, tenantId),
+              eq(otpSessions.identifier, identifier),
+              eq(otpSessions.type, type)
+          )
+      );
+      
+      if (!otp) return null;
+      
+      // Map back to OtpSession (drizzle returns inferred types)
+      return {
+          tenantId: otp.tenantId,
+          identifier: otp.identifier,
+          code: otp.code,
+          type: otp.type as any,
+          channel: otp.channel as any,
+          expiresAt: otp.expiresAt,
+          attempts: otp.attempts
+      };
   }
-  async incrementOtpAttempts(identifier: string, type: string): Promise<void> {
-      throw new Error("Method not implemented.");
+
+  async incrementOtpAttempts(identifier: string, type: string, tenantId: string): Promise<void> {
+      const db = getTenantDb(tenantId);
+      // We can't do a simple update with increment easily in generic way without raw sql, 
+      // but fetch+update is safer for attempts logic anyway or sql ops.
+      // Drizzle has sql template tag.
+      
+      // Let's use simple update for now, ideally SQL increment
+      const otp = await this.getOtp(identifier, type, tenantId);
+      if(otp) {
+           await db.update(otpSessions)
+            .set({ attempts: otp.attempts + 1 } as any)
+            .where(
+                and(
+                    eq(otpSessions.tenantId, tenantId),
+                    eq(otpSessions.identifier, identifier),
+                    eq(otpSessions.type, type)
+                )
+            );
+      }
   }
-  async deleteOtp(identifier: string, type: string): Promise<void> {
-      throw new Error("Method not implemented.");
+
+  async deleteOtp(identifier: string, type: string, tenantId: string): Promise<void> {
+      const db = getTenantDb(tenantId);
+      await db.delete(otpSessions).where(
+          and(
+              eq(otpSessions.tenantId, tenantId),
+              eq(otpSessions.identifier, identifier),
+              eq(otpSessions.type, type)
+          )
+      );
+  }
+
+  async getAuthConfig(tenantId: string): Promise<AuthConfig | null> {
+      const db = getTenantDb(tenantId);
+      const [config] = await db.select().from(authConfig).limit(1);
+      
+      if (!config) return null;
+      
+      return {
+          ...config,
+          loginMethods: config.loginMethods as unknown as LoginMethods,
+          providers: config.enabledProviders as unknown as AuthProviderType[], 
+      } as unknown as AuthConfig;
+  }
+
+  async updateAuthConfig(tenantId: string, data: Partial<AuthConfig>): Promise<AuthConfig> {
+        const db = getTenantDb(tenantId);
+        
+        // Check if config exists
+        const existing = await this.getAuthConfig(tenantId);
+        
+        if (existing) {
+             const [row] = await db.select({ id: authConfig.id }).from(authConfig).limit(1);
+                 
+             if (row) {
+                 await db.update(authConfig).set({
+                    ...data,
+                     loginMethods: data.loginMethods as any,
+                    updatedAt: new Date()
+                 } as any).where(eq(authConfig.id, row.id));
+             }
+        } else {
+            // Insert
+            await db.insert(authConfig).values({
+                ...data,
+                loginMethods: data.loginMethods as any, 
+                enabledProviders: data.providers as any // Map prop names
+            } as any);
+        }
+        
+        const updated = await this.getAuthConfig(tenantId);
+        if (!updated) throw new Error("Failed to update config");
+        return updated;
   }
 }

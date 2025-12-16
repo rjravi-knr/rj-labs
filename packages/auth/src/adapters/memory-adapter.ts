@@ -99,18 +99,13 @@ export class MemoryAdapter implements AuthAdapter {
   // OTP Management (In-Memory)
   private otps = new Map<string, any>(); 
 
-  async createOtp(session: any): Promise<void> {
-    const key = `${session.identifier}:${session.type}`;
-    this.otps.set(key, session);
-  }
-
-  async getOtp(identifier: string, type: string): Promise<any | null> {
-    const key = `${identifier}:${type}`;
+  async getOtp(identifier: string, type: string, tenantId: string): Promise<any | null> {
+    const key = `${tenantId}:${identifier}:${type}`;
     return this.otps.get(key) || null;
   }
 
-  async incrementOtpAttempts(identifier: string, type: string): Promise<void> {
-    const key = `${identifier}:${type}`;
+  async incrementOtpAttempts(identifier: string, type: string, tenantId: string): Promise<void> {
+    const key = `${tenantId}:${identifier}:${type}`;
     const otp = this.otps.get(key);
     if (otp) {
         otp.attempts += 1;
@@ -118,8 +113,20 @@ export class MemoryAdapter implements AuthAdapter {
     }
   }
 
-  async deleteOtp(identifier: string, type: string): Promise<void> {
-    const key = `${identifier}:${type}`;
+  async deleteOtp(identifier: string, type: string, tenantId: string): Promise<void> {
+    const key = `${tenantId}:${identifier}:${type}`;
     this.otps.delete(key);
+  }
+
+  async createOtp(session: any): Promise<void> {
+    const key = `${session.tenantId}:${session.identifier}:${session.type}`;
+    this.otps.set(key, session);
+  }
+
+  async getAuthConfig(tenantId: string): Promise<any | null> {
+      return null;
+  }
+  async updateAuthConfig(tenantId: string, config: any): Promise<any> {
+      return config;
   }
 }

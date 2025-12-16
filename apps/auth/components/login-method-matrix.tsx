@@ -1,8 +1,7 @@
 import * as React from "react";
 import { Switch } from "@labs/ui/switch";
-import { LoginMethods, LoginMethodConfig, FactorDetails } from "@labs/auth";
+import { LoginMethods, LoginMethodEnablement } from "@labs/auth";
 import { Smartphone, Mail } from "lucide-react";
-import { FactorConfigDialog } from "./factor-config-dialog";
 
 interface LoginMethodMatrixProps {
   config: LoginMethods;
@@ -12,30 +11,13 @@ interface LoginMethodMatrixProps {
 export function LoginMethodMatrix({ config, onChange }: LoginMethodMatrixProps) {
   const updateMethod = (
     method: "email" | "phone",
-    updates: Partial<LoginMethodConfig>
+    updates: Partial<LoginMethodEnablement> // Use correct type
   ) => {
     onChange({
       ...config,
       [method]: {
         ...config[method],
         ...updates,
-      },
-    });
-  };
-
-  const updateFactor = (
-    method: "email" | "phone",
-    factor: "otp" | "pin",
-    updates: Partial<FactorDetails>
-  ) => {
-    onChange({
-      ...config,
-      [method]: {
-        ...config[method],
-        [factor]: {
-          ...config[method][factor],
-          ...updates,
-        },
       },
     });
   };
@@ -69,40 +51,20 @@ export function LoginMethodMatrix({ config, onChange }: LoginMethodMatrixProps) 
               />
             </td>
             <td className="p-4 align-middle text-center">
-              <div className="flex items-center justify-center gap-2">
                 <Switch
-                  checked={config.email.otp.enabled}
+                  checked={config.email.otp}
                   onCheckedChange={(checked) =>
-                    updateFactor("email", "otp", { enabled: checked })
+                    updateMethod("email", { otp: checked })
                   }
                 />
-                 {config.email.otp.enabled && (
-                    <FactorConfigDialog
-                        title="Email OTP Configuration"
-                        description="Configure settings for One-Time Passwords sent via Email."
-                        config={config.email.otp}
-                        onSave={(updates) => updateFactor("email", "otp", updates)}
-                    />
-                 )}
-              </div>
             </td>
             <td className="p-4 align-middle text-center">
-              <div className="flex items-center justify-center gap-2">
                 <Switch
-                  checked={config.email.pin.enabled}
+                  checked={config.email.pin}
                   onCheckedChange={(checked) =>
-                    updateFactor("email", "pin", { enabled: checked })
+                    updateMethod("email", { pin: checked })
                   }
                 />
-                {config.email.pin.enabled && (
-                    <FactorConfigDialog
-                        title="Email PIN Configuration"
-                        description="Configure restrictions for Email-linked PINs."
-                        config={config.email.pin}
-                        onSave={(updates) => updateFactor("email", "pin", updates)}
-                    />
-                 )}
-              </div>
             </td>
           </tr>
 
@@ -123,40 +85,20 @@ export function LoginMethodMatrix({ config, onChange }: LoginMethodMatrixProps) 
               />
             </td>
             <td className="p-4 align-middle text-center">
-              <div className="flex items-center justify-center gap-2">
                 <Switch
-                  checked={config.phone.otp.enabled}
+                  checked={config.phone.otp}
                   onCheckedChange={(checked) =>
-                    updateFactor("phone", "otp", { enabled: checked })
+                    updateMethod("phone", { otp: checked })
                   }
                 />
-                 {config.phone.otp.enabled && (
-                    <FactorConfigDialog
-                        title="SMS/Phone OTP Configuration"
-                        description="Configure settings for OTPs sent via SMS."
-                        config={config.phone.otp}
-                        onSave={(updates) => updateFactor("phone", "otp", updates)}
-                    />
-                 )}
-              </div>
             </td>
             <td className="p-4 align-middle text-center">
-               <div className="flex items-center justify-center gap-2">
                 <Switch
-                  checked={config.phone.pin.enabled}
+                  checked={config.phone.pin}
                   onCheckedChange={(checked) =>
-                    updateFactor("phone", "pin", { enabled: checked })
+                    updateMethod("phone", { pin: checked })
                   }
                 />
-                 {config.phone.pin.enabled && (
-                    <FactorConfigDialog
-                        title="Phone PIN Configuration"
-                        description="Configure restrictions for Phone-linked PINs."
-                        config={config.phone.pin}
-                        onSave={(updates) => updateFactor("phone", "pin", updates)}
-                    />
-                 )}
-              </div>
             </td>
           </tr>
         </tbody>

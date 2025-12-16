@@ -49,6 +49,10 @@ export const AuthErrors = {
     code: 'auth/internal-error',
     message: 'An internal error has occurred.',
   },
+  INVALID_OTP: {
+    code: 'auth/invalid-otp',
+    message: 'The provided OTP is invalid or expired.',
+  },
 };
 
 export function createAuthError(code: string, message?: string, details?: any): AuthErrorImpl {

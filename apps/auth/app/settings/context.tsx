@@ -21,41 +21,18 @@ export interface AuthConfig {
         requireSpecial?: boolean;
         preventUserData?: boolean;
     };
-    providerConfig: {
-        google?: {
-            clientId?: string;
-            clientSecret?: string;
-            redirectUri?: string;
-        };
-        github?: {
-            clientId?: string;
-            clientSecret?: string;
-            redirectUri?: string;
-        };
-        microsoft?: {
-            clientId?: string;
-            clientSecret?: string;
-            redirectUri?: string;
-            tenantId?: string;
-        };
-        linkedin?: {
-            clientId?: string;
-            clientSecret?: string;
-            redirectUri?: string;
-        };
-
-    };
+    // New Policy Logic
+    otpPolicy: { length: number; expiry: number; maxAttempts: number };
+    pinPolicy: { length: number; expiry: number; maxAttempts: number };
     loginMethods: {
-        email: {
-            password: boolean;
-            otp: { enabled: boolean; length?: number; expiry?: number; maxAttempts?: number };
-            pin: { enabled: boolean; length?: number; expiry?: number; maxAttempts?: number };
-        };
-        phone: {
-            password: boolean;
-            otp: { enabled: boolean; length?: number; expiry?: number; maxAttempts?: number };
-            pin: { enabled: boolean; length?: number; expiry?: number; maxAttempts?: number };
-        };
+        email: { password: boolean; otp: boolean; pin: boolean };
+        phone: { password: boolean; otp: boolean; pin: boolean };
+    };
+    providerConfig: {
+        google?: { clientId?: string; clientSecret?: string; redirectUri?: string; };
+        github?: { clientId?: string; clientSecret?: string; redirectUri?: string; };
+        microsoft?: { clientId?: string; clientSecret?: string; redirectUri?: string; tenantId?: string; };
+        linkedin?: { clientId?: string; clientSecret?: string; redirectUri?: string; };
     };
     settings?: Record<string, any>;
 }
@@ -93,18 +70,12 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         mfaEnabled: false,
         enabledProviders: ['email_password'],
         passwordPolicy: { minLength: 8 },
+        otpPolicy: { length: 6, expiry: 300, maxAttempts: 3 },
+        pinPolicy: { length: 4, expiry: 0, maxAttempts: 5 },
         providerConfig: {},
         loginMethods: {
-            email: {
-                password: true,
-                otp: { enabled: true, length: 6, expiry: 300, maxAttempts: 3 },
-                pin: { enabled: false, length: 4, expiry: 0, maxAttempts: 5 }
-            },
-            phone: {
-                password: false,
-                otp: { enabled: false, length: 6, expiry: 300, maxAttempts: 3 },
-                pin: { enabled: false, length: 4, expiry: 0, maxAttempts: 5 }
-            }
+            email: { password: true, otp: true, pin: false },
+            phone: { password: false, otp: false, pin: false }
         },
         settings: {}
     });
@@ -124,18 +95,12 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
                 mfaEnabled: data.mfaEnabled || false,
                 enabledProviders: data.enabledProviders || ['email_password'],
                 passwordPolicy: data.passwordPolicy || { minLength: 8 },
+                otpPolicy: data.otpPolicy || { length: 6, expiry: 300, maxAttempts: 3 },
+                pinPolicy: data.pinPolicy || { length: 4, expiry: 0, maxAttempts: 5 },
                 providerConfig: data.providerConfig || {},
                 loginMethods: data.loginMethods || {
-                    email: {
-                        password: true,
-                        otp: { enabled: true, length: 6, expiry: 300, maxAttempts: 3 },
-                        pin: { enabled: false, length: 4, expiry: 0, maxAttempts: 5 }
-                    },
-                    phone: {
-                        password: false,
-                        otp: { enabled: false, length: 6, expiry: 300, maxAttempts: 3 },
-                        pin: { enabled: false, length: 4, expiry: 0, maxAttempts: 5 }
-                    }
+                    email: { password: true, otp: true, pin: false },
+                    phone: { password: false, otp: false, pin: false }
                 },
                 settings: data.settings || {}
             });

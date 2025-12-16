@@ -11,6 +11,9 @@ export const authConfig = pgTable('auth_config', {
   providerConfig: jsonb('provider_config'), // Client IDs, etc.
   ssoConfig: jsonb('sso_config'), // SAML/OIDC metadata
   passwordPolicy: jsonb('password_policy').default({ minLength: 8 }),
+  otpPolicy: jsonb('otp_policy'), // Global OTP settings (length, expiry)
+  pinPolicy: jsonb('pin_policy'), // Global PIN settings
+  loginMethods: jsonb('login_methods'), // simplified enablement matrix
   mfaEnabled: boolean('mfa_enabled').default(false).notNull(),
 
   selfRegistrationEnabled: boolean('self_registration_enabled').default(true).notNull(),
