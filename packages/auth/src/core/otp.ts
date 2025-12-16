@@ -21,8 +21,7 @@ export class OtpManager {
   }
 
   async generate(tenantId: string, identifier: string, channel: 'email' | 'sms' | 'whatsapp', type: 'login' | 'verification' = 'login'): Promise<string> {
-    const settings = this.getConfig(identifier, channel);
-    if (settings && 'enabled' in settings && !settings.enabled) {
+    if (settings === false || (typeof settings !== 'boolean' && (settings as any).enabled === false)) {
       throw new Error(`OTP logic disabled for ${channel}`);
     }
 

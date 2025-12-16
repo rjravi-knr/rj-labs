@@ -7,8 +7,10 @@ import { pgTable, uuid, varchar, timestamp, boolean, bigint } from 'drizzle-orm/
 export const users = pgTable('users', {
   id: bigint('id', { mode: 'number' }).primaryKey().generatedAlwaysAsIdentity(),
   tenantId: varchar('tenant_id', { length: 32 }).notNull(),
+  username: varchar('username', { length: 255 }),
   email: varchar('email', { length: 255 }).notNull(),
   name: varchar('name', { length: 255 }),
+  roles: jsonb('roles').default([]), // Added support for roles
 
   passwordHash: varchar('password_hash', { length: 255 }),
   

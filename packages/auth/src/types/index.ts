@@ -1,27 +1,28 @@
 export interface User {
   id: string;
   tenantId: string;
-
   email: string;
   name?: string;
-  isSuperAdmin?: boolean;
   emailVerified: Date | null;
   image?: string;
-  authMethod?: string; // Track which provider was used for authentication
+  authMethod?: string;
+  roles?: string[]; // Added
   createdAt: Date;
   updatedAt: Date;
   metadata?: Record<string, any>;
+  passwordHash?: string;
 }
 
 export interface Session {
   id: string;
-  tenantId: string;
   userId: string;
-  expiresAt: Date;
+  tenantId: string;
   token: string;
-  authMethod?: string; // Track which provider was used for this session
+  expiresAt: Date;
+  createdAt: Date;
   ipAddress?: string;
   userAgent?: string;
+  authMethod?: string; // e.g., 'password', 'google', 'otp'
 }
 
 export interface OtpSession {
@@ -43,9 +44,11 @@ export interface FactorPolicy {
 }
 
 export interface LoginMethodEnablement {
-  password: boolean;
-  otp: boolean;
-  pin: boolean;
+  password?: boolean;
+  otp?: boolean;
+  pin?: boolean;
+  magicLink?: boolean;
+  webauthn?: boolean;
 } 
 
 export interface LoginMethods {
@@ -55,6 +58,7 @@ export interface LoginMethods {
 
 
 export interface AuthConfig {
+  id?: string;
   apiKey?: string;
   authDomain?: string;
   providers: AuthProviderType[];
@@ -63,11 +67,21 @@ export interface AuthConfig {
   loginMethods?: LoginMethods; 
   otpPolicy?: FactorPolicy;
   pinPolicy?: FactorPolicy;
+  passwordPolicy?: any; 
   
   autoSignIn?: boolean;
   sessionDuration?: number; // in milliseconds
   persistence?: 'local' | 'session' | 'none';
   debug?: boolean;
+
+  // Added Fields
+  selfRegistrationEnabled?: boolean;
+  mfaEnabled?: boolean;
+  requireMfa?: boolean; 
+  name?: string; 
+  termsUrl?: string;
+  privacyUrl?: string;
+  enabledProviders?: AuthProviderType[]; 
 }
 
 export interface AuthError {

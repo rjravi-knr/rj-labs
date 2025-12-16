@@ -129,7 +129,7 @@ export default async function SignInPage(props: PageProps) {
             )}
 
 
-            <LoginForm tenantId={tenantId} />
+            <LoginForm tenantId={tenantId} config={authConfig} />
           </div>
           
           {(termsUrl || privacyUrl) && (

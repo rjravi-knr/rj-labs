@@ -1,134 +1,314 @@
-
-
 'use client';
 
 import * as React from 'react';
 import { Button } from '@labs/ui/button';
 import { Input } from '@labs/ui/input';
 import { Label } from '@labs/ui/label';
-
 import { toast } from '@labs/ui/sonner';
 import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
-
-interface LoginFormProps {
-    tenantId: string;
-}
-
-
-
-
-
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@labs/auth/client';
 import { storage } from '@labs/utils';
+import { AuthConfig } from '@labs/auth'; 
 
-export function LoginForm({ tenantId }: LoginFormProps) {
+interface LoginFormProps {
+    tenantId: string;
+    config: AuthConfig;
+}
+
+type IdentifierMode = 'email' | 'phone';
+type ChallengeMethod = 'password' | 'otp' | 'pin';
+
+export function LoginForm({ tenantId, config }: LoginFormProps) {
     const router = useRouter();
     const { signIn } = useAuth();
+    
+    // Core State
+    const [mode, setMode] = React.useState<IdentifierMode>('email'); // Default to email
+    
+    // Input State
+    const [identifier, setIdentifier] = React.useState('');
+    const [password, setPassword] = React.useState('');
+    const [otpCode, setOtpCode] = React.useState('');
+    
+    // UI State
     const [isLoading, setIsLoading] = React.useState(false);
     const [showPassword, setShowPassword] = React.useState(false);
+    
+    // Method Selection (Password vs OTP vs PIN)
+    // We default to 'password' usually, but if password disabled for phone, default to otp.
+    const [method, setMethod] = React.useState<ChallengeMethod>('password');
 
-    async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
-        event.preventDefault();
+    // -- Derived Config --
+    
+    // Check global enablement from config setup
+    // Assuming config structure: config.loginMethods.email.password = true/false
+    const methods = config.loginMethods || { 
+        email: { password: true, otp: false, pin: false }, 
+        phone: { password: true, otp: true, pin: false } 
+    };
+
+    const isEmailEnabled = true; 
+    
+    const phoneConfig = methods.phone || { password: false, otp: false, pin: false };
+    const isPhoneEnabled = phoneConfig.password || phoneConfig.otp || phoneConfig.pin;
+
+    // Compute enabled methods for CURRENT mode
+    const currentMethods = mode === 'email' ? (methods.email || { password: true }) : phoneConfig;
+    
+    // Effect to reset method when mode changes
+    React.useEffect(() => {
+        // Smart Defaulting
+        if (mode === 'email') {
+             if (currentMethods.password) setMethod('password');
+             else if (currentMethods.otp) setMethod('otp');
+        } else {
+             // Phone often defaults to OTP
+             if (currentMethods.otp) setMethod('otp');
+             else if (currentMethods.password) setMethod('password');
+        }
+        
+        // Clear inputs on switch
+        setIdentifier('');
+        setPassword('');
+        setOtpCode('');
+    }, [mode]);
+
+    // -- Handlers --
+
+    const requestOtp = async () => {
+        if (!identifier) {
+            toast.error("Please enter your " + (mode === 'email' ? 'email' : 'phone number'));
+            return;
+        }
+        
+        setIsLoading(true);
+        try {
+            await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    tenantId, 
+                    identifier, 
+                    action: 'request_otp',
+                    strategy: mode === 'email' ? 'email' : 'sms'
+                })
+            });
+            toast.message("OTP Sent", { description: `We sent a code to your ${mode}.` });
+        } catch (e) {
+            toast.error("Failed to send OTP");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
         setIsLoading(true);
 
-        const formData = new FormData(event.currentTarget);
-        const email = formData.get('email') as string;
-        const password = formData.get('password') as string;
-
-
         try {
-            // Use Auth SDK
-            // cast result to any because strict type might be void depending on recent build details
-            // but we returned data in implemented AuthContext
-            const data: any = await signIn('email_password', {
-                email,
-                password,
-                tenantId
-            });
+            let payload: any = {
+                tenantId,
+                identifier,
+                strategy: mode === 'email' ? 'email' : 'sms'
+            };
 
-            toast.success("Login Successful", {
-                description: "You have successfully signed in."
+            if (method === 'password') {
+                payload.action = 'verify_password';
+                payload.password = password;
+            } else if (method === 'otp') {
+                payload.action = 'verify_otp';
+                payload.code = otpCode;
+            } else if (method === 'pin') {
+                 payload.action = 'verify_password'; // Reuse generic verify? Or specifically pin?
+                 payload.password = password; // Reuse password field
+            }
+
+            const res = await fetch('/api/auth/login', {
+                 method: 'POST',
+                 body: JSON.stringify(payload)
             });
             
-            // Persist tenantId for future sessions
-            storage.set('tenantId', tenantId);
+            const data = await res.json();
             
-            // Check for Super Admin
+            if (!res.ok) throw new Error(data.error || "Login Failed");
+            
+            toast.success("Login Successful");
+            storage.set('tenantId', tenantId);
+             
             if (data?.user?.isSuperAdmin) {
-                // Force reload to ensure Auth SDK re-initializes (if passing via query param isn't enough)
-                // But since we used the hook, state MIGHT be updated.
-                // However, navigation ensures clean slate.
                 window.location.href = `/settings?tenantId=${tenantId}`;
             } else {
                  window.location.href = `/?tenantId=${tenantId}`;
             }
 
         } catch (e: any) {
-             const msg = e.message || "Login failed";
-            toast.error("Login Failed", {
-                description: msg
-            });
+             toast.error("Login Failed", { description: e.message });
         } finally {
             setIsLoading(false);
         }
-    }
+    };
+
+    // -- Render Helpers --
+
+    const renderToggle = () => {
+        if (!isPhoneEnabled) return null; // If phone not enabled, no toggle needed (assuming email default)
+        
+        if (mode === 'email') {
+            return (
+                <button 
+                    type="button" 
+                    onClick={() => setMode('phone')}
+                    className="text-sm font-medium text-primary hover:underline float-right"
+                >
+                    Use phone
+                </button>
+            );
+        } else {
+            return (
+                <button 
+                    type="button" 
+                    onClick={() => setMode('email')}
+                    className="text-sm font-medium text-primary hover:underline float-right"
+                >
+                    Use email
+                </button>
+            );
+        }
+    };
+
+    const renderMethodSwitcher = () => {
+         // Show links to switch between Password / OTP / PIN if multiple enabled
+         const options: React.ReactNode[] = [];
+         
+         if (currentMethods.password && method !== 'password') {
+             options.push(
+                <button key="pass" type="button" onClick={() => setMethod('password')} className="text-xs text-muted-foreground hover:text-primary underline underline-offset-4">
+                    Login with Password
+                </button>
+             );
+         }
+         if (currentMethods.otp && method !== 'otp') {
+             options.push(
+                <button key="otp" type="button" onClick={() => setMethod('otp')} className="text-xs text-muted-foreground hover:text-primary underline underline-offset-4">
+                    Login via OTP
+                </button>
+             );
+         }
+         if (currentMethods.pin && method !== 'pin') {
+             options.push(
+                <button key="pin" type="button" onClick={() => setMethod('pin')} className="text-xs text-muted-foreground hover:text-primary underline underline-offset-4">
+                    Login with PIN
+                </button>
+             );
+         }
+         
+         if (options.length === 0) return null;
+         
+         return (
+             <div className="flex gap-4 pt-2 justify-end">
+                 {options}
+             </div>
+         );
+    };
+
 
     return (
-        <form onSubmit={onSubmit} className="grid gap-4">
-            <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
+        <form onSubmit={handleLogin} className="space-y-4">
+            
+            {/* Identifier Section */}
+            <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                    <Label htmlFor="identifier">
+                        {mode === 'email' ? 'Email address or username' : 'Phone number'}
+                    </Label>
+                    {renderToggle()}
+                </div>
                 <Input
-                    id="email"
-                    name="email"
-                    placeholder="name@example.com"
-                    type="email"
-                    autoCapitalize="none"
-                    autoComplete="email"
-                    autoCorrect="off"
+                    id="identifier"
+                    type={mode === 'email' ? 'text' : 'tel'}
+                    placeholder={mode === 'email' ? 'name@example.com' : '+1 555 000 0000'}
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
                     disabled={isLoading}
                     required
                 />
             </div>
 
-            <div className="grid gap-2">
-                <div className="flex items-center justify-between">
-                    <Label htmlFor="password">Password</Label>
-                    <Link
-                        href={`/forgot-password?tenantId=${tenantId}`}
-                        className="text-xs font-medium text-primary underline-offset-4 hover:underline"
-                    >
-                        Forgot password?
-                    </Link>
-                </div>
-                <div className="relative">
-                    <Input 
-                        id="password" 
-                        name="password" 
-                        type={showPassword ? "text" : "password"}
-                        disabled={isLoading} 
-                        required 
-                        className="pr-10"
-                    />
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => setShowPassword(!showPassword)}
-                    >
-                        {showPassword ? (
-                            <EyeOff className="h-4 w-4 text-muted-foreground" />
-                        ) : (
-                            <Eye className="h-4 w-4 text-muted-foreground" />
-                        )}
-                        <span className="sr-only">
-                            {showPassword ? "Hide password" : "Show password"}
-                        </span>
-                    </Button>
-                </div>
+            {/* Challenge Section */}
+            <div className="space-y-2">
+                 {/* Label + Forgot Link */}
+                 <div className="flex justify-between items-center">
+                    <Label htmlFor="challenge">
+                        {method === 'password' ? 'Password' : (method === 'otp' ? 'Verification Code' : 'PIN')}
+                    </Label>
+                    
+                    {method === 'password' && (
+                        <Link href="#" className="text-xs text-muted-foreground hover:text-primary">
+                            Forgot Password?
+                        </Link>
+                    )}
+                 </div>
+
+                 {/* Inputs */}
+                 <div className="relative">
+                    {method === 'password' && (
+                        <>
+                            <Input 
+                                id="challenge"
+                                type={showPassword ? "text" : "password"} 
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="pr-10"
+                                required
+                            />
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                onClick={() => setShowPassword(!showPassword)}
+                            >
+                                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </Button>
+                        </>
+                    )}
+
+                    {method === 'otp' && (
+                         <div className="flex gap-2">
+                            <Input 
+                                id="challenge"
+                                placeholder="123456" 
+                                value={otpCode}
+                                onChange={(e) => setOtpCode(e.target.value)}
+                                maxLength={6}
+                                className="tracking-widest"
+                            />
+                             <Button type="button" variant="outline" onClick={requestOtp} disabled={isLoading || !identifier} className="shrink-0">
+                                Get Code
+                             </Button>
+                         </div>
+                    )}
+
+                    {method === 'pin' && (
+                        <Input 
+                            id="challenge"
+                            type="password" 
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            value={password} // Reusing field
+                            onChange={(e) => setPassword(e.target.value)}
+                            maxLength={6}
+                        />
+                    )}
+                 </div>
+                 
+                 {/* Internal Switcher (Pass vs OTP) */}
+                 {renderMethodSwitcher()}
+
             </div>
+
             <Button disabled={isLoading} type="submit" className="w-full">
                 {isLoading ? 'Signing In...' : 'Sign In'}
             </Button>
