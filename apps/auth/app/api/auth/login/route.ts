@@ -28,7 +28,15 @@ export async function POST(req: NextRequest) {
                 return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
             }
             
-            return await createSession(user, tenantId, 'password');
+            // Construct granular method: e.g. email_password or username_password or phone_password
+            // We can try to infer from identifier type or just use "password" and strategy.
+            // Client sends "strategy" (email/sms) in body logic from login-form (I need to check if I updated login-form to send strategy for password? Yes, it sends strategy).
+            // But if username is used, strategy might remain 'email' in my previous code? 
+            // I should double check login-form.tsx logic for strategy.
+            // For now, let's use `${strategy}_password` as a good approximation.
+            const method = `${strategy || 'unknown'}_password`;
+            
+            return await createSession(user, tenantId, method);
         }
 
         if (action === 'request_otp') {
@@ -68,7 +76,7 @@ export async function POST(req: NextRequest) {
                  return NextResponse.json({ error: "User not found" }, { status: 404 });
             }
 
-            return await createSession(user, tenantId, 'otp');
+            return await createSession(user, tenantId, `${strategy || 'email'}_otp`);
         }
 
         return NextResponse.json({ error: "Invalid action" }, { status: 400 });
