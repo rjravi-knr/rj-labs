@@ -17,7 +17,7 @@ import { authConfig, users } from '@labs/database/auth';
 
 
 import { getTenantDb } from '@labs/database';
-import { eq, and, gt } from 'drizzle-orm';
+import { eq, and, gt, desc } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 
 extendZodWithOpenApi(z);
@@ -283,6 +283,9 @@ app.openapi(
     const body = c.req.valid('json');
 
     try {
+      // Secure: Only Super Admin can update config
+      await verifyAdmin(c, tenantId, true); // true = strict super admin
+
       console.log(`[PATCH Config] Processing update for tenant: ${tenantId}`);
       const db = getTenantDb(tenantId);
       
@@ -458,6 +461,116 @@ app.openapi(
         });
     } catch (e) {
         return c.json({ error: 'Validation failed' }, 401);
+    }
+  }
+);
+
+// Helper to verify Admin Access
+async function verifyAdmin(c: any, tenantId: string, strictSuperAdmin = false) {
+    const authHeader = c.req.header('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+        throw new Error('Missing or invalid token');
+    }
+    
+    const token = authHeader.split(' ')[1];
+    const session = await validateSession(token);
+    if (!session) {
+        throw new Error('Invalid session');
+    }
+
+    // Get User to check role
+    const user = await getUser(session.userId, String(session.tenantId || 'default'));
+    if (!user) {
+        throw new Error('User not found');
+    }
+
+    if (strictSuperAdmin && !user.isSuperAdmin) {
+        throw new Error('Access denied: Super Admin required');
+    }
+
+    // If not strict, allow Tenant Admin (checking tenant match)
+    // For now, assuming anyone with access to the tenant + valid session is allowed 
+    // real implementation would check a specific role/permission
+    if (user.tenantId !== tenantId && !user.isSuperAdmin) {
+        throw new Error('Access denied: Invalid tenant');
+    }
+    
+    return user;
+}
+
+// List Users Endpoint
+app.openapi(
+  createRoute({
+    method: 'get',
+    path: '/api/auth/users',
+    request: {
+      query: z.object({
+        tenantId: z.string().openapi({ example: 'acme-corp' })
+      })
+    },
+    responses: {
+      200: {
+        description: 'List of users',
+        content: {
+          'application/json': {
+            schema: z.array(z.object({
+                id: z.string(),
+                email: z.string(),
+                fullName: z.string().nullable(),
+                isSuperAdmin: z.boolean(),
+                isActive: z.boolean(),
+                createdAt: z.string(),
+                emailVerified: z.boolean(),
+                provider: z.string().nullable()
+            }))
+          }
+        }
+      },
+      401: { description: 'Unauthorized' },
+      403: { description: 'Forbidden' },
+      500: { description: 'Server Error' }
+    },
+    security: [
+        {
+            BearerAuth: []
+        }
+    ]
+  }),
+  async (c) => {
+    const { tenantId } = c.req.valid('query');
+
+    try {
+        // Verify Admin Access
+        await verifyAdmin(c, tenantId);
+
+        const db = getTenantDb(tenantId);
+        
+        const tenantUsers = await db
+            .select({
+                id: users.id,
+                email: users.email,
+                fullName: users.fullName,
+                isSuperAdmin: users.isSuperAdmin,
+                isActive: users.isActive,
+                createdAt: users.createdAt,
+                emailVerified: users.emailVerified,
+                provider: users.memberCode
+            })
+            .from(users)
+            .where(eq(users.tenantId, tenantId))
+            .orderBy(desc(users.createdAt));
+
+        // Format dates as strings for JSON response
+        const formattedUsers = tenantUsers.map(u => ({
+            ...u,
+            id: u.id.toString(), // Ensure BigInt is string
+            createdAt: u.createdAt.toISOString()
+        }));
+
+        return c.json(formattedUsers);
+    } catch (e: any) {
+        const status = e.message.includes('Access denied') ? 403 : e.message.includes('Invalid') ? 401 : 500;
+        return c.json({ error: e.message }, status);
     }
   }
 );
