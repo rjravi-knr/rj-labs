@@ -23,14 +23,16 @@ export function SecuritySetupView() {
             <div className="space-y-6 lg:col-span-12">
                 <Tabs defaultValue="password" className="w-full">
                     {/* ... Content ... */}
-                    <TabsList className="grid w-full grid-cols-4 mb-6">
+                <TabsList className="grid w-full grid-cols-5 mb-6">
                         <TabsTrigger value="password">Password</TabsTrigger>
+                        <TabsTrigger value="email">Email</TabsTrigger>
                         <TabsTrigger value="mfa">MFA</TabsTrigger>
                         <TabsTrigger value="otp">OTP</TabsTrigger>
                         <TabsTrigger value="pin">PIN</TabsTrigger>
                     </TabsList>
                     
                     <TabsContent value="password" className="mt-0">
+                        {/* ... Existing Password Content ... */}
                         <Card>
                             <CardHeader>
                                 <CardTitle>Password Policy</CardTitle>
@@ -133,6 +135,67 @@ export function SecuritySetupView() {
                                             })}
                                         />
                                     </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent value="email" className="mt-0">
+                        <Card>
+                             <CardHeader>
+                                <CardTitle>Email Security Policy</CardTitle>
+                                <CardDescription>Control which email domains are allowed to sign up.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-6">
+                                <div className="flex items-center justify-between">
+                                    <div className="space-y-0.5">
+                                        <Label className="text-base">Allow Public Domains</Label>
+                                        <p className="text-sm text-muted-foreground">
+                                            Allow personal emails like Gmail, Yahoo, Outlook, etc.
+                                        </p>
+                                    </div>
+                                    <Switch 
+                                        checked={config.emailPolicy?.allowPublicDomains ?? true}
+                                        onCheckedChange={(checked) => updateConfig({ 
+                                            emailPolicy: { ...config.emailPolicy, allowPublicDomains: checked } 
+                                        })}
+                                    />
+                                </div>
+                                
+                                <div className="space-y-2">
+                                     <Label>Allowed Domains (Whitelist)</Label>
+                                     <Input 
+                                        placeholder="acme.com, partners.org"
+                                        value={config.emailPolicy?.allowedDomains?.join(", ") || ""}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            const domains = val.split(",").map(d => d.trim()).filter(Boolean);
+                                            updateConfig({ 
+                                                emailPolicy: { ...config.emailPolicy, allowedDomains: domains } 
+                                            });
+                                        }}
+                                     />
+                                     <p className="text-xs text-muted-foreground">
+                                        Only allow users from these specific domains. Leave empty to allow all (unless public domains are blocked).
+                                     </p>
+                                </div>
+
+                                <div className="space-y-2">
+                                     <Label>Blocked Domains (Blacklist)</Label>
+                                     <Input 
+                                        placeholder="competitor.com, spam.net"
+                                        value={config.emailPolicy?.blockedDomains?.join(", ") || ""}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            const domains = val.split(",").map(d => d.trim()).filter(Boolean);
+                                            updateConfig({ 
+                                                emailPolicy: { ...config.emailPolicy, blockedDomains: domains } 
+                                            });
+                                        }}
+                                     />
+                                     <p className="text-xs text-muted-foreground">
+                                        Explicitly block users from these domains.
+                                     </p>
                                 </div>
                             </CardContent>
                         </Card>

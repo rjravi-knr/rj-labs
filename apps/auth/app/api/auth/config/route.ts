@@ -26,3 +26,30 @@ export async function GET(req: NextRequest) {
         }, { status: 500 });
     }
 }
+
+export async function PATCH(req: NextRequest) {
+    const { searchParams } = new URL(req.url);
+    const tenantId = searchParams.get("tenantId");
+
+    if (!tenantId) {
+        return NextResponse.json({ error: "Tenant ID required" }, { status: 400 });
+    }
+
+    try {
+        const body = await req.json();
+        
+        console.log("[API] PATCH /auth/config body:", JSON.stringify(body, null, 2));
+
+        // Sanitize or Validate body here if needed
+        
+        const updated = await authAdapter.updateAuthConfig(tenantId, body);
+        return NextResponse.json(updated, { status: 200 });
+
+    } catch (error) {
+        console.error("Config Update Error:", error);
+        return NextResponse.json({ 
+            error: "Internal Server Error", 
+            details: (error as Error).message 
+        }, { status: 500 });
+    }
+}

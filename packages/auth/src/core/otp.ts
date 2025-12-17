@@ -21,12 +21,15 @@ export class OtpManager {
   }
 
   async generate(tenantId: string, identifier: string, channel: 'email' | 'sms' | 'whatsapp', type: 'login' | 'verification' = 'login'): Promise<string> {
+    const settings = this.getConfig(identifier, channel);
+    
     if (settings === false || (typeof settings !== 'boolean' && (settings as any).enabled === false)) {
       throw new Error(`OTP logic disabled for ${channel}`);
     }
 
-    const length = settings.length || 6;
-    const expirySeconds = settings.expiry || 300;
+
+    const length = (typeof settings === 'object' && (settings as any).length) || 6;
+    const expirySeconds = (typeof settings === 'object' && (settings as any).expiry) || 300;
 
     // Generate numeric code
     const code = Math.floor(Math.random() * Math.pow(10, length)).toString().padStart(length, '0');
@@ -62,7 +65,7 @@ export class OtpManager {
      }
 
      const settings = this.getConfig(identifier, session.channel);
-     const maxAttempts = settings.maxAttempts || 3;
+     const maxAttempts = (typeof settings === 'object' && (settings as any).maxAttempts) || 3;
 
      if (session.attempts >= maxAttempts) {
        await this.adapter.deleteOtp(identifier, type, tenantId);

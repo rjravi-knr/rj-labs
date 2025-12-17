@@ -6,7 +6,9 @@ import { pgTable, uuid, varchar, timestamp, jsonb, boolean } from 'drizzle-orm/p
  * Only one row should exist per tenant (enforced by application logic or singleton pattern)
  */
 export const authConfig = pgTable('auth_config', {
-  id: uuid('id').primaryKey().defaultRandom(),
+    // Log execution to debug loading
+    ...(() => { console.log('[DATABASE] Loading authConfig schema definition WITH emailPolicy'); return {}; })(),
+    id: uuid('id').primaryKey().defaultRandom(),
   enabledProviders: jsonb('enabled_providers').notNull().default(['email_password']), // Array of strings
   providerConfig: jsonb('provider_config'), // Client IDs, etc.
   ssoConfig: jsonb('sso_config'), // SAML/OIDC metadata
@@ -21,6 +23,7 @@ export const authConfig = pgTable('auth_config', {
   termsUrl: varchar('terms_url', { length: 512 }),
   privacyUrl: varchar('privacy_url', { length: 512 }),
   name: varchar('name', { length: 255 }),
+  emailPolicy: jsonb('email_policy'), // Stores EmailPolicy interface
   settings: jsonb('settings'), // Flexible settings for theme, etc.
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),

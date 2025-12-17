@@ -218,7 +218,9 @@ app.openapi(
         mfaEnabled: config.mfaEnabled,
         otpPolicy: config.otpPolicy,
         pinPolicy: config.pinPolicy,
+        pinPolicy: config.pinPolicy,
         loginMethods: config.loginMethods,
+        emailPolicy: config.emailPolicy, // Added emailPolicy
         // @ts-ignore - settings added recently
         settings: config.settings 
       });
@@ -256,6 +258,7 @@ app.openapi(
 
                             termsUrl: z.string().optional(),
                             privacyUrl: z.string().optional(),
+                            emailPolicy: z.any().optional(), // Added emailPolicy
                             settings: z.record(z.any()).optional()
                         })
                     }
@@ -305,7 +308,9 @@ app.openapi(
             mfaEnabled: body.mfaEnabled,
             otpPolicy: body.otpPolicy,
             pinPolicy: body.pinPolicy,
+            pinPolicy: body.pinPolicy,
             loginMethods: body.loginMethods,
+            emailPolicy: body.emailPolicy, // Added emailPolicy
             termsUrl: body.termsUrl,
         }).returning();
   

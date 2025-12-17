@@ -24,6 +24,11 @@ export interface AuthConfig {
     // New Policy Logic
     otpPolicy: { length: number; expiry: number; maxAttempts: number };
     pinPolicy: { length: number; expiry: number; maxAttempts: number };
+    emailPolicy?: { // Added emailPolicy
+        allowedDomains: string[];
+        blockedDomains: string[];
+        allowPublicDomains: boolean;
+    };
     loginMethods: {
         email: { password: boolean; otp: boolean; pin: boolean };
         phone: { password: boolean; otp: boolean; pin: boolean };
@@ -72,6 +77,7 @@ export function SettingsProvider({ children, tenantId: propTenantId }: { childre
         passwordPolicy: { minLength: 8 },
         otpPolicy: { length: 6, expiry: 300, maxAttempts: 3 },
         pinPolicy: { length: 4, expiry: 0, maxAttempts: 5 },
+        emailPolicy: { allowedDomains: [], blockedDomains: [], allowPublicDomains: true }, // Default
         providerConfig: {},
         loginMethods: {
             email: { password: true, otp: true, pin: false },
@@ -97,6 +103,7 @@ export function SettingsProvider({ children, tenantId: propTenantId }: { childre
                 passwordPolicy: data.passwordPolicy || { minLength: 8 },
                 otpPolicy: data.otpPolicy || { length: 6, expiry: 300, maxAttempts: 3 },
                 pinPolicy: data.pinPolicy || { length: 4, expiry: 0, maxAttempts: 5 },
+                emailPolicy: data.emailPolicy || { allowedDomains: [], blockedDomains: [], allowPublicDomains: true }, // Map from API
                 providerConfig: data.providerConfig || {},
                 loginMethods: data.loginMethods || {
                     email: { password: true, otp: true, pin: false },
@@ -155,6 +162,8 @@ export function SettingsProvider({ children, tenantId: propTenantId }: { childre
                 ...config,
                 enabledProviders
             };
+
+            console.log("[Frontend] Saving payload:", JSON.stringify(payload, null, 2));
 
             const res = await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL}/config?tenantId=${tenantId}`, {
                 method: "PATCH",

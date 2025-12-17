@@ -17,6 +17,46 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Tenant configuration not found" }, { status: 404 });
         }
 
+        // 2. Configuration Check (Self Registration)
+        // Ideally should fetch full config here.
+        // For now, assuming request might come with some context or we fetch default config.
+        // NOTE: In a real multi-tenant setup, we fetch config by tenantId (from domain or header).
+        // Let's assume we fetch it here.
+        // const config = await dbAdapter.getAuthConfig(tenantId);
+        
+        // 2.1 Email Policy Validation
+        // Fetch config to check policy
+        // The config is already fetched above, so we use the existing 'config' variable.
+        
+        if (config?.emailPolicy) {
+            const { allowedDomains, blockedDomains, allowPublicDomains } = config.emailPolicy;
+            const emailDomain = email.split('@')[1].toLowerCase();
+
+            // 1. Blocked Domains (Blacklist)
+            if (blockedDomains?.includes(emailDomain)) {
+                return NextResponse.json({ 
+                    error: "This email domain is not allowed." 
+                }, { status: 403 });
+            }
+
+            // 2. Allowed Domains (Whitelist) - strict enforce if list exists
+            if (allowedDomains?.length > 0 && !allowedDomains.includes(emailDomain)) {
+                 return NextResponse.json({ 
+                    error: "Please use an authorized work email address." 
+                }, { status: 403 });
+            }
+
+            // 3. Public Domains check 
+            // Common public domains list for basic check
+            const PUBLIC_DOMAINS = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com'];
+            if (allowPublicDomains === false && PUBLIC_DOMAINS.includes(emailDomain)) {
+                 return NextResponse.json({ 
+                    error: "Public email providers are not allowed. Please use your work email." 
+                }, { status: 403 });
+            }
+        }
+
+        // 3. User Existence Check
         if (!config.selfRegistrationEnabled) {
             return NextResponse.json({ error: "Registration is disabled for this tenant." }, { status: 403 });
         }

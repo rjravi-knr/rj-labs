@@ -23,9 +23,24 @@ export async function POST(req: NextRequest) {
                 return NextResponse.json({ error: "Password required" }, { status: 400 });
             }
             
+            // 1. Verify credentials and get user
+            // VerifyPassword handles identifier lookup (email/username) and hash comparison
             const user = await authAdapter.verifyPassword(identifier, tenantId, password);
+            
             if (!user) {
                 return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+            }
+
+            // 3. Email Policy Logic (Post-Authentication Check)
+            // Even if password is correct, if domain is now blocked, we might deny access.
+            if (config?.emailPolicy) {
+                const { allowedDomains, blockedDomains, allowPublicDomains } = config.emailPolicy;
+                const emailDomain = user.email.split('@')[1].toLowerCase();
+
+                if (blockedDomains?.includes(emailDomain)) {
+                    return NextResponse.json({ error: "Access denied by security policy." }, { status: 403 });
+                }
+                // Add logic for allowedDomains and allowPublicDomains if needed
             }
             
             // Construct granular method: e.g. email_password or username_password or phone_password

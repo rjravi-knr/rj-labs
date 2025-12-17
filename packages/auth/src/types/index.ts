@@ -101,6 +101,13 @@ export interface AuthConfig {
   termsUrl?: string;
   privacyUrl?: string;
   enabledProviders?: AuthProviderType[]; 
+  emailPolicy?: EmailPolicy;
+}
+
+export interface EmailPolicy {
+    allowedDomains: string[]; // e.g. ["acme.com"]
+    blockedDomains: string[]; // e.g. ["gmail.com"]
+    allowPublicDomains: boolean; // if false, public domains are blocked unless explicitly allowed
 }
 
 export interface AuthError {

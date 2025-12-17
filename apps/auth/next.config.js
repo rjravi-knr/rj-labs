@@ -1,5 +1,5 @@
 const nextConfig = {
-  transpilePackages: ["@labs/auth", "@labs/ui"],
+  transpilePackages: ["@labs/auth", "@labs/ui", "@labs/database"],
   async rewrites() {
     return [
       {

@@ -246,6 +246,9 @@ export class DrizzleAdapter implements AuthAdapter {
   }
 
   async updateAuthConfig(tenantId: string, data: Partial<AuthConfig>): Promise<AuthConfig> {
+        console.log("[Adapter] updateAuthConfig data:", JSON.stringify(data, null, 2));
+        console.log("[Adapter] Check Schema: authConfig.emailPolicy exists?", 'emailPolicy' in authConfig);
+
         const db = getTenantDb(tenantId);
         
         // Check if config exists
@@ -258,7 +261,8 @@ export class DrizzleAdapter implements AuthAdapter {
                  await db.update(authConfig).set({
                     ...data,
                      loginMethods: data.loginMethods as any,
-                    updatedAt: new Date()
+                     emailPolicy: data.emailPolicy as any, // Explicit mapping forced
+                     updatedAt: new Date()
                  } as any).where(eq(authConfig.id, row.id));
              }
         } else {
