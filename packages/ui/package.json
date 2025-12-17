@@ -115,6 +115,7 @@
     "./switch": "./src/components/forms/switch/index.ts",
     "./textarea": "./src/components/forms/textarea/index.ts",
     "./toggle-group": "./src/components/forms/toggle-group/index.ts",
+    "./table": "./src/components/data-display/table/index.ts",
     "./breadcrumb": "./src/components/navigation/breadcrumb/index.ts",
     "./command": "./src/components/navigation/command/index.ts",
     "./context-menu": "./src/components/navigation/context-menu/index.ts",

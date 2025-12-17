@@ -13,7 +13,7 @@ import { logger } from 'hono/logger';
 import { initializeAuth, signIn, validateSession, getUser, getAuthAdapter, validatePassword, DEFAULT_PASSWORD_POLICY } from '@labs/auth';
 import { DrizzleAdapter } from '@labs/auth/adapters';
 
-import { authConfig, users } from '@labs/database/auth';
+import { authConfig, users, sessions } from '@labs/database/auth';
 
 
 import { getTenantDb } from '@labs/database';
@@ -575,6 +575,116 @@ app.openapi(
     } catch (e: any) {
         const status = e.message.includes('Access denied') ? 403 : e.message.includes('Invalid') ? 401 : 500;
         return c.json({ error: e.message }, status);
+    }
+  }
+);
+
+// Get Detailed User Endpoint
+app.openapi(
+  createRoute({
+    method: 'get',
+    path: '/api/auth/users/{userId}',
+    request: {
+        params: z.object({
+            userId: z.string().openapi({ example: '123' })
+        }),
+        query: z.object({
+            tenantId: z.string().openapi({ example: 'acme-corp' })
+        })
+    },
+    responses: {
+      200: {
+        description: 'Detailed user information',
+        content: {
+          'application/json': {
+            schema: z.object({
+                user: z.object({
+                    id: z.string(),
+                    email: z.string(),
+                    fullName: z.string().nullable(),
+                    username: z.string().nullable().optional(),
+                    displayName: z.string().nullable().optional(),
+                    firstName: z.string().nullable().optional(),
+                    lastName: z.string().nullable().optional(),
+                    memberCode: z.string().nullable().optional(),
+                    isSuperAdmin: z.boolean(),
+                    isActive: z.boolean(),
+                    createdAt: z.string(),
+                    emailVerified: z.boolean(),
+                    phoneVerified: z.boolean(),
+                    userVerified: z.boolean(),
+                    provider: z.string().nullable(),
+                    emailVerifiedTimestamp: z.string().nullable().optional(),
+                    phoneVerifiedTimestamp: z.string().nullable().optional(),
+                    userVerifiedTimestamp: z.string().nullable().optional(),
+                 }),
+                 sessions: z.array(z.object({
+                     id: z.string(),
+                     ipAddress: z.string().nullable(),
+                     userAgent: z.string().nullable(),
+                     createdAt: z.string(),
+                     expiresAt: z.string()
+                 }))
+            })
+          }
+        }
+      },
+      404: { description: 'User not found' },
+      500: { description: 'Server Error' }
+    },
+    security: [
+        {
+            BearerAuth: []
+        }
+    ]
+  }),
+  async (c) => {
+    const { userId } = c.req.valid('param');
+    const { tenantId } = c.req.valid('query');
+    
+    try {
+        await verifyAdmin(c, tenantId);
+        const db = getTenantDb(tenantId);
+        
+        const user = await db
+            .select()
+            .from(users)
+            .where(and(eq(users.tenantId, tenantId), eq(users.id, Number(userId)))) // Cast userId to number for BigInt
+            .limit(1)
+            .then(res => res[0]);
+
+        if (!user) {
+            return c.json({ error: 'User not found' }, 404);
+        }
+        
+        // Fetch recent sessions
+        const recentSessions = await db
+            .select()
+            .from(sessions)
+            .where(eq(sessions.userId, user.id))
+            .orderBy(desc(sessions.createdAt))
+            .limit(10);
+            
+        return c.json({
+            user: {
+                ...user,
+                id: user.id.toString(),
+                createdAt: user.createdAt.toISOString(),
+                emailVerifiedTimestamp: user.emailVerifiedTimestamp?.toISOString() || null,
+                phoneVerifiedTimestamp: user.phoneVerifiedTimestamp?.toISOString() || null,
+                userVerifiedTimestamp: user.userVerifiedTimestamp?.toISOString() || null
+            },
+            sessions: recentSessions.map(s => ({
+                id: s.id,
+                ipAddress: s.ipAddress,
+                userAgent: s.userAgent,
+                createdAt: s.createdAt.toISOString(),
+                expiresAt: s.expiresAt.toISOString()
+            }))
+        });
+
+    } catch (e: any) {
+         return c.json({ error: e.message }, 500);
     }
   }
 );

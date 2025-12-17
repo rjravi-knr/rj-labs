@@ -8,7 +8,7 @@ import {
     TableHead, 
     TableHeader, 
     TableRow 
-} from "@labs/ui/components/data-display/table"; 
+} from "@labs/ui/table"; 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@labs/ui/card";
 import { Badge } from "@labs/ui/badge";
 import { Button } from "@labs/ui/button";
@@ -62,8 +62,10 @@ import { UserDialog } from "./user-dialog";
 import { 
     Phone, 
     CheckCircle2, 
-    ShieldCheck
+    ShieldCheck,
+    Eye
 } from "lucide-react";
+import { UserDetailSheet } from "./user-detail-sheet";
 
 export function UsersView() {
     const { user: currentUser, session } = useAuth();
@@ -78,6 +80,10 @@ export function UsersView() {
     // Delete Alert State
     const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
     const [userToDelete, setUserToDelete] = useState<User | null>(null);
+
+    // Detail Sheet State
+    const [detailSheetOpen, setDetailSheetOpen] = useState(false);
+    const [userToView, setUserToView] = useState<User | null>(null);
 
     const fetchUsers = async () => {
         if (!session?.token) return;
@@ -109,6 +115,11 @@ export function UsersView() {
     const handleEditUser = (user: User) => {
         setSelectedUser(user);
         setDialogOpen(true);
+    };
+
+    const handleViewUser = (user: User) => {
+        setUserToView(user);
+        setDetailSheetOpen(true);
     };
 
     const handleSuccess = () => {
@@ -275,20 +286,20 @@ export function UsersView() {
                                                 <td className="p-4 align-middle">
                                                     <div className="flex items-center gap-2">
                                                         {user.userVerified ? (
-                                                             <Badge variant="outline" className="border-blue-500/20 text-blue-600 bg-blue-500/5 gap-1 pr-2">
-                                                                <ShieldCheck className="h-3 w-3" />
+                                                             <Badge variant="outline" className="border-blue-500/20 text-blue-600 bg-blue-500/5 gap-1.5 pr-3 pl-2 py-1 text-sm [&>svg]:size-4">
+                                                                <ShieldCheck />
                                                                 Verified
                                                             </Badge>
                                                         ) : (
                                                             <>
                                                                 {user.emailVerified && (
                                                                     <div title="Email Verified" className="p-1 rounded-md bg-green-50 text-green-600 border border-green-200">
-                                                                        <Mail className="h-3 w-3" />
+                                                                        <Mail className="h-4 w-4" />
                                                                     </div>
                                                                 )}
                                                                 {user.phoneVerified && (
                                                                     <div title="Phone Verified" className="p-1 rounded-md bg-blue-50 text-blue-600 border border-blue-200">
-                                                                        <Phone className="h-3 w-3" />
+                                                                        <Phone className="h-4 w-4" />
                                                                     </div>
                                                                 )}
                                                                 {!user.emailVerified && !user.phoneVerified && (
@@ -300,7 +311,7 @@ export function UsersView() {
                                                 </td>
                                                 {/* Joined Col */}
                                                 <td className="p-4 align-middle text-muted-foreground">
-                                                    {formatDate(new Date(user.createdAt), "YYYY-MM-DD")}
+                                                    {formatDate(new Date(user.createdAt), "MMM DD, YYYY")}
                                                 </td>
                                                 {/* Actions Col */}
                                                 <td className="p-4 align-middle text-right">
@@ -314,6 +325,10 @@ export function UsersView() {
                                                         </DropdownMenuTrigger>
                                                         <DropdownMenuContent align="end">
                                                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                            <DropdownMenuItem onClick={() => handleViewUser(user)}>
+                                                                <Eye className="mr-2 h-4 w-4" />
+                                                                View Details
+                                                            </DropdownMenuItem>
                                                             <DropdownMenuItem onClick={() => handleEditUser(user)}>
                                                                 Edit User
                                                             </DropdownMenuItem>
@@ -370,6 +385,11 @@ export function UsersView() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+            <UserDetailSheet 
+                open={detailSheetOpen} 
+                onOpenChange={setDetailSheetOpen} 
+                user={userToView} 
+            />
         </div>
     );
 }
