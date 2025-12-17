@@ -10,7 +10,8 @@ import {
     UploadCloud,
     Menu,
     TriangleAlert,
-    PanelLeft
+    PanelLeft,
+    Eye
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@labs/ui/sheet";
 import { Sidebar } from "../app/settings/sidebar";
@@ -90,6 +91,7 @@ export function Header({ userEmail, tenantId, onSignOut, onToggleSidebar }: Head
                     onClick={saveConfig} 
                     disabled={isSaving || !hasUnsavedChanges} 
                     size="sm"
+                    variant="destructive"
                     className={hasUnsavedChanges ? "shadow-md" : ""}
                 >
                     {isSaving ? (
@@ -98,6 +100,16 @@ export function Header({ userEmail, tenantId, onSignOut, onToggleSidebar }: Head
                         <UploadCloud className="mr-2 h-4 w-4" />
                     )}
                     Publish
+                </Button>
+
+                <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="hidden md:flex gap-2"
+                    onClick={() => window.open('/preview', '_blank')}
+                >
+                    <Eye className="h-4 w-4" />
+                    Preview
                 </Button>
                 
                 <Button variant="ghost" size="icon" className="relative text-muted-foreground hover:text-foreground">
