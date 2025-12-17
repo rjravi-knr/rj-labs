@@ -73,6 +73,44 @@ export default function AuthPage() {
         </CardContent>
       </Card>
 
+
+      {/* Features */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base">Multi-Tenancy</CardTitle>
+                <CardDescription>Built-in isolation</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <p className="text-sm text-muted-foreground">
+                    Data is logically isolated by <code>tenantId</code>. The engine automatically handles tenant resolution via URL or headers.
+                </p>
+            </CardContent>
+        </Card>
+        <Card>
+            <CardHeader>
+                 <CardTitle className="text-base">Dynamic Config</CardTitle>
+                 <CardDescription>Runtime customization</CardDescription>
+            </CardHeader>
+            <CardContent>
+                 <p className="text-sm text-muted-foreground">
+                    Tenants can configure their own branding (name, logo) and authentication providers (Google, Email) without redeployment.
+                 </p>
+            </CardContent>
+        </Card>
+         <Card>
+            <CardHeader>
+                 <CardTitle className="text-base">Self-Service</CardTitle>
+                 <CardDescription>Ready-to-use flows</CardDescription>
+            </CardHeader>
+            <CardContent>
+                 <p className="text-sm text-muted-foreground">
+                    Pre-built APIs for Sign Up, Sign In, Forgot Password, and Profile Management.
+                 </p>
+            </CardContent>
+        </Card>
+      </div>
+
       {/* Usage: API */}
       <Card>
         <CardHeader>
@@ -98,7 +136,8 @@ const adapter = new DrizzleAdapter(db.sql);
 const auth = new AuthEngine({
   adapter,
   providers: [
-    { id: "email", name: "Email", type: "email" }
+    { id: "email", name: "Email", type: "email" },
+    { id: "google", name: "Google", type: "oauth" }
   ]
 });
 

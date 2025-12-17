@@ -23,6 +23,7 @@
         "./types": "./src/types/index.ts"
     },
     "scripts": {
+        "build": "tsc --noEmit",
         "lint": "eslint . --max-warnings 0",
         "check-types": "tsc --noEmit"
     },
@@ -41,5 +42,8 @@
         "@labs/eslint-config": "workspace:*",
         "@labs/typescript-config": "workspace:*",
         "typescript": "^5.9.2"
+    },
+    "dependencies": {
+        "moment": "^2.30.1"
     }
 }

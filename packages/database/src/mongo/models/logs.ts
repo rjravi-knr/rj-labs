@@ -19,7 +19,7 @@ export interface ILog extends Document {
   level: LogLevel
   message: string
   context?: string // e.g., 'auth', 'api', 'database'
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   userId?: string
   errorStack?: string
   timestamp: Date

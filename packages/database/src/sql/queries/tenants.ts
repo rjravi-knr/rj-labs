@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm'
 import type { SqlClient } from '../client'
-import { tenants, type Tenant, type NewTenant } from '../schema/tenants'
+import { tenants, type Tenant, type NewTenant } from '../../modules/tenancy/sql'
 
 /**
  * Find tenant by ID

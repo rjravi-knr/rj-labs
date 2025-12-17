@@ -8,29 +8,32 @@
         ".": "./src/index.ts",
         "./sql": "./src/sql/index.ts",
         "./mongo": "./src/mongo/index.ts",
-        "./cache": "./src/cache/index.ts",
-        "./tenancy": "./src/tenancy/index.ts",
+        "./auth": "./src/modules/auth/index.ts",
+        "./tenancy": "./src/modules/tenancy/index.ts",
         "./testing": "./src/testing/index.ts"
     },
     "scripts": {
         "db:generate": "drizzle-kit generate",
         "db:migrate": "tsx src/sql/migrations/runner.ts",
-        "db:studio": "drizzle-kit studio",
-        "lint": "eslint . --max-warnings 0",
+        "db:push:common": "drizzle-kit push --config=drizzle.config.common.ts",
+        "db:push:tenant": "drizzle-kit push --config=drizzle.config.tenant.ts",
+        "db:studio:common": "DATABASE_URL_COMMON='postgres://postgres:postgres@localhost:5432/rj_common' drizzle-kit studio --config=drizzle.config.common.ts",
+        "db:studio:acme": "DATABASE_URL='postgres://postgres:postgres@localhost:5432/acme_corp' drizzle-kit studio --config=drizzle.config.tenant.ts --port 4984",
+        "db:studio:local": "DATABASE_URL='postgres://postgres:postgres@localhost:5432/rj_local' drizzle-kit studio --config=drizzle.config.tenant.ts --port 4985",
         "check-types": "tsc --noEmit"
     },
     "dependencies": {
-        "drizzle-orm": "^0.36.4",
-        "postgres": "^3.4.5",
-        "mongoose": "^8.9.3",
+        "drizzle-orm": "^0.33.0",
         "ioredis": "^5.4.2",
+        "mongoose": "^8.9.3",
+        "postgres": "^3.4.5",
         "zod": "^3.24.2"
     },
     "devDependencies": {
         "@labs/eslint-config": "workspace:*",
         "@labs/typescript-config": "workspace:*",
         "@types/node": "^22.15.3",
-        "drizzle-kit": "^0.30.2",
+        "drizzle-kit": "^0.24.0",
         "tsx": "^4.19.2",
         "typescript": "^5.9.2"
     }

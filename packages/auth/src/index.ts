@@ -1,16 +1,14 @@
-export * from "./types";
-export * from "./adapter";
-export * from "./error";
+// export * from './core/config'; // Internal logic, exposed via api
 
-// Core Logic
-export * from "./core/auth-service";
-export * from "./core/tenant-config";
+export * from './core/session';
+export * from './core/errors';
+export * from './core/session';
+export * from './core/errors';
+export * from './core/password-policy';
+export * from './core/otp';
+ // Internal use only
+export * from './api';
+export * from './adapters';
 
-// API
-export * from "./api/engine";
-
-// Adapters
-export * from "./adapters";
-
-// Client
-// export * from "./client/react";
+export * from './providers';
+export * from './types';

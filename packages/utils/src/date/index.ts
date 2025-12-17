@@ -1,20 +1,13 @@
+import moment from 'moment';
+
 /**
- * Format date with custom format string
+ * Format date using Moment.js
  * @param date - Date to format
- * @param format - Format string (YYYY, MM, DD, HH, mm, ss)
+ * @param format - Moment.js format string
  * @returns Formatted date string
  */
-export function formatDate(date: Date, format: string): string {
-  const map: Record<string, string> = {
-    YYYY: date.getFullYear().toString(),
-    MM: String(date.getMonth() + 1).padStart(2, '0'),
-    DD: String(date.getDate()).padStart(2, '0'),
-    HH: String(date.getHours()).padStart(2, '0'),
-    mm: String(date.getMinutes()).padStart(2, '0'),
-    ss: String(date.getSeconds()).padStart(2, '0'),
-  };
-  
-  return format.replace(/YYYY|MM|DD|HH|mm|ss/g, (matched) => map[matched] || matched);
+export function formatDate(date: Date | string | number, format: string): string {
+  return moment(date).format(format);
 }
 
 /**

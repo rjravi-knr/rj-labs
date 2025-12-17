@@ -8,9 +8,9 @@ export interface DatabaseConfig {
 }
 
 export interface SqlConfig {
-  connectionString?: string
-  schema?: string
-  poolSize?: number
+  url: string;
+  maxConnections?: number;
+  ssl?: boolean;
 }
 
 export interface MongoConfig {
@@ -51,3 +51,5 @@ export interface PaginatedResult<T> {
   pageSize: number
   hasMore: boolean
 }
+
+export type Database = any;

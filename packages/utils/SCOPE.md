@@ -234,14 +234,14 @@ A comprehensive, type-safe utility library for TypeScript/JavaScript application
 ### 13. Storage Utilities (`/storage`) - Client-Side Only
 
 #### Implemented ✅
-- [ ] `setLocalStorage<T>(key: string, value: T): void` - Set localStorage with JSON
-- [ ] `getLocalStorage<T>(key: string): T | null` - Get from localStorage with JSON
-- [ ] `removeLocalStorage(key: string): void` - Remove from localStorage
-- [ ] `clearLocalStorage(): void` - Clear all localStorage
-- [ ] `setSessionStorage<T>(key: string, value: T): void` - Set sessionStorage
-- [ ] `getSessionStorage<T>(key: string): T | null` - Get from sessionStorage
-- [ ] `setStorageWithExpiry<T>(key: string, value: T, ttl: number): void` - Storage with TTL
-- [ ] `getStorageWithExpiry<T>(key: string): T | null` - Get storage with TTL check
+- [x] `setLocalStorage<T>(key: string, value: T): void` - Set localStorage with JSON
+- [x] `getLocalStorage<T>(key: string): T | null` - Get from localStorage with JSON
+- [x] `removeLocalStorage(key: string): void` - Remove from localStorage
+- [x] `clearLocalStorage(): void` - Clear all localStorage
+- [x] `setSessionStorage<T>(key: string, value: T): void` - Set sessionStorage
+- [x] `getSessionStorage<T>(key: string): T | null` - Get from sessionStorage
+- [x] `setStorageWithExpiry<T>(key: string, value: T, ttl: number): void` - Storage with TTL
+- [x] `getStorageWithExpiry<T>(key: string): T | null` - Get storage with TTL check
 
 ---
 

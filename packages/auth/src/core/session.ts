@@ -1,57 +1,47 @@
-import type { Adapter } from "../adapter";
-import type { Session, User } from "../types";
-import { generateSessionToken } from "./crypto";
-
-const SESSION_MAX_AGE = 60 * 60 * 24 * 30; // 30 days in seconds
+import { AuthAdapter, Session, User } from '../types';
+import { getAuthConfig } from './config';
+import { createAuthError, AuthErrors } from './errors';
 
 export class SessionManager {
-  constructor(private adapter: Adapter) {}
+  constructor(private adapter: AuthAdapter) {}
 
-  /**
-   * Creates a new session for a user
-   */
-  async createSession(userId: string): Promise<Session> {
-    const token = generateSessionToken();
-    const session: Session = {
-      id: generateSessionToken(), // Using random ID for now, DB might auto-gen
-      userId,
+  async createSession(user: User, authMethod?: string, ipAddress?: string, userAgent?: string): Promise<Session> {
+    const config = getAuthConfig();
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + (config.sessionDuration || 3600000));
+    
+    // Smart Token: tenantId.randomString
+    // This allows identifying the tenant DB just from the token
+    const randomPart = Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
+    const token = `${user.tenantId}.${randomPart}`;
+
+    const session = await this.adapter.createSession({
+      userId: user.id,
+      tenantId: user.tenantId,
+      expiresAt,
       token,
-      expiresAt: new Date(Date.now() + SESSION_MAX_AGE * 1000),
-    };
+      authMethod: authMethod || user.authMethod,
+      ipAddress,
+      userAgent,
+    });
 
-    return this.adapter.createSession(session);
+    return session;
   }
 
-  /**
-   * Validates a session token
-   * - Checks if session exists
-   * - Checks if expired
-   * - Auto-extends expiry if sufficiently close to expiration (Sliding window)
-   */
-  async validateSession(token: string): Promise<{ session: Session; user: User } | null> {
-    const result = await this.adapter.getSession(token);
-    if (!result) return null;
+  async validateSession(token: string): Promise<Session | null> {
+    const session = await this.adapter.getSession(token);
+    
+    if (!session) return null;
 
-    const { session, user } = result;
-
-    if (Date.now() >= session.expiresAt.getTime()) {
-      await this.adapter.deleteSession(session.token);
+    if (new Date() > session.expiresAt) {
+      await this.adapter.deleteSession(token);
       return null;
     }
 
-    // Sliding window: Extend session if half of max age has passed
-    const activePeriod = session.expiresAt.getTime() - Date.now();
-    const halfMaxAge = (SESSION_MAX_AGE * 1000) / 2;
-    
-    if (activePeriod < halfMaxAge) {
-      session.expiresAt = new Date(Date.now() + SESSION_MAX_AGE * 1000);
-      await this.adapter.updateSession(session.token, { expiresAt: session.expiresAt });
-    }
-
-    return { session, user };
+    return session;
   }
 
-  async invalidateSession(token: string): Promise<void> {
+  async destroySession(token: string): Promise<void> {
     await this.adapter.deleteSession(token);
   }
 }

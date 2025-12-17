@@ -126,3 +126,27 @@
         @apply bg-background text-foreground;
     }
 }
+
+@layer utilities {
+    /* Thin Scrollbar Utility */
+    .thin-scrollbar::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    
+    .thin-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    .thin-scrollbar::-webkit-scrollbar-thumb {
+        background-color: var(--color-muted-foreground); /* Using tailwind var */
+        opacity: 0.2;
+        border-radius: 9999px;
+    }
+    
+    /* For Firefox */
+    .thin-scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: var(--color-muted-foreground) transparent;
+    }
+}
