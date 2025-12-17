@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 
-export default function SettingsPage({ searchParams }: { searchParams: { tenantId?: string } }) {
-    const tenantId = searchParams.tenantId;
-    redirect(`/`);
+export default function SettingsPage() {
+    redirect("/settings/general");
 }
