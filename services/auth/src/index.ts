@@ -550,11 +550,15 @@ app.openapi(
                 id: users.id,
                 email: users.email,
                 fullName: users.fullName,
+                username: users.username, // Added
+                displayName: users.displayName, // Added
                 isSuperAdmin: users.isSuperAdmin,
                 isActive: users.isActive,
                 createdAt: users.createdAt,
                 emailVerified: users.emailVerified,
-                provider: users.memberCode
+                phoneVerified: users.phoneVerified, // Added
+                userVerified: users.userVerified,   // Added
+                provider: users.memberCode // Fixed: Map memberCode to provider key
             })
             .from(users)
             .where(eq(users.tenantId, tenantId))
@@ -570,6 +574,201 @@ app.openapi(
         return c.json(formattedUsers);
     } catch (e: any) {
         const status = e.message.includes('Access denied') ? 403 : e.message.includes('Invalid') ? 401 : 500;
+        return c.json({ error: e.message }, status);
+    }
+  }
+);
+
+// Create User Endpoint
+app.openapi(
+  createRoute({
+    method: 'post',
+    path: '/api/auth/users',
+    request: {
+      query: z.object({
+        tenantId: z.string().openapi({ example: 'acme-corp' })
+      }),
+      body: {
+        content: {
+          'application/json': {
+            schema: z.object({
+              email: z.string().email(),
+              fullName: z.string().optional(),
+              isSuperAdmin: z.boolean().optional(),
+              password: z.string().min(6).optional()
+            })
+          }
+        }
+      }
+    },
+    responses: {
+      200: {
+        description: 'User Created',
+        content: {
+          'application/json': {
+            schema: z.object({ id: z.string(), email: z.string() })
+          }
+        }
+      },
+      400: { description: 'Bad Request' },
+      403: { description: 'Forbidden' },
+      500: { description: 'Server Error' }
+    },
+    security: [{ BearerAuth: [] }]
+  }),
+  async (c) => {
+    const { tenantId } = c.req.valid('query');
+    const { email, fullName, isSuperAdmin, password } = c.req.valid('json');
+
+    try {
+        await verifyAdmin(c, tenantId); // Security Check
+
+        const db = getTenantDb(tenantId);
+
+        // Check existence
+        const [existing] = await db.select().from(users).where(eq(users.email, email));
+        if (existing) return c.json({ error: 'User already exists' }, 400);
+
+        // Hash Password (or use random default if not provided)
+        const initialPassword = password || Math.random().toString(36).slice(-8);
+        const hashedPassword = await bcrypt.hash(initialPassword, 10);
+
+        const [newUser] = await db.insert(users).values({
+            email,
+            name: fullName,
+            tenantId,
+            passwordHash: hashedPassword,
+            isSuperAdmin: isSuperAdmin || false,
+            updatedAt: new Date()
+        }).returning();
+
+        return c.json({ id: newUser.id.toString(), email: newUser.email });
+
+    } catch (e: any) {
+        const status = e.message.includes('Access denied') ? 403 : 500;
+        return c.json({ error: e.message }, status);
+    }
+  }
+);
+
+// Update User Endpoint
+app.openapi(
+  createRoute({
+    method: 'patch',
+    path: '/api/auth/users',
+    request: {
+      query: z.object({
+        tenantId: z.string().openapi({ example: 'acme-corp' })
+      }),
+      body: {
+        content: {
+          'application/json': {
+            schema: z.object({
+              id: z.string(),
+              fullName: z.string().optional(),
+              isSuperAdmin: z.boolean().optional(),
+              isActive: z.boolean().optional()
+            })
+          }
+        }
+      }
+    },
+    responses: {
+      200: {
+        description: 'User Updated',
+        content: {
+          'application/json': {
+            schema: z.object({ success: z.boolean() })
+          }
+        }
+      },
+      403: { description: 'Forbidden' },
+      500: { description: 'Server Error' }
+    },
+    security: [{ BearerAuth: [] }]
+  }),
+  async (c) => {
+    const { tenantId } = c.req.valid('query');
+    const { id, fullName, isSuperAdmin, isActive } = c.req.valid('json');
+
+    try {
+        await verifyAdmin(c, tenantId);
+
+        const db = getTenantDb(tenantId);
+        
+        await db.update(users)
+            .set({
+                name: fullName,
+                isSuperAdmin: isSuperAdmin,
+                isActive: isActive,
+                updatedAt: new Date()
+            })
+            .where(eq(users.id, BigInt(id)));
+
+        return c.json({ success: true });
+
+    } catch (e: any) {
+        const status = e.message.includes('Access denied') ? 403 : 500;
+        return c.json({ error: e.message }, status);
+    }
+  }
+);
+
+// Delete User Endpoint
+app.openapi(
+  createRoute({
+    method: 'delete',
+    path: '/api/auth/users',
+    request: {
+      query: z.object({
+        tenantId: z.string().openapi({ example: 'acme-corp' }),
+        userId: z.string().openapi({ example: '123' })
+      })
+    },
+    responses: {
+      200: {
+        description: 'User Deleted',
+        content: {
+          'application/json': {
+            schema: z.object({ success: z.boolean() })
+          }
+        }
+      },
+      403: { description: 'Forbidden' },
+      404: { description: 'User Not Found' },
+      500: { description: 'Server Error' }
+    },
+    security: [{ BearerAuth: [] }]
+  }),
+  async (c) => {
+    const { tenantId, userId } = c.req.valid('query');
+
+    try {
+        await verifyAdmin(c, tenantId);
+
+        const db = getTenantDb(tenantId);
+        
+        // Use BigInt for ID as per schema
+        const targetId = BigInt(userId);
+
+        const [existing] = await db.select().from(users).where(and(
+            eq(users.id, targetId),
+            eq(users.tenantId, tenantId)
+        ));
+
+        if (!existing) {
+            return c.json({ error: 'User not found' }, 404);
+        }
+
+        // Prevent deleting self? (Optional but good practice)
+        // For now, allow it.
+
+        await db.delete(users).where(eq(users.id, targetId));
+
+        return c.json({ success: true });
+
+    } catch (e: any) {
+        const status = e.message.includes('Access denied') ? 403 : 500;
         return c.json({ error: e.message }, status);
     }
   }
