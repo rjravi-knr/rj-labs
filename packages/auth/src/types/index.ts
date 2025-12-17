@@ -72,6 +72,7 @@ export interface LoginMethodEnablement {
 export interface LoginMethods {
   email: LoginMethodEnablement;
   phone: LoginMethodEnablement;
+  username?: LoginMethodEnablement; // Optional for backward compatibility
 }
 
 
@@ -141,7 +142,7 @@ export interface AuthAdapter {
   useVerificationToken?(identifier: string, token: string): Promise<boolean>;
 
   // Password Management
-  verifyPassword(email: string, tenantId: string, password: string): Promise<User | null>; // Returns User on success
+  verifyPassword(identifier: string, tenantId: string, password: string): Promise<User | null>; // Returns User on success
 
   // Configuration Management
   getAuthConfig(tenantId: string): Promise<AuthConfig | null>;

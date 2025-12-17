@@ -99,11 +99,11 @@ export class MemoryAdapter implements AuthAdapter {
     }
   }
 
-  async verifyPassword(email: string, tenantId: string, password: string): Promise<User | null> {
-      // Mock implementation
-      const user = await this.getUserByEmail(email, tenantId);
-      if (user) return user;
-      return null;
+  async verifyPassword(identifier: string, tenantId: string, plainPassword: string): Promise<User | null> {
+    const users = Array.from(this.users.values()).filter(u => u.tenantId === tenantId);
+    const user = users.find(u => u.email === identifier || u.username === identifier);
+    
+    if (!user || !user.passwordHash) return null;
   }
 
   // OTP Management (In-Memory)

@@ -1,7 +1,7 @@
 import { AuthAdapter, User, Session, OtpSession, AuthConfig, LoginMethods, AuthProviderType } from '../types';
 import { createAuthError, AuthErrors } from '../core/errors';
 
-import { getTenantDb, eq, and } from '@labs/database';
+import { getTenantDb, eq, and, or } from '@labs/database';
 import { users, sessions, otpSessions, authConfig } from '@labs/database/auth';
 
 /**
@@ -138,9 +138,15 @@ export class DrizzleAdapter implements AuthAdapter {
        await db.delete(sessions).where(eq(sessions.userId, Number(userId)));
   }
 
-  async verifyPassword(email: string, tenantId: string, plainPassword: string): Promise<User | null> {
+  async verifyPassword(identifier: string, tenantId: string, plainPassword: string): Promise<User | null> {
     const db = getTenantDb(tenantId);
-    const [user] = await db.select().from(users).where(eq(users.email, email));
+    // Check email OR username
+    const [user] = await db.select().from(users).where(
+        and(
+            or(eq(users.email, identifier), eq(users.username, identifier)),
+            eq(users.tenantId, tenantId)
+        )
+    );
     
     if (!user || !user.passwordHash) return null;
 

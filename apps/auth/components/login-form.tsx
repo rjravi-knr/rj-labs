@@ -54,15 +54,41 @@ export function LoginForm({ tenantId, config }: LoginFormProps) {
     const phoneConfig = methods.phone || { password: false, otp: false, pin: false };
     const isPhoneEnabled = phoneConfig.password || phoneConfig.otp || phoneConfig.pin;
 
+
     // Compute enabled methods for CURRENT mode
     const currentMethods = mode === 'email' ? (methods.email || { password: true }) : phoneConfig;
+
+    // Check individual enablements for "Email Mode" (which now includes Username)
+    const isEmailLoginEnabled = methods.email?.password || methods.email?.otp || methods.email?.pin;
+    const isUsernameLoginEnabled = methods.username?.password || methods.username?.otp || methods.username?.pin;
     
+    // Determine Label and Placeholder based on configuration
+    const getEmailModeLabel = () => {
+        if (isEmailLoginEnabled && isUsernameLoginEnabled) return 'Email address or username';
+        if (isUsernameLoginEnabled) return 'Username';
+        return 'Email address';
+    };
+
+    const getEmailModePlaceholder = () => {
+        if (isEmailLoginEnabled && isUsernameLoginEnabled) return 'name@example.com or username';
+        if (isUsernameLoginEnabled) return 'username';
+        return 'name@example.com';
+    };
+
+    const isInputEmailType = isEmailLoginEnabled && !isUsernameLoginEnabled; // Only enforce email type if ONLY email is enabled
+
     // Effect to reset method when mode changes
     React.useEffect(() => {
         // Smart Defaulting
         if (mode === 'email') {
-             if (currentMethods.password) setMethod('password');
-             else if (currentMethods.otp) setMethod('otp');
+             // For email/username mode, check preferences in order
+             const targetConfig = isUsernameLoginEnabled ? (methods.username || {}) : (methods.email || {});
+             // If both are enabled, we might need a merged view or arguably just default to password which is common for both.
+             // But 'currentMethods' variable above logic might need tweak if we want strict per-type method availability (e.g. username only allows password)
+             // For simplicity in this merged View, we assume if you are in "Email/Username" tab, we show Union of methods or default to Password which is safe.
+             
+             if (currentMethods.password || methods.username?.password) setMethod('password');
+             else if (currentMethods.otp || methods.username?.otp) setMethod('otp');
         } else {
              // Phone often defaults to OTP
              if (currentMethods.otp) setMethod('otp');
@@ -228,14 +254,14 @@ export function LoginForm({ tenantId, config }: LoginFormProps) {
             <div className="space-y-2">
                 <div className="flex justify-between items-center">
                     <Label htmlFor="identifier">
-                        {mode === 'email' ? 'Email address or username' : 'Phone number'}
+                        {mode === 'email' ? getEmailModeLabel() : 'Phone number'}
                     </Label>
                     {renderToggle()}
                 </div>
                 <Input
                     id="identifier"
-                    type={mode === 'email' ? 'text' : 'tel'}
-                    placeholder={mode === 'email' ? 'name@example.com' : '+1 555 000 0000'}
+                    type={mode === 'email' ? (isInputEmailType ? 'email' : 'text') : 'tel'}
+                    placeholder={mode === 'email' ? getEmailModePlaceholder() : '+1 555 000 0000'}
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
                     disabled={isLoading}

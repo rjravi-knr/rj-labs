@@ -8,10 +8,10 @@ export class EmailPasswordProvider implements AuthProvider {
   
   constructor(private adapter: AuthAdapter) {}
 
-  async signIn(credentials: { email: string; password: string; tenantId: string }): Promise<User> {
-      const { email, password, tenantId } = credentials;
+  async signIn(credentials: { identifier: string; password: string; tenantId: string }): Promise<User> {
+      const { identifier, password, tenantId } = credentials;
       
-      const user = await this.adapter.verifyPassword(email, tenantId, password);
+      const user = await this.adapter.verifyPassword(identifier, tenantId, password);
       
       if (!user) {
           throw createAuthError(AuthErrors.WRONG_PASSWORD.code);

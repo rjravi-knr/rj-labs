@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Switch } from "@labs/ui/switch";
 import { LoginMethods, LoginMethodEnablement } from "@labs/auth";
-import { Smartphone, Mail } from "lucide-react";
+import { Smartphone, Mail, User as UserIcon } from "lucide-react";
 
 interface LoginMethodMatrixProps {
   config: LoginMethods;
@@ -10,7 +10,7 @@ interface LoginMethodMatrixProps {
 
 export function LoginMethodMatrix({ config, onChange }: LoginMethodMatrixProps) {
   const updateMethod = (
-    method: "email" | "phone",
+    method: "email" | "phone" | "username",
     updates: Partial<LoginMethodEnablement> // Use correct type
   ) => {
     onChange({
@@ -97,6 +97,40 @@ export function LoginMethodMatrix({ config, onChange }: LoginMethodMatrixProps) 
                   checked={config.phone.pin}
                   onCheckedChange={(checked) =>
                     updateMethod("phone", { pin: checked })
+                  }
+                />
+            </td>
+          </tr>
+
+          {/* Username Row */}
+          <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+            <td className="p-4 align-middle font-medium">
+              <div className="flex items-center gap-2">
+                <UserIcon className="h-4 w-4" />
+                Username
+              </div>
+            </td>
+            <td className="p-4 align-middle text-center">
+              <Switch
+                checked={config.username?.password || false}
+                onCheckedChange={(checked) =>
+                  updateMethod("username", { password: checked })
+                }
+              />
+            </td>
+            <td className="p-4 align-middle text-center">
+                <Switch
+                  checked={config.username?.otp || false}
+                  onCheckedChange={(checked) =>
+                    updateMethod("username", { otp: checked })
+                  }
+                />
+            </td>
+            <td className="p-4 align-middle text-center">
+                <Switch
+                  checked={config.username?.pin || false}
+                  onCheckedChange={(checked) =>
+                    updateMethod("username", { pin: checked })
                   }
                 />
             </td>
