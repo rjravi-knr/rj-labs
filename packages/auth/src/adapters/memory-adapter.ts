@@ -10,8 +10,17 @@ export class MemoryAdapter implements AuthAdapter {
     const id = Math.floor(Math.random() * 1000000).toString();
     const now = new Date();
     const newUser: User = {
-      ...user,
+      // Default Verification States
+      emailVerified: false,
+      emailVerifiedTimestamp: null,
+      phoneVerified: false,
+      phoneVerifiedTimestamp: null,
+      userVerified: false,
+      userVerifiedTimestamp: null,
+      memberCode: user.memberCode || null, // Explicitly init
+      ...user, // Allow overrides
       id,
+      
       createdAt: now,
       updatedAt: now,
     };

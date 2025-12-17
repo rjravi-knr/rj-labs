@@ -37,9 +37,20 @@ export async function POST(req: NextRequest) {
             const newUser = await authAdapter.createUser({
                 tenantId,
                 email,
-                name,
+                username: email.split('@')[0],
+                fullName: name,
+                displayName: name,
+                firstName: null,
+                lastName: null,
                 passwordHash,
-                emailVerified: null,
+                
+                emailVerified: false,
+                emailVerifiedTimestamp: null,
+                phoneVerified: false,
+                phoneVerifiedTimestamp: null,
+                userVerified: false,
+                userVerifiedTimestamp: null,
+                
                 roles: ["user"], 
             } as any);
 

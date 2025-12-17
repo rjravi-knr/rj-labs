@@ -32,7 +32,20 @@ export class DrizzleAdapter implements AuthAdapter {
 
     const [newUser] = await db.insert(users).values({
         ...user,
-        emailVerified: (user.emailVerified ? new Date(user.emailVerified) : null) as any,
+        // Map types explicitly if needed, but Omit<User...> should mostly match now
+        emailVerified: user.emailVerified || false, // Boolean
+        emailVerifiedTimestamp: user.emailVerifiedTimestamp,
+        phoneVerified: user.phoneVerified || false,
+        phoneVerifiedTimestamp: user.phoneVerifiedTimestamp,
+        userVerified: user.userVerified || false,
+        userVerifiedTimestamp: user.userVerifiedTimestamp,
+        
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        fullName: user.fullName,
+        displayName: user.displayName,
+        memberCode: user.memberCode,
     } as any).returning(); // Postgres supports returning
 
     // Convert keys/types if necessary (drizzle returns inferred types which should match User)

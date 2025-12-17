@@ -94,8 +94,15 @@ export class GoogleProvider implements AuthProvider {
           // Create new user
           user = await this.adapter.createUser({
               email,
-              name: userProfile.name,
-              emailVerified: userProfile.email_verified ? new Date() : null,
+              username: email.split('@')[0],
+              fullName: userProfile.name,
+              firstName: userProfile.given_name,
+              lastName: userProfile.family_name,
+              displayName: userProfile.name,
+              emailVerified: !!userProfile.email_verified,
+              emailVerifiedTimestamp: userProfile.email_verified ? new Date() : null,
+              phoneVerified: false,
+              userVerified: false,
               image: userProfile.picture,
               tenantId,
               metadata: {

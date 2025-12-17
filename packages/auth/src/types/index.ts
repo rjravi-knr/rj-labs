@@ -1,13 +1,29 @@
 export interface User {
   id: string;
   tenantId: string;
-  username?: string | null; // Added
+  username?: string | null;
   email: string;
-  name?: string;
-  emailVerified: Date | null;
+  
+  // New Profile Fields
+  firstName?: string | null;
+  lastName?: string | null;
+  fullName?: string | null; // Replaces name
+  displayName?: string | null;
+  memberCode?: string | null;
+
+  // New Verification Fields
+  emailVerified: boolean;
+  emailVerifiedTimestamp?: Date | null;
+  
+  phoneVerified: boolean;
+  phoneVerifiedTimestamp?: Date | null;
+
+  userVerified: boolean;
+  userVerifiedTimestamp?: Date | null;
+
   image?: string;
   authMethod?: string;
-  roles?: string[]; // Added
+  roles?: string[];
   createdAt: Date;
   updatedAt: Date;
   metadata?: Record<string, any>;

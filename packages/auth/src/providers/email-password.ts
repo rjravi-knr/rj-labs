@@ -35,8 +35,14 @@ export class EmailPasswordProvider implements AuthProvider {
       // Create user via adapter
       const newUser = await this.adapter.createUser({
           email,
-          emailVerified: null,
-          name: name,
+          emailVerified: false,
+          fullName: name,
+          username: email.split('@')[0], // Basic default username
+          firstName: null,
+          lastName: null,
+          displayName: name,
+          phoneVerified: false,
+          userVerified: false,
 
           tenantId,
           metadata: {

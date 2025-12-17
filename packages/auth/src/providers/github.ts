@@ -115,8 +115,15 @@ export class GitHubProvider implements AuthProvider {
           // Create new user
           user = await this.adapter.createUser({
               email,
-              name: userProfile.name || userProfile.login,
-              emailVerified: userProfile.email_verified ? new Date() : null,
+              username: userProfile.login, 
+              fullName: userProfile.name || userProfile.login,
+              displayName: userProfile.name || userProfile.login,
+              firstName: null,
+              lastName: null,
+              emailVerified: !!userProfile.email_verified,
+              emailVerifiedTimestamp: userProfile.email_verified ? new Date() : null,
+              phoneVerified: false,
+              userVerified: false,
               image: userProfile.avatar_url,
               tenantId,
               metadata: {
