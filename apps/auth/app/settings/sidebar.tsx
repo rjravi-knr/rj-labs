@@ -13,7 +13,7 @@ import {
     Users,
     Activity,
     Lock,
-    Globe,
+    Sparkles,
     FileText,
     LogOut,
     User
@@ -66,7 +66,7 @@ const MENU_GROUPS: MenuGroup[] = [
     {
         title: "Configure",
         items: [
-            { id: "general", label: "Branding", icon: Globe, href: "/settings/general" },
+            { id: "general", label: "Branding", icon: Sparkles, href: "/settings/general" },
             { id: "auth-config", label: "Access Control", icon: Lock, href: "/settings/auth" },
             { id: "social", label: "SSO & Social", icon: Plug, href: "/settings/social" },
             { id: "user-model", label: "User Model", icon: User, href: "/settings/user-model" },
@@ -125,7 +125,7 @@ export function Sidebar({ className, onSignOut, userEmail, tenantId, collapsed =
                                                 onClick={() => window.open(item.href, "_blank")}
                                                 title={item.label}
                                             >
-                                                <item.icon className="h-5 w-5 shrink-0 opacity-70 group-hover:opacity-100" />
+                                                <item.icon className="h-6 w-6 shrink-0 opacity-70 group-hover:opacity-100" />
                                                 {!collapsed && <span className="truncate">{item.label}</span>}
                                             </Button>
                                         );
@@ -142,7 +142,7 @@ export function Sidebar({ className, onSignOut, userEmail, tenantId, collapsed =
                                                 )}
                                                 title={item.label}
                                             >
-                                                <item.icon className={cn("h-5 w-5 shrink-0 opacity-70", active && "opacity-100")} />
+                                                <item.icon className={cn("h-6 w-6 shrink-0 opacity-70", active && "opacity-100")} />
                                                 {!collapsed && <span className="truncate">{item.label}</span>}
                                             </Button>
                                         </Link>

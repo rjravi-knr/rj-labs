@@ -42,6 +42,20 @@ import {
     AlertDialogTitle,
 } from "@labs/ui/alert-dialog";
 import { toast } from "@labs/ui/sonner";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@labs/ui/select";
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationNext,
+    PaginationPrevious,
+} from "@labs/ui/pagination";
 
 interface User {
     id: string;
@@ -190,10 +204,26 @@ export function UsersView() {
         setUserToDelete(null);
     };
 
+    // Pagination State
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(5);
+
     const filteredUsers = users.filter(u => 
         u.email.toLowerCase().includes(searchTerm.toLowerCase()) || 
         (u.fullName && u.fullName.toLowerCase().includes(searchTerm.toLowerCase()))
     );
+
+    // Calculate Pagination
+    const totalItems = filteredUsers.length;
+    const totalPages = Math.ceil(totalItems / pageSize);
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize, totalItems);
+    const currentUsers = filteredUsers.slice(startIndex, endIndex);
+
+    // Reset page when filtering
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm]);
 
     return (
         <div className="space-y-6">
@@ -229,131 +259,197 @@ export function UsersView() {
                             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                         </div>
                     ) : (
-                        <div className="rounded-md border">
-                            <table className="w-full caption-bottom text-sm">
-                                <thead className="[&_tr]:border-b">
-                                    <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">User</th>
-                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Role</th>
-                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Status</th>
-                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Verified</th>
-                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Joined</th>
-                                        <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="[&_tr:last-child]:border-0">
-                                    {filteredUsers.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={6} className="h-24 text-center text-muted-foreground">
-                                                No users found.
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        filteredUsers.map((user) => (
-                                            <tr key={user.id} className="border-b transition-colors hover:bg-muted/50">
-                                                {/* User Col */}
-                                                <td className="p-4 align-middle">
-                                                    <div className="flex flex-col">
-                                                        <span className="font-medium">{user.fullName || user.displayName || user.username || "—"}</span>
-                                                        <span className="text-xs text-muted-foreground">{user.email}</span>
-                                                    </div>
-                                                </td>
-                                                {/* Role Col */}
-                                                <td className="p-4 align-middle">
-                                                    {user.isSuperAdmin ? (
-                                                        <Badge variant="default" className="bg-indigo-500/10 text-indigo-600 hover:bg-indigo-500/20 border-indigo-200">
-                                                            Admin
-                                                        </Badge>
-                                                    ) : (
-                                                        <Badge variant="secondary" className="font-normal text-muted-foreground">
-                                                            Member
-                                                        </Badge>
-                                                    )}
-                                                </td>
-                                                {/* Status Col */}
-                                                <td className="p-4 align-middle">
-                                                    {user.isActive ? (
-                                                        <Badge variant="outline" className="border-green-500/20 text-green-600 bg-green-500/5">
-                                                            Active
-                                                        </Badge>
-                                                    ) : (
-                                                        <Badge variant="outline" className="text-muted-foreground">
-                                                            Inactive
-                                                        </Badge>
-                                                    )}
-                                                </td>
-                                                {/* Verified Col (New) */}
-                                                <td className="p-4 align-middle">
-                                                    <div className="flex items-center gap-2">
-                                                        {user.userVerified ? (
-                                                             <Badge variant="outline" className="border-blue-500/20 text-blue-600 bg-blue-500/5 gap-1.5 pr-3 pl-2 py-1 text-sm [&>svg]:size-4">
-                                                                <ShieldCheck />
-                                                                Verified
+                        <div className="space-y-4">
+                                <div className="rounded-md border">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="w-[200px]">User</TableHead>
+                                            <TableHead>Role</TableHead>
+                                            <TableHead>Status</TableHead>
+                                            <TableHead>Verified</TableHead>
+                                            <TableHead>Joined</TableHead>
+                                            <TableHead className="text-right">Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {currentUsers.length === 0 ? (
+                                            <TableRow>
+                                                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                                                    No users found.
+                                                </TableCell>
+                                            </TableRow>
+                                        ) : (
+                                            currentUsers.map((user) => (
+                                                <TableRow key={user.id}>
+                                                    {/* User Col */}
+                                                    <TableCell>
+                                                        <div className="flex flex-col">
+                                                            <span className="font-medium">{user.fullName || user.displayName || user.username || "—"}</span>
+                                                            <span className="text-xs text-muted-foreground">{user.email}</span>
+                                                        </div>
+                                                    </TableCell>
+                                                    {/* Role Col */}
+                                                    <TableCell>
+                                                        {user.isSuperAdmin ? (
+                                                            <Badge variant="default" className="bg-indigo-500/10 text-indigo-600 hover:bg-indigo-500/20 border-indigo-200">
+                                                                Admin
                                                             </Badge>
                                                         ) : (
-                                                            <>
-                                                                {user.emailVerified && (
-                                                                    <div title="Email Verified" className="p-1 rounded-md bg-green-50 text-green-600 border border-green-200">
-                                                                        <Mail className="h-4 w-4" />
-                                                                    </div>
-                                                                )}
-                                                                {user.phoneVerified && (
-                                                                    <div title="Phone Verified" className="p-1 rounded-md bg-blue-50 text-blue-600 border border-blue-200">
-                                                                        <Phone className="h-4 w-4" />
-                                                                    </div>
-                                                                )}
-                                                                {!user.emailVerified && !user.phoneVerified && (
-                                                                    <span className="text-xs text-muted-foreground">—</span>
-                                                                )}
-                                                            </>
+                                                            <Badge variant="secondary" className="font-normal text-muted-foreground">
+                                                                Member
+                                                            </Badge>
                                                         )}
-                                                    </div>
-                                                </td>
-                                                {/* Joined Col */}
-                                                <td className="p-4 align-middle text-muted-foreground">
-                                                    {formatDate(new Date(user.createdAt), "MMM DD, YYYY")}
-                                                </td>
-                                                {/* Actions Col */}
-                                                <td className="p-4 align-middle text-right">
-                                                    <DropdownMenu>
-                                                        {/* ... menu items ... */}
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" className="h-8 w-8 p-0">
-                                                                <span className="sr-only">Open menu</span>
-                                                                <MoreHorizontal className="h-4 w-4" />
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end">
-                                                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                            <DropdownMenuItem onClick={() => handleViewUser(user)}>
-                                                                <Eye className="mr-2 h-4 w-4" />
-                                                                View Details
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem onClick={() => handleEditUser(user)}>
-                                                                Edit User
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem onClick={() => handleToggleActive(user)}>
-                                                                {user.isActive ? "Deactivate User" : "Activate User"}
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuSeparator />
-                                                            <DropdownMenuItem 
-                                                                className="text-red-600 cursor-pointer focus:text-red-600 focus:bg-red-50"
-                                                                onSelect={(e) => {
-                                                                    e.preventDefault();
-                                                                    setUserToDelete(user);
-                                                                    setDeleteAlertOpen(true);
-                                                                }}
-                                                            >
-                                                                Remove User
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
+                                                    </TableCell>
+                                                    {/* Status Col */}
+                                                    <TableCell>
+                                                        {user.isActive ? (
+                                                            <Badge variant="outline" className="border-green-500/20 text-green-600 bg-green-500/5">
+                                                                Active
+                                                            </Badge>
+                                                        ) : (
+                                                            <Badge variant="outline" className="text-muted-foreground">
+                                                                Inactive
+                                                            </Badge>
+                                                        )}
+                                                    </TableCell>
+                                                    {/* Verified Col (New) */}
+                                                    <TableCell>
+                                                        <div className="flex items-center gap-2">
+                                                            {user.userVerified ? (
+                                                                 <Badge variant="outline" className="border-blue-500/20 text-blue-600 bg-blue-500/5 gap-1.5 pr-3 pl-2 py-1 text-sm [&>svg]:size-4">
+                                                                    <ShieldCheck />
+                                                                    Verified
+                                                                </Badge>
+                                                            ) : (
+                                                                <>
+                                                                    {user.emailVerified && (
+                                                                        <div title="Email Verified" className="p-1 rounded-md bg-green-50 text-green-600 border border-green-200">
+                                                                            <Mail className="h-4 w-4" />
+                                                                        </div>
+                                                                    )}
+                                                                    {user.phoneVerified && (
+                                                                        <div title="Phone Verified" className="p-1 rounded-md bg-blue-50 text-blue-600 border border-blue-200">
+                                                                            <Phone className="h-4 w-4" />
+                                                                        </div>
+                                                                    )}
+                                                                    {!user.emailVerified && !user.phoneVerified && (
+                                                                        <span className="text-xs text-muted-foreground">—</span>
+                                                                    )}
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    </TableCell>
+                                                    {/* Joined Col */}
+                                                    <TableCell className="text-muted-foreground">
+                                                        {formatDate(new Date(user.createdAt), "MMM DD, YYYY")}
+                                                    </TableCell>
+                                                    {/* Actions Col */}
+                                                    <TableCell className="text-right">
+                                                        <DropdownMenu>
+                                                            {/* ... menu items ... */}
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                                                    <span className="sr-only">Open menu</span>
+                                                                    <MoreHorizontal className="h-4 w-4" />
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end">
+                                                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                                <DropdownMenuItem onClick={() => handleViewUser(user)}>
+                                                                    <Eye className="mr-2 h-4 w-4" />
+                                                                    View Details
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem onClick={() => handleEditUser(user)}>
+                                                                    Edit User
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem onClick={() => handleToggleActive(user)}>
+                                                                    {user.isActive ? "Deactivate User" : "Activate User"}
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuSeparator />
+                                                                <DropdownMenuItem 
+                                                                    className="text-red-600 cursor-pointer focus:text-red-600 focus:bg-red-50"
+                                                                    onSelect={(e) => {
+                                                                        e.preventDefault();
+                                                                        setUserToDelete(user);
+                                                                        setDeleteAlertOpen(true);
+                                                                    }}
+                                                                >
+                                                                    Remove User
+                                                                </DropdownMenuItem>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                            
+                            {/* Pagination Controls */}
+                            {totalItems > 0 && (
+                                <div className="flex items-center justify-between px-2 pt-4">
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                        <span>Show</span>
+                                        <Select
+                                            value={pageSize.toString()}
+                                            onValueChange={(v) => {
+                                                setPageSize(Number(v));
+                                                setCurrentPage(1);
+                                            }}
+                                        >
+                                            <SelectTrigger className="h-8 w-[70px]">
+                                                <SelectValue placeholder={pageSize.toString()} />
+                                            </SelectTrigger>
+                                            <SelectContent side="top">
+                                                {[5, 10, 20, 50, 100].map((size) => (
+                                                    <SelectItem key={size} value={size.toString()}>
+                                                        {size}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <span>
+                                            {startIndex + 1}-{endIndex} of {totalItems}
+                                        </span>
+                                    </div>
+
+                                    <div className="flex-1 flex justify-end">
+                                         <Pagination>
+                                            <PaginationContent>
+                                                <PaginationItem>
+                                                    <PaginationPrevious 
+                                                        href="#"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            if (currentPage > 1) setCurrentPage(currentPage - 1);
+                                                        }}
+                                                        className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                                                    />
+                                                </PaginationItem>
+                                                
+                                                 <PaginationItem>
+                                                    <span className="text-sm font-medium px-2">
+                                                        Page {currentPage} of {totalPages}
+                                                    </span>
+                                                </PaginationItem>
+
+                                                <PaginationItem>
+                                                    <PaginationNext 
+                                                        href="#"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+                                                        }}
+                                                        className={currentPage >= totalPages ? "pointer-events-none opacity-50" : ""}
+                                                    />
+                                                </PaginationItem>
+                                            </PaginationContent>
+                                        </Pagination>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
                 </CardContent>
