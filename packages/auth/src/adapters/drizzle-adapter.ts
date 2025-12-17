@@ -2,7 +2,7 @@ import { AuthAdapter, User, Session, OtpSession, AuthConfig, LoginMethods, AuthP
 import { createAuthError, AuthErrors } from '../core/errors';
 
 import { getTenantDb, eq, and, or } from '@labs/database';
-import { users, sessions, otpSessions, authConfig } from '@labs/database/auth';
+import { users, sessions, otpSessions, authConfig, authConfigHistory } from '@labs/database/auth';
 
 /**
  * Parsing helper for smart tokens
@@ -258,6 +258,27 @@ export class DrizzleAdapter implements AuthAdapter {
              const [row] = await db.select({ id: authConfig.id }).from(authConfig).limit(1);
                  
              if (row) {
+                 // HISTORY: Archive current state before update
+                 try {
+                     // We use the 'existing' object which contains the full config BEFORE this update
+                     // We need to cast 'existing' to match the snapshot expectations (stripping non-json compatible types if any, 
+                     // but jsonb handles most. 'snapshot' is jsonb).
+                     
+                     // Import history table (ensure import is added at top of file, I'll add it separately or assume it's available?
+                     // I need to update the import statement first!)
+                     await db.insert(authConfigHistory).values({
+                         configId: existing.id,
+                         snapshot: existing,
+                         changedBy: 'system', // TODO: Pass userId if available in context
+                         createdAt: new Date()
+                     } as any);
+                     console.log("[Adapter] Archived auth config history");
+                 } catch (hErr) {
+                     console.error("[Adapter] Failed to archive history:", hErr);
+                     // Non-blocking: proceed with update even if history fails? 
+                     // Ideally blocking, but for now let's log.
+                 }
+
                  await db.update(authConfig).set({
                     ...data,
                      loginMethods: data.loginMethods as any,

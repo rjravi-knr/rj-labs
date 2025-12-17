@@ -11,6 +11,7 @@ export interface AuthConfig {
     termsUrl: string;
     privacyUrl: string;
     mfaEnabled: boolean;
+    providers: string[]; // Legacy/Compat
     enabledProviders: string[];
     passwordPolicy: {
         minLength: number;
@@ -73,6 +74,7 @@ export function SettingsProvider({ children, tenantId: propTenantId }: { childre
         termsUrl: "",
         privacyUrl: "",
         mfaEnabled: false,
+        providers: [],
         enabledProviders: ['email_password'],
         passwordPolicy: { minLength: 8 },
         otpPolicy: { length: 6, expiry: 300, maxAttempts: 3 },
@@ -99,6 +101,7 @@ export function SettingsProvider({ children, tenantId: propTenantId }: { childre
                 termsUrl: data.termsUrl || "",
                 privacyUrl: data.privacyUrl || "",
                 mfaEnabled: data.mfaEnabled || false,
+                providers: data.providers || [],
                 enabledProviders: data.enabledProviders || ['email_password'],
                 passwordPolicy: data.passwordPolicy || { minLength: 8 },
                 otpPolicy: data.otpPolicy || { length: 6, expiry: 300, maxAttempts: 3 },

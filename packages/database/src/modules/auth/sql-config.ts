@@ -29,5 +29,13 @@ export const authConfig = pgTable('auth_config', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
 
+export const authConfigHistory = pgTable('auth_config_history', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  configId: uuid('config_id').references(() => authConfig.id).notNull(),
+  snapshot: jsonb('snapshot').notNull(),
+  changedBy: varchar('changed_by', { length: 255 }), // User ID or "system"
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
 export type AuthConfig = typeof authConfig.$inferSelect
 export type NewAuthConfig = typeof authConfig.$inferInsert

@@ -1,16 +1,42 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { SettingsProvider } from "./context";
 import { Sidebar } from "./sidebar";
 import { useAuth } from "@labs/auth/client";
 import { Header } from "../../components/header";
+import { FloatingConfigTrigger } from "./components/floating-config-trigger";
 import { Breadcrumbs } from "../../components/breadcrumbs";
 import { cn } from "@labs/ui/lib/utils";
+import { Loader2 } from "lucide-react";
 
 export default function SettingsLayout({ children }: { children: ReactNode }) {
-    const { user, signOut } = useAuth();
+    const { user, loading, signOut } = useAuth();
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const router = useRouter();
+
+    useEffect(() => {
+        if (!loading && !user) {
+            router.push('/sign-in'); // Or specific login route
+        }
+    }, [loading, user, router]);
+
+    if (loading) {
+        return (
+            <div className="flex h-screen w-screen items-center justify-center bg-background">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        );
+    }
+
+    if (!user) {
+        return (
+            <div className="flex h-screen w-screen items-center justify-center bg-background">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        );
+    }
 
     return (
         <SettingsProvider tenantId={user?.tenantId}>
@@ -66,6 +92,7 @@ export default function SettingsLayout({ children }: { children: ReactNode }) {
                         </div>
                     </div>
                 </div>
+                <FloatingConfigTrigger />
             </div>
         </SettingsProvider>
     );

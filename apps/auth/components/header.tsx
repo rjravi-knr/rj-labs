@@ -84,6 +84,8 @@ export function Header({ userEmail, tenantId, onSignOut, onToggleSidebar }: Head
                     </div>
                 )}
                 
+                {/* Config Summary removed */}
+                
                 <Button 
                     onClick={saveConfig} 
                     disabled={isSaving || !hasUnsavedChanges} 
