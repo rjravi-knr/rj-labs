@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "@labs/ui/lib/utils";
 import { SecurityPulse } from "../dashboard/components/security-pulse";
+import { LoginMap } from "../dashboard/components/login-map";
 
 // Mock Data for "Premium" feel until we have real analytics API
 const stats = [
@@ -152,6 +153,11 @@ export function DashboardView() {
                         </div>
                     </Button>
                 </div>
+            </div>
+
+            {/* Interactive Login Map */}
+            <div className="mb-6 grid grid-cols-1">
+                 <LoginMap />
             </div>
 
             <div className="grid gap-6 xl:grid-cols-2">
