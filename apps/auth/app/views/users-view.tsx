@@ -56,6 +56,23 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from "@labs/ui/pagination";
+import { Checkbox } from "@labs/ui/checkbox";
+import { Label } from "@labs/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@labs/ui/dialog";
+import {
+    ChevronDown,
+    Trash2,
+    LogOut,
+    ShieldAlert,
+    Power
+} from "lucide-react";
 
 interface User {
     id: string;
@@ -101,6 +118,19 @@ export function UsersView() {
 
     // Bulk Selection State
     const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
+    
+    // New Dialog States
+    const [verifyDialogOpen, setVerifyDialogOpen] = useState(false);
+    const [revokeConfirmOpen, setRevokeConfirmOpen] = useState(false);
+    const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
+    const [bulkStatusConfirmOpen, setBulkStatusConfirmOpen] = useState(false); // For Activate/Deactivate warning if needed
+    
+    // Verification Options
+    const [verifyOptions, setVerifyOptions] = useState({
+        email: false,
+        phone: false,
+        user: false
+    });
 
     const toggleSelectAll = () => {
         if (selectedUsers.size === currentUsers.length && currentUsers.length > 0) {
@@ -120,15 +150,73 @@ export function UsersView() {
         setSelectedUsers(newSelected);
     };
 
-    const handleBulkDeactivate = async () => {
-        if (selectedUsers.size === 0) return;
+    const handleBulkAction = async (action: 'activate' | 'deactivate' | 'delete' | 'revoke' | 'verify') => {
+         if (selectedUsers.size === 0) return;
+         if (selectedUsers.size > 10) {
+            toast.error("Bulk actions are limited to 10 users at a time.");
+            return;
+        }
+
+        const tenantId = currentUser?.tenantId || 'default-tenant';
+        const userIds = Array.from(selectedUsers);
         setLoading(true);
-        // Mock bulk action for now
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        toast.success(`Deactivated ${selectedUsers.size} users`);
-        setSelectedUsers(new Set());
-        setLoading(false);
+
+        try {
+            let res;
+            if (action === 'activate' || action === 'deactivate') {
+                res = await fetch(`/api/auth/users?tenantId=${tenantId}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.token}` },
+                    body: JSON.stringify({ ids: userIds, isActive: action === 'activate' })
+                });
+            } else if (action === 'delete') {
+                res = await fetch(`/api/auth/users?tenantId=${tenantId}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.token}` },
+                    body: JSON.stringify({ userIds: userIds })
+                });
+            } else if (action === 'revoke') {
+                 res = await fetch(`/api/auth/users/revoke-sessions?tenantId=${tenantId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.token}` },
+                    body: JSON.stringify({ userIds: userIds })
+                });
+            } else if (action === 'verify') {
+                res = await fetch(`/api/auth/users?tenantId=${tenantId}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.token}` },
+                    body: JSON.stringify({ 
+                        ids: userIds, 
+                        emailVerified: verifyOptions.email ? true : undefined,
+                        phoneVerified: verifyOptions.phone ? true : undefined,
+                        userVerified: verifyOptions.user ? true : undefined
+                    })
+                });
+            }
+
+            if (res && !res.ok) {
+                const err = await res.json();
+                toast.error(`Action failed: ${err.error || 'Unknown error'}`);
+            } else {
+                toast.success("Bulk action completed successfully");
+                setSelectedUsers(new Set());
+                fetchUsers();
+                // Close all dialogs
+                setVerifyDialogOpen(false);
+                setVerifyOptions({ email: false, phone: false, user: false }); // Reset verification options
+                setRevokeConfirmOpen(false);
+                setBulkDeleteConfirmOpen(false);
+                setBulkStatusConfirmOpen(false);
+            }
+
+        } catch (error) {
+            console.error("Bulk action failed", error);
+            toast.error("An error occurred during bulk action.");
+        } finally {
+            setLoading(false);
+        }
     };
+
 
     const fetchUsers = async () => {
         if (!session?.token) return;
@@ -371,27 +459,23 @@ export function UsersView() {
                                                     {/* Verified Col (New) */}
                                                     <TableCell>
                                                         <div className="flex items-center gap-2">
-                                                            {user.userVerified ? (
-                                                                 <Badge variant="outline" className="border-blue-500/20 text-blue-600 bg-blue-500/5 gap-1.5 pr-3 pl-2 py-1 text-sm [&>svg]:size-4">
-                                                                    <ShieldCheck />
-                                                                    Verified
-                                                                </Badge>
-                                                            ) : (
-                                                                <>
-                                                                    {user.emailVerified && (
-                                                                        <div title="Email Verified" className="p-1 rounded-md bg-green-50 text-green-600 border border-green-200">
-                                                                            <Mail className="h-4 w-4" />
-                                                                        </div>
-                                                                    )}
-                                                                    {user.phoneVerified && (
-                                                                        <div title="Phone Verified" className="p-1 rounded-md bg-blue-50 text-blue-600 border border-blue-200">
-                                                                            <Phone className="h-4 w-4" />
-                                                                        </div>
-                                                                    )}
-                                                                    {!user.emailVerified && !user.phoneVerified && (
-                                                                        <span className="text-xs text-muted-foreground">—</span>
-                                                                    )}
-                                                                </>
+                                                            {user.userVerified && (
+                                                                <div title="User Verified (KYC)" className="p-1 rounded-md bg-purple-50 text-purple-600 border border-purple-200">
+                                                                    <ShieldCheck className="h-4 w-4" />
+                                                                </div>
+                                                            )}
+                                                            {user.emailVerified && (
+                                                                <div title="Email Verified" className="p-1 rounded-md bg-green-50 text-green-600 border border-green-200">
+                                                                    <Mail className="h-4 w-4" />
+                                                                </div>
+                                                            )}
+                                                            {user.phoneVerified && (
+                                                                <div title="Phone Verified" className="p-1 rounded-md bg-blue-50 text-blue-600 border border-blue-200">
+                                                                    <Phone className="h-4 w-4" />
+                                                                </div>
+                                                            )}
+                                                            {!user.userVerified && !user.emailVerified && !user.phoneVerified && (
+                                                                <span className="text-xs text-muted-foreground">—</span>
                                                             )}
                                                         </div>
                                                     </TableCell>
@@ -542,14 +626,126 @@ export function UsersView() {
                 user={userToView} 
             />
 
+
+            {/* Verify User Dialog */}
+            <Dialog open={verifyDialogOpen} onOpenChange={(open) => {
+                setVerifyDialogOpen(open);
+                if (!open) {
+                    // Reset options when closing
+                    setVerifyOptions({ email: false, phone: false, user: false });
+                }
+            }}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Verify Selected Users</DialogTitle>
+                        <DialogDescription>
+                            Select the verification markers to apply to the {selectedUsers.size} selected users.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex flex-col gap-4 py-4">
+                        <div className="flex items-center space-x-2">
+                            <Checkbox 
+                                id="verify-email" 
+                                checked={verifyOptions.email}
+                                onCheckedChange={(c) => setVerifyOptions(prev => ({ ...prev, email: !!c }))}
+                            />
+                            <Label htmlFor="verify-email">Email Verified</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <Checkbox 
+                                id="verify-phone" 
+                                checked={verifyOptions.phone}
+                                onCheckedChange={(c) => setVerifyOptions(prev => ({ ...prev, phone: !!c }))}
+                            />
+                            <Label htmlFor="verify-phone">Phone Verified</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <Checkbox 
+                                id="verify-user" 
+                                checked={verifyOptions.user}
+                                onCheckedChange={(c) => setVerifyOptions(prev => ({ ...prev, user: !!c }))}
+                            />
+                            <Label htmlFor="verify-user">User Verified (Manual/KYC)</Label>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => {
+                            setVerifyDialogOpen(false);
+                            setVerifyOptions({ email: false, phone: false, user: false });
+                        }}>Cancel</Button>
+                        <Button onClick={() => handleBulkAction('verify')}>Apply Verification</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Bulk Revoke Dialog */}
+            <AlertDialog open={revokeConfirmOpen} onOpenChange={setRevokeConfirmOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Revoke Sessions?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will force logout {selectedUsers.size} users. They will need to sign in again.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleBulkAction('revoke')} className="bg-orange-600 hover:bg-orange-700">
+                            Revoke Sessions
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+             {/* Bulk Delete Dialog */}
+             <AlertDialog open={bulkDeleteConfirmOpen} onOpenChange={setBulkDeleteConfirmOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Users?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to permanently delete {selectedUsers.size} users? This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleBulkAction('delete')} className="bg-red-600 hover:bg-red-700">
+                            Delete Users
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+             {/* Bulk Status Dialog */}
+             <AlertDialog open={bulkStatusConfirmOpen} onOpenChange={setBulkStatusConfirmOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Change User Status?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will update the status for {selectedUsers.size} users.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <div className="flex gap-2">
+                             <Button onClick={() => handleBulkAction('deactivate')} variant="destructive">
+                                Deactivate All
+                             </Button>
+                             <Button onClick={() => handleBulkAction('activate')} className="bg-green-600 hover:bg-green-700">
+                                Activate All
+                             </Button>
+                        </div>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+
             {/* Bulk Action Bar */}
             {selectedUsers.size > 0 && (
-                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-2xl bg-foreground text-background p-4 rounded-full shadow-2xl flex items-center justify-between animate-in slide-in-from-bottom-10 z-50">
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-3xl bg-foreground text-background p-4 rounded-full shadow-2xl flex items-center justify-between animate-in slide-in-from-bottom-10 z-50">
                     <div className="flex items-center gap-4 px-2">
                         <div className="bg-background text-foreground rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm">
                             {selectedUsers.size}
                         </div>
-                        <span className="font-medium">Users Selected</span>
+                        <span className="font-medium">Selected</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <Button 
@@ -560,14 +756,44 @@ export function UsersView() {
                         >
                             Cancel
                         </Button>
+                        
+                        <div className="h-4 w-px bg-muted/20 mx-2" />
+                        
                         <Button 
-                            size="sm" 
-                            variant="destructive"
-                            onClick={handleBulkDeactivate}
-                            className="rounded-full"
+                            size="sm"
+                            variant="secondary" 
+                            className="rounded-full gap-2"
+                            onClick={() => setVerifyDialogOpen(true)}
                         >
-                             Deactivate Selected
+                            <ShieldCheck className="h-4 w-4" /> Verify
                         </Button>
+
+                         <Button 
+                            size="sm"
+                            variant="secondary" 
+                            className="rounded-full gap-2"
+                            onClick={() => setBulkStatusConfirmOpen(true)}
+                        >
+                            <Power className="h-4 w-4" /> Status
+                        </Button>
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button size="sm" variant="destructive" className="rounded-full gap-1 pl-3 pr-4">
+                                     Danger Zone <ChevronDown className="h-4 w-4 opacity-50" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48">
+                                <DropdownMenuItem onClick={() => setRevokeConfirmOpen(true)}>
+                                    <LogOut className="mr-2 h-4 w-4" /> Revoke Sessions
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => setBulkDeleteConfirmOpen(true)} className="text-red-600 focus:text-red-600 focus:bg-red-50">
+                                    <Trash2 className="mr-2 h-4 w-4" /> Delete Users
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
                     </div>
                 </div>
             )}

@@ -17,7 +17,7 @@ import { authConfig, users, sessions } from '@labs/database/auth';
 
 
 import { getTenantDb } from '@labs/database';
-import { eq, and, gt, desc } from 'drizzle-orm';
+import { eq, and, gt, desc, inArray } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 
 extendZodWithOpenApi(z);
@@ -761,7 +761,7 @@ app.openapi(
   }
 );
 
-// Update User Endpoint
+// Update User Endpoint (Bulk Support)
 app.openapi(
   createRoute({
     method: 'patch',
@@ -774,10 +774,14 @@ app.openapi(
         content: {
           'application/json': {
             schema: z.object({
-              id: z.string(),
+              id: z.string().optional(),
+              ids: z.array(z.string()).max(10).optional(), // Bulk IDs
               fullName: z.string().optional(),
               isSuperAdmin: z.boolean().optional(),
-              isActive: z.boolean().optional()
+              isActive: z.boolean().optional(),
+              emailVerified: z.boolean().optional(),
+              phoneVerified: z.boolean().optional(),
+              userVerified: z.boolean().optional()
             })
           }
         }
@@ -785,13 +789,14 @@ app.openapi(
     },
     responses: {
       200: {
-        description: 'User Updated',
+        description: 'User(s) Updated',
         content: {
           'application/json': {
-            schema: z.object({ success: z.boolean() })
+            schema: z.object({ success: z.boolean(), count: z.number().optional() })
           }
         }
       },
+      400: { description: 'Bad Request' },
       403: { description: 'Forbidden' },
       500: { description: 'Server Error' }
     },
@@ -799,21 +804,107 @@ app.openapi(
   }),
   async (c) => {
     const { tenantId } = c.req.valid('query');
-    const { id, fullName, isSuperAdmin, isActive } = c.req.valid('json');
+    const { id, ids, fullName, isSuperAdmin, isActive, emailVerified, phoneVerified, userVerified } = c.req.valid('json');
 
     try {
         await verifyAdmin(c, tenantId);
 
         const db = getTenantDb(tenantId);
         
+        // Prepare target IDs
+        let targetIds: bigint[] = [];
+        if (ids && ids.length > 0) {
+            targetIds = ids.map(i => BigInt(i));
+        } else if (id) {
+            targetIds = [BigInt(id)];
+        } else {
+             return c.json({ error: 'Missing id or ids' }, 400);
+        }
+
+        // Prepare update object (filtering undefined)
+        const updateData: any = { updatedAt: new Date() };
+        if (fullName !== undefined) updateData.name = fullName;
+        if (isSuperAdmin !== undefined) updateData.isSuperAdmin = isSuperAdmin;
+        if (isActive !== undefined) updateData.isActive = isActive;
+        
+        // Verification Logic
+        if (emailVerified !== undefined) {
+             updateData.emailVerified = emailVerified;
+             updateData.emailVerifiedTimestamp = emailVerified ? new Date() : null;
+        }
+        if (phoneVerified !== undefined) {
+             updateData.phoneVerified = phoneVerified;
+             updateData.phoneVerifiedTimestamp = phoneVerified ? new Date() : null;
+        }
+        if (userVerified !== undefined) {
+             updateData.userVerified = userVerified;
+             updateData.userVerifiedTimestamp = userVerified ? new Date() : null;
+        }
+
+        if (Object.keys(updateData).length <= 1) { // Only updatedAt
+             return c.json({ success: true, count: 0 }); // Nothing to update
+        }
+
         await db.update(users)
-            .set({
-                name: fullName,
-                isSuperAdmin: isSuperAdmin,
-                isActive: isActive,
-                updatedAt: new Date()
+            .set(updateData)
+            .where(and(
+                eq(users.tenantId, tenantId),
+                inArray(users.id, targetIds)
+            ));
+
+        return c.json({ success: true, count: targetIds.length });
+
+    } catch (e: any) {
+        const status = e.message.includes('Access denied') ? 403 : 500;
+        return c.json({ error: e.message }, status);
+    }
+  }
+);
+
+// Revoke Sessions Endpoint (Bulk)
+app.openapi(
+  createRoute({
+    method: 'post',
+    path: '/api/auth/users/actions/revoke-sessions',
+    request: {
+      query: z.object({
+        tenantId: z.string().openapi({ example: 'acme-corp' })
+      }),
+      body: {
+        content: {
+          'application/json': {
+            schema: z.object({
+              userIds: z.array(z.string()).max(10)
             })
-            .where(eq(users.id, BigInt(id)));
+          }
+        }
+      }
+    },
+    responses: {
+       200: {
+        description: 'Sessions Revoked',
+        content: { 'application/json': { schema: z.object({ success: z.boolean() }) } }
+       },
+       400: { description: 'Bad Request' },
+       403: { description: 'Forbidden' },
+       500: { description: 'Server Error' }
+    },
+    security: [{ BearerAuth: [] }]
+  }),
+  async (c) => {
+    const { tenantId } = c.req.valid('query');
+    const { userIds } = c.req.valid('json');
+
+    try {
+        await verifyAdmin(c, tenantId);
+        const db = getTenantDb(tenantId);
+        
+        if (userIds.length === 0) return c.json({ success: true });
+
+        const targetIds = userIds.map(id => BigInt(id));
+
+        await db.delete(sessions)
+            .where(inArray(sessions.userId, targetIds));
 
         return c.json({ success: true });
 
@@ -824,26 +915,36 @@ app.openapi(
   }
 );
 
-// Delete User Endpoint
+// Delete User Endpoint (Bulk Support)
 app.openapi(
   createRoute({
     method: 'delete',
     path: '/api/auth/users',
     request: {
       query: z.object({
-        tenantId: z.string().openapi({ example: 'acme-corp' }),
-        userId: z.string().openapi({ example: '123' })
-      })
+        tenantId: z.string().openapi({ example: 'acme-corp' })
+      }),
+      body: {
+        content: {
+          'application/json': {
+            schema: z.object({
+              userId: z.string().optional(),
+              userIds: z.array(z.string()).max(10).optional() // Bulk IDs in Body
+            })
+          }
+        }
+      }
     },
     responses: {
       200: {
-        description: 'User Deleted',
+        description: 'User(s) Deleted',
         content: {
           'application/json': {
-            schema: z.object({ success: z.boolean() })
+            schema: z.object({ success: z.boolean(), count: z.number() })
           }
         }
       },
+      400: { description: 'Bad Request' },
       403: { description: 'Forbidden' },
       404: { description: 'User Not Found' },
       500: { description: 'Server Error' }
@@ -851,31 +952,37 @@ app.openapi(
     security: [{ BearerAuth: [] }]
   }),
   async (c) => {
-    const { tenantId, userId } = c.req.valid('query');
+    const { tenantId } = c.req.valid('query');
+    const { userId, userIds } = c.req.valid('json');
 
     try {
         await verifyAdmin(c, tenantId);
 
         const db = getTenantDb(tenantId);
         
-        // Use BigInt for ID as per schema
-        const targetId = BigInt(userId);
+        let targetIds: bigint[] = [];
 
-        const [existing] = await db.select().from(users).where(and(
-            eq(users.id, targetId),
-            eq(users.tenantId, tenantId)
-        ));
-
-        if (!existing) {
-            return c.json({ error: 'User not found' }, 404);
+        if (userIds && userIds.length > 0) {
+            if (userIds.length > 10) {
+                return c.json({ error: 'Bulk limit exceeded. Max 10 users per request.' }, 400);
+            }
+            targetIds = userIds.map(id => BigInt(id));
+        } else if (userId) {
+            targetIds = [BigInt(userId)];
+        } else {
+            return c.json({ error: 'Missing userId or userIds' }, 400);
         }
 
-        // Prevent deleting self? (Optional but good practice)
-        // For now, allow it.
+        if (targetIds.length === 0) {
+             return c.json({ error: 'No valid IDs provided' }, 400);
+        }
 
-        await db.delete(users).where(eq(users.id, targetId));
+        await db.delete(users).where(and(
+            eq(users.tenantId, tenantId),
+            inArray(users.id, targetIds)
+        ));
 
-        return c.json({ success: true });
+        return c.json({ success: true, count: targetIds.length });
 
     } catch (e: any) {
         const status = e.message.includes('Access denied') ? 403 : 500;

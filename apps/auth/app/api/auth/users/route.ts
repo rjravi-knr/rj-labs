@@ -54,10 +54,14 @@ async function proxyRequest(req: Request, method: string) {
         
         console.log(`[API] Proxying ${method} to ${AUTH_SERVICE_URL}/api/auth/users?${searchParams.toString()}`);
 
-        // For GET/DELETE we rely on params, for POST/PATCH we might have body
+        // For GET we rely on params, for POST/PATCH/DELETE we might have body
         let body;
-        if (method !== 'GET' && method !== 'DELETE') {
-             body = await req.json();
+        if (method !== 'GET') {
+             try {
+                body = await req.json();
+             } catch (e) {
+                // Ignore if no body
+             }
         }
 
         const res = await fetch(`${AUTH_SERVICE_URL}/api/auth/users?${searchParams.toString()}`, {
