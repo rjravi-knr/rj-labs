@@ -16,7 +16,13 @@ import {
     Loader2,
     Lock,
     Activity,
-    LogIn
+    LogIn,
+    Chrome,
+    Smartphone,
+    Monitor,
+    Globe,
+    Key,
+    Laptop
 } from "lucide-react";
 import { useAuth } from "@labs/auth/client";
 import {
@@ -127,6 +133,46 @@ export function UserDetailSheet({ open, onOpenChange, user: initialUser }: UserD
             .toUpperCase()
             .slice(0, 2);
     };
+
+    const getDeviceDetails = (ua: string) => {
+        const lower = ua.toLowerCase();
+        let browser = "Unknown Browser";
+        let os = "Unknown OS";
+        let icon = <Globe className="h-3 w-3" />;
+        
+        // Browser Detection
+        if (lower.includes("firefox")) {
+             browser = "Firefox";
+        } else if (lower.includes("chrome")) {
+             browser = "Chrome";
+             icon = <Chrome className="h-3 w-3 text-blue-500" />;
+        } else if (lower.includes("safari")) {
+             browser = "Safari";
+             icon = <Activity className="h-3 w-3 text-blue-400" />; // Fallback icon for Safari
+        } else if (lower.includes("edge")) {
+             browser = "Edge";
+        }
+
+        // OS Detection
+        if (lower.includes("mac")) {
+            os = "macOS";
+            if (!icon.props.className?.includes("text-")) icon = <Laptop className="h-3 w-3" />;
+        } else if (lower.includes("win")) {
+            os = "Windows";
+            if (!icon.props.className?.includes("text-")) icon = <Monitor className="h-3 w-3" />;
+        } else if (lower.includes("iphone") || lower.includes("ipad")) {
+            os = "iOS";
+            icon = <Smartphone className="h-3 w-3" />;
+        } else if (lower.includes("android")) {
+            os = "Android";
+            icon = <Smartphone className="h-3 w-3" />;
+        } else if (lower.includes("linux")) {
+             os = "Linux";
+             icon = <Monitor className="h-3 w-3" />;
+        }
+
+        return { browser, os, icon };
+    }
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
@@ -352,28 +398,55 @@ export function UserDetailSheet({ open, onOpenChange, user: initialUser }: UserD
                                             <TableRow>
                                                 <TableHead>Date & Time</TableHead>
                                                 <TableHead>IP</TableHead>
-                                                <TableHead className="text-right">Device</TableHead>
+                                                <TableHead>Device</TableHead>
+                                                <TableHead className="text-right">Method</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
                                             {!data?.sessions || data.sessions.length === 0 ? (
                                                 <TableRow>
-                                                    <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">
+                                                    <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
                                                         {loading ? "Loading..." : "No recent logins found."}
                                                     </TableCell>
                                                 </TableRow>
                                             ) : (
-                                                data.sessions.map((session) => (
-                                                    <TableRow key={session.id}>
-                                                        <TableCell className="font-medium text-xs">
-                                                            {formatDate(new Date(session.createdAt), "MMM DD, h:mm a")}
-                                                        </TableCell>
-                                                        <TableCell className="font-mono text-xs">{session.ipAddress || "—"}</TableCell>
-                                                        <TableCell className="text-right text-muted-foreground text-xs max-w-[150px] truncate" title={session.userAgent || ""}>
-                                                            {session.userAgent || "—"}
-                                                        </TableCell>
-                                                    </TableRow>
-                                                ))
+                                                data.sessions.map((session) => {
+                                                    const device = getDeviceDetails(session.userAgent || "")
+                                                    return (
+                                                        <TableRow key={session.id}>
+                                                            <TableCell className="font-medium text-xs">
+                                                                {formatDate(new Date(session.createdAt), "MMM DD, h:mm a")}
+                                                            </TableCell>
+                                                            <TableCell className="font-mono text-xs">{session.ipAddress || "—"}</TableCell>
+                                                            <TableCell>
+                                                                <div className="flex items-center gap-2" title={session.userAgent || ""}>
+                                                                    <div className="p-1.5 bg-muted rounded-full">
+                                                                        {device.icon}
+                                                                    </div>
+                                                                    <div className="flex flex-col">
+                                                                        <span className="text-xs font-medium">{device.browser}</span>
+                                                                        <span className="text-[10px] text-muted-foreground">{device.os}</span>
+                                                                    </div>
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell className="text-right">
+                                                                <Badge variant="outline" className="gap-1.5 font-normal text-xs">
+                                                                    {displayUser.provider === 'google' ? (
+                                                                         <>
+                                                                            <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                                                                            Google
+                                                                         </>
+                                                                    ) : (
+                                                                        <>
+                                                                            <Key className="h-3 w-3 text-muted-foreground" />
+                                                                            Password
+                                                                        </>
+                                                                    )}
+                                                                </Badge>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    )
+                                                })
                                             )}
                                         </TableBody>
                                     </Table>

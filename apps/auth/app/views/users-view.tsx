@@ -99,6 +99,37 @@ export function UsersView() {
     const [detailSheetOpen, setDetailSheetOpen] = useState(false);
     const [userToView, setUserToView] = useState<User | null>(null);
 
+    // Bulk Selection State
+    const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
+
+    const toggleSelectAll = () => {
+        if (selectedUsers.size === currentUsers.length && currentUsers.length > 0) {
+            setSelectedUsers(new Set());
+        } else {
+            setSelectedUsers(new Set(currentUsers.map(u => u.id)));
+        }
+    };
+
+    const toggleSelectUser = (userId: string) => {
+        const newSelected = new Set(selectedUsers);
+        if (newSelected.has(userId)) {
+            newSelected.delete(userId);
+        } else {
+            newSelected.add(userId);
+        }
+        setSelectedUsers(newSelected);
+    };
+
+    const handleBulkDeactivate = async () => {
+        if (selectedUsers.size === 0) return;
+        setLoading(true);
+        // Mock bulk action for now
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        toast.success(`Deactivated ${selectedUsers.size} users`);
+        setSelectedUsers(new Set());
+        setLoading(false);
+    };
+
     const fetchUsers = async () => {
         if (!session?.token) return;
 
@@ -264,6 +295,14 @@ export function UsersView() {
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
+                                            <TableHead className="w-[50px]">
+                                                <input 
+                                                    type="checkbox"
+                                                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                                    checked={currentUsers.length > 0 && selectedUsers.size === currentUsers.length}
+                                                    onChange={toggleSelectAll}
+                                                />
+                                            </TableHead>
                                             <TableHead className="w-[200px]">User</TableHead>
                                             <TableHead>Role</TableHead>
                                             <TableHead>Status</TableHead>
@@ -284,8 +323,24 @@ export function UsersView() {
                                                 <TableRow key={user.id}>
                                                     {/* User Col */}
                                                     <TableCell>
+                                                        <input 
+                                                            type="checkbox" 
+                                                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                                            checked={selectedUsers.has(user.id)}
+                                                            onChange={() => toggleSelectUser(user.id)}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>
                                                         <div className="flex flex-col">
-                                                            <span className="font-medium">{user.fullName || user.displayName || user.username || "—"}</span>
+                                                            <span 
+                                                                className="font-medium cursor-pointer hover:text-primary hover:underline transition-colors"
+                                                                onClick={() => {
+                                                                    setUserToView(user);
+                                                                    setDetailSheetOpen(true);
+                                                                }}
+                                                            >
+                                                                {user.fullName || user.displayName || user.username || "—"}
+                                                            </span>
                                                             <span className="text-xs text-muted-foreground">{user.email}</span>
                                                         </div>
                                                     </TableCell>
@@ -486,6 +541,36 @@ export function UsersView() {
                 onOpenChange={setDetailSheetOpen} 
                 user={userToView} 
             />
+
+            {/* Bulk Action Bar */}
+            {selectedUsers.size > 0 && (
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-2xl bg-foreground text-background p-4 rounded-full shadow-2xl flex items-center justify-between animate-in slide-in-from-bottom-10 z-50">
+                    <div className="flex items-center gap-4 px-2">
+                        <div className="bg-background text-foreground rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm">
+                            {selectedUsers.size}
+                        </div>
+                        <span className="font-medium">Users Selected</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Button 
+                            size="sm" 
+                            variant="secondary"
+                            onClick={() => setSelectedUsers(new Set())}
+                            className="rounded-full text-foreground bg-muted hover:bg-muted/80"
+                        >
+                            Cancel
+                        </Button>
+                        <Button 
+                            size="sm" 
+                            variant="destructive"
+                            onClick={handleBulkDeactivate}
+                            className="rounded-full"
+                        >
+                             Deactivate Selected
+                        </Button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
