@@ -16,6 +16,7 @@ import {
     KeyRound
 } from "lucide-react";
 import { cn } from "@labs/ui/lib/utils";
+import { SecurityPulse } from "../dashboard/components/security-pulse";
 
 // Mock Data for "Premium" feel until we have real analytics API
 const stats = [
@@ -100,6 +101,11 @@ export function DashboardView() {
                         </CardContent>
                     </Card>
                 ))}
+            </div>
+
+            {/* Security Pulse Widget */}
+            <div className="mb-6">
+                <SecurityPulse />
             </div>
 
             {/* Quick Actions (Moved Above Charts) */}
