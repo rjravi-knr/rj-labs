@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@labs/ui/sheet";
 import { Sidebar } from "../app/settings/sidebar";
+import { ChangesReviewDialog } from "../app/settings/components/changes-review-dialog";
+import { useState } from "react";
 
 interface HeaderProps {
     userEmail?: string;
@@ -24,7 +26,8 @@ interface HeaderProps {
 }
 
 export function Header({ userEmail, tenantId, onSignOut, onToggleSidebar }: HeaderProps) {
-    const { isSaving, hasUnsavedChanges, saveConfig } = useSettings();
+    const { isSaving, hasUnsavedChanges, saveConfig, config, initialConfig } = useSettings();
+    const [reviewOpen, setReviewOpen] = useState(false);
 
     return (
         <header className="flex h-16 items-center gap-4 border-b bg-background px-4 lg:px-6 shadow-sm shrink-0">
@@ -88,7 +91,7 @@ export function Header({ userEmail, tenantId, onSignOut, onToggleSidebar }: Head
                 {/* Config Summary removed */}
                 
                 <Button 
-                    onClick={saveConfig} 
+                    onClick={() => setReviewOpen(true)}
                     disabled={isSaving || !hasUnsavedChanges} 
                     size="sm"
                     variant="destructive"
@@ -101,6 +104,18 @@ export function Header({ userEmail, tenantId, onSignOut, onToggleSidebar }: Head
                     )}
                     Publish
                 </Button>
+
+                <ChangesReviewDialog 
+                    open={reviewOpen} 
+                    onOpenChange={setReviewOpen}
+                    initialConfig={initialConfig}
+                    currentConfig={config}
+                    onConfirm={async () => {
+                        await saveConfig();
+                        setReviewOpen(false);
+                    }}
+                    isSaving={isSaving}
+                />
 
                 <Button 
                     variant="outline" 

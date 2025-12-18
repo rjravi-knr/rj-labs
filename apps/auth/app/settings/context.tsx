@@ -45,6 +45,7 @@ export interface AuthConfig {
 
 interface SettingsContextType {
     config: AuthConfig;
+    initialConfig: AuthConfig; // Added for diffing
     isLoading: boolean;
     isSaving: boolean;
     hasUnsavedChanges: boolean;
@@ -88,6 +89,9 @@ export function SettingsProvider({ children, tenantId: propTenantId }: { childre
         settings: {}
     });
 
+    // Track original config for diffing
+    const [initialConfig, setInitialConfig] = useState<AuthConfig>(config);
+
     const fetchConfig = async () => {
         if (!session?.token || !tenantId) return;
         try {
@@ -95,7 +99,7 @@ export function SettingsProvider({ children, tenantId: propTenantId }: { childre
             if (!res.ok) throw new Error("Failed to load config");
             const data = await res.json();
             
-            setConfig({
+            const loadedConfig = {
                 name: data.name || "",
                 selfRegistrationEnabled: data.selfRegistrationEnabled ?? true,
                 termsUrl: data.termsUrl || "",
@@ -113,7 +117,10 @@ export function SettingsProvider({ children, tenantId: propTenantId }: { childre
                     phone: { password: false, otp: false, pin: false }
                 },
                 settings: data.settings || {}
-            });
+            };
+            
+            setConfig(loadedConfig);
+            setInitialConfig(loadedConfig); // Sync initial state
             setHasUnsavedChanges(false);
         } catch (error) {
             console.error(error);
@@ -196,6 +203,7 @@ export function SettingsProvider({ children, tenantId: propTenantId }: { childre
     return (
         <SettingsContext.Provider value={{
             config,
+            initialConfig,
             isLoading,
             isSaving,
             hasUnsavedChanges,
