@@ -12,6 +12,7 @@ import { Button } from "@labs/ui/button";
 import { PolicyConfigCard } from "../../components/policy-config-card";
 import { PasswordStrengthMeter } from "../../components/password-strength-meter";
 import { generateExamplePasswords, validatePassword } from "@labs/auth/password-policy";
+import { SecurityPresets } from "../components/security-presets";
 
 export function SecuritySetupView() {
     const { config, updateConfig } = useSettings();
@@ -20,7 +21,24 @@ export function SecuritySetupView() {
 
     return (
         <div className="grid gap-6 lg:grid-cols-12">
-            <div className="space-y-6 lg:col-span-12">
+            <div className="space-y-8 lg:col-span-12">
+                 {/* Security Presets */}
+                 <SecurityPresets 
+                    config={config} 
+                    onApply={(preset) => {
+                        // Merge preset into config. 
+                        // Note: Spread logic relies on updateConfig doing a shallow merge at least, or we manually merge deep objects here.
+                        // Assuming updateConfig handles partial updates well or we pass the full structure for nested objects.
+                        // Let's manually merge specific sub-objects to be safe.
+                        
+                        updateConfig({
+                            ...preset,
+                            passwordPolicy: { ...config.passwordPolicy, ...preset.passwordPolicy },
+                            emailPolicy: { ...config.emailPolicy, ...preset.emailPolicy }
+                        });
+                    }}
+                 />
+
                 <Tabs defaultValue="password" className="w-full">
                     {/* ... Content ... */}
                 <TabsList className="grid w-full grid-cols-5 mb-6">
