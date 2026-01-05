@@ -10,15 +10,16 @@ export class MemoryAdapter implements AuthAdapter {
     const id = Math.floor(Math.random() * 1000000).toString();
     const now = new Date();
     const newUser: User = {
-      // Default Verification States
-      emailVerified: false,
-      emailVerifiedTimestamp: null,
-      phoneVerified: false,
-      phoneVerifiedTimestamp: null,
-      userVerified: false,
-      userVerifiedTimestamp: null,
-      memberCode: user.memberCode || null, // Explicitly init
       ...user, // Allow overrides
+      // Default Verification States - handled by overrides or defaults if missing
+      memberCode: user.memberCode || null,
+      emailVerified: user.emailVerified ?? false,
+      emailVerifiedTimestamp: user.emailVerifiedTimestamp ?? null,
+      phoneVerified: user.phoneVerified ?? false,
+      phoneVerifiedTimestamp: user.phoneVerifiedTimestamp ?? null,
+      userVerified: user.userVerified ?? false,
+      userVerifiedTimestamp: user.userVerifiedTimestamp ?? null,
+      
       id,
       
       createdAt: now,
@@ -104,6 +105,12 @@ export class MemoryAdapter implements AuthAdapter {
     const user = users.find(u => u.email === identifier || u.username === identifier);
     
     if (!user || !user.passwordHash) return null;
+    
+    // Simple equality check for memory adapter (assuming mock/text)
+    if (user.passwordHash !== plainPassword && user.passwordHash !== 'hashed_' + plainPassword) {
+         return null;
+    }
+    return user;
   }
 
   // OTP Management (In-Memory)

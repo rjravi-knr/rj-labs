@@ -6,7 +6,12 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "esModuleInterop": true,
-    "strict": true
+    "strict": true,
+    "paths": {
+      "@labs/auth": ["../../packages/auth/src/index.ts"],
+      "@labs/database": ["../../packages/database/src/index.ts"],
+      "@labs/utils": ["../../packages/utils/src/index.ts"]
+    }
   },
   "include": ["src/**/*", "api/**/*"],
   "exclude": ["node_modules"]

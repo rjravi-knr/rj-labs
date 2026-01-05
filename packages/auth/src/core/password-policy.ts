@@ -145,7 +145,7 @@ export function generateExamplePasswords(policy: PasswordPolicy = DEFAULT_PASSWO
 
         // Fill
         while (password.length < targetLen) {
-            const randomPool = pools[Math.floor(Math.random() * pools.length)];
+            const randomPool = pools[Math.floor(Math.random() * pools.length)]!;
             password += pick(randomPool);
         }
 
