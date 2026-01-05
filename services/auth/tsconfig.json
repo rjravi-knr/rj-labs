@@ -9,6 +9,7 @@
     "strict": true,
     "paths": {
       "@labs/auth": ["../../packages/auth/src/index.ts"],
+      "@labs/auth/*": ["../../packages/auth/src/*"],
       "@labs/database": ["../../packages/database/src/index.ts"],
       "@labs/utils": ["../../packages/utils/src/index.ts"]
     }
