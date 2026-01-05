@@ -14,6 +14,8 @@ import { PasswordStrengthMeter } from "../../components/password-strength-meter"
 import { generateExamplePasswords, validatePassword } from "@labs/auth/password-policy";
 import { SecurityPresets } from "../components/security-presets";
 
+const defaultEmailPolicy = { allowedDomains: [], blockedDomains: [], allowPublicDomains: true };
+
 export function SecuritySetupView() {
     const { config, updateConfig } = useSettings();
     const [testPassword, setTestPassword] = useState("");
@@ -34,7 +36,11 @@ export function SecuritySetupView() {
                         updateConfig({
                             ...preset,
                             passwordPolicy: { ...config.passwordPolicy, ...preset.passwordPolicy },
-                            emailPolicy: { ...config.emailPolicy, ...preset.emailPolicy }
+                            emailPolicy: { 
+                                ...defaultEmailPolicy,
+                                ...config.emailPolicy, 
+                                ...preset.emailPolicy 
+                            }
                         });
                     }}
                  />
@@ -175,7 +181,11 @@ export function SecuritySetupView() {
                                     <Switch 
                                         checked={config.emailPolicy?.allowPublicDomains ?? true}
                                         onCheckedChange={(checked) => updateConfig({ 
-                                            emailPolicy: { ...config.emailPolicy, allowPublicDomains: checked } 
+                                            emailPolicy: { 
+                                                ...defaultEmailPolicy,
+                                                ...config.emailPolicy, 
+                                                allowPublicDomains: checked 
+                                            } 
                                         })}
                                     />
                                 </div>
@@ -189,7 +199,11 @@ export function SecuritySetupView() {
                                             const val = e.target.value;
                                             const domains = val.split(",").map(d => d.trim()).filter(Boolean);
                                             updateConfig({ 
-                                                emailPolicy: { ...config.emailPolicy, allowedDomains: domains } 
+                                                emailPolicy: { 
+                                                    ...defaultEmailPolicy,
+                                                    ...config.emailPolicy, 
+                                                    allowedDomains: domains 
+                                                } 
                                             });
                                         }}
                                      />
@@ -207,7 +221,11 @@ export function SecuritySetupView() {
                                             const val = e.target.value;
                                             const domains = val.split(",").map(d => d.trim()).filter(Boolean);
                                             updateConfig({ 
-                                                emailPolicy: { ...config.emailPolicy, blockedDomains: domains } 
+                                                emailPolicy: { 
+                                                    ...defaultEmailPolicy,
+                                                    ...config.emailPolicy, 
+                                                    blockedDomains: domains 
+                                                } 
                                             });
                                         }}
                                      />

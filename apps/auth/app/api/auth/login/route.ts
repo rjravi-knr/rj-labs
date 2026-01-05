@@ -35,10 +35,16 @@ export async function POST(req: NextRequest) {
             // Even if password is correct, if domain is now blocked, we might deny access.
             if (config?.emailPolicy) {
                 const { allowedDomains, blockedDomains, allowPublicDomains } = config.emailPolicy;
-                const emailDomain = user.email.split('@')[1].toLowerCase();
+                const email = user.email;
+                if (email) {
+                    const parts = email.split('@');
+                    if (parts.length >= 2) {
+                        const emailDomain = parts[1]!.toLowerCase();
 
-                if (blockedDomains?.includes(emailDomain)) {
-                    return NextResponse.json({ error: "Access denied by security policy." }, { status: 403 });
+                        if (blockedDomains?.includes(emailDomain)) {
+                            return NextResponse.json({ error: "Access denied by security policy." }, { status: 403 });
+                        }
+                    }
                 }
                 // Add logic for allowedDomains and allowPublicDomains if needed
             }

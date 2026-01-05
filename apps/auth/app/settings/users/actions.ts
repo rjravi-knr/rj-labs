@@ -27,10 +27,10 @@ export async function getSessionStatsAction(): Promise<SessionStats> {
     const variance = Math.floor(Math.random() * 10) - 5 // -5 to +5
     
     // Pick 3 random events
-    const events = []
+    const events: string[] = []
     for (let i = 0; i < 3; i++) {
         const randomIndex = Math.floor(Math.random() * LIVE_EVENTS_POOL.length)
-        events.push(LIVE_EVENTS_POOL[randomIndex])
+        events.push(LIVE_EVENTS_POOL[randomIndex]!)
     }
 
     return {

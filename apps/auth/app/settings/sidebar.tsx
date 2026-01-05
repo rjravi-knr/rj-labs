@@ -89,13 +89,20 @@ const MENU_GROUPS: MenuGroup[] = [
     }
 ];
 
-export function Sidebar({ className, onSignOut, userEmail, tenantId, collapsed = false }: SidebarProps) {
+export function Sidebar({ className, onSignOut, userEmail, tenantId, collapsed = false, activeView, onChange }: SidebarProps & { activeView?: ViewType; onChange?: (view: ViewType) => void }) {
     const pathname = usePathname();
 
-    const isActive = (href: string) => {
+    const isActive = (href: string, id: string) => {
+        if (activeView) return activeView === id;
         if (href === '/dashboard' && pathname === '/dashboard') return true;
         if (href !== '/dashboard' && pathname.startsWith(href)) return true;
         return false;
+    };
+
+    const handleNavigation = (item: MenuItem) => {
+        if (onChange && item.id !== "docs") {
+            onChange(item.id as ViewType);
+        }
     };
 
     return (
@@ -111,7 +118,7 @@ export function Sidebar({ className, onSignOut, userEmail, tenantId, collapsed =
                             )}
                             <div className="space-y-1">
                                 {group.items.map((item) => {
-                                    const active = isActive(item.href);
+                                    const active = isActive(item.href, item.id);
                                     
                                     if (item.external) {
                                         return (
@@ -131,6 +138,27 @@ export function Sidebar({ className, onSignOut, userEmail, tenantId, collapsed =
                                         );
                                     }
 
+                                    // SPA Mode: If onChange is provided, render as Button
+                                    if (onChange) {
+                                        return (
+                                            <Button
+                                                key={item.id}
+                                                variant="ghost"
+                                                className={cn(
+                                                    "w-full justify-start gap-3 px-3 h-10 font-normal text-zinc-400 hover:text-zinc-100 hover:bg-white/10 transition-all",
+                                                    active && "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-white font-medium shadow-md",
+                                                    collapsed && "justify-center px-0"
+                                                )}
+                                                onClick={() => handleNavigation(item)}
+                                                title={item.label}
+                                            >
+                                                <item.icon className={cn("h-6 w-6 shrink-0 opacity-70", active && "opacity-100")} />
+                                                {!collapsed && <span className="truncate">{item.label}</span>}
+                                            </Button>
+                                        );
+                                    }
+
+                                    // Standard Link Mode
                                     return (
                                         <Link key={item.id} href={item.href} passHref className="block">
                                             <Button

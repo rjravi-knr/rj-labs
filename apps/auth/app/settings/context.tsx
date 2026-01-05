@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useAuth } from "@labs/auth/client";
+import { AuthProviderType, LoginMethods } from "@labs/auth/types";
 import { toast } from "@labs/ui/sonner";
 import { useSearchParams, useRouter } from "next/navigation";
 import { storage } from "@labs/utils";
@@ -11,8 +12,8 @@ export interface AuthConfig {
     termsUrl: string;
     privacyUrl: string;
     mfaEnabled: boolean;
-    providers: string[]; // Legacy/Compat
-    enabledProviders: string[];
+    providers: AuthProviderType[]; // Legacy/Compat
+    enabledProviders: AuthProviderType[];
     passwordPolicy: {
         minLength: number;
         maxLength?: number;
@@ -30,10 +31,7 @@ export interface AuthConfig {
         blockedDomains: string[];
         allowPublicDomains: boolean;
     };
-    loginMethods: {
-        email: { password: boolean; otp: boolean; pin: boolean };
-        phone: { password: boolean; otp: boolean; pin: boolean };
-    };
+    loginMethods: LoginMethods;
     providerConfig: {
         google?: { clientId?: string; clientSecret?: string; redirectUri?: string; };
         github?: { clientId?: string; clientSecret?: string; redirectUri?: string; };

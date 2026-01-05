@@ -189,6 +189,15 @@ const items: SidebarGroup[] = [
       },
     ],
   },
+  {
+    title: "Resources",
+    items: [
+      {
+        title: "Workflow Analysis",
+        href: "/docs/resources/workflow",
+      },
+    ],
+  },
 ]
 
 const utilsItems: SidebarGroup[] = [

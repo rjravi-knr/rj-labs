@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authAdapter } from "../../../../lib/adapter";
 import { validatePassword } from "@labs/auth/password-policy";
-import { AuthErrors } from "@labs/auth/core/errors";
+import { AuthErrors } from "@labs/auth";
 
 export async function POST(req: NextRequest) {
     try {

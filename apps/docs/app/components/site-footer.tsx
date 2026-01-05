@@ -43,6 +43,11 @@ export function SiteFooter() {
                   Utilities
                 </Link>
               </li>
+              <li>
+                <Link href="/docs/resources/workflow" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Workflow Analysis
+                </Link>
+              </li>
             </ul>
           </div>
 
