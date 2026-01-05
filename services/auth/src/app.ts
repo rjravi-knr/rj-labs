@@ -1019,10 +1019,10 @@ app.get(
 const port = 3002;
 console.log(`Server is running on http://localhost:${port}`);
 
-serve({
-  fetch: app.fetch,
-  port,
-});
+// serve({
+//   fetch: app.fetch,
+//   port,
+// });
 
 /*
  * Google OAuth Routes

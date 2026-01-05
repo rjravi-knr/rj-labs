@@ -2,13 +2,12 @@
   "extends": "@labs/typescript-config/base.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src",
     "target": "es2020",
     "module": "esnext",
     "moduleResolution": "bundler",
     "esModuleInterop": true,
     "strict": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "api/**/*"],
   "exclude": ["node_modules"]
 }

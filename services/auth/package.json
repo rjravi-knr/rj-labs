@@ -3,9 +3,9 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "dev": "tsx watch src/index.ts",
+        "dev": "tsx watch src/server.ts",
         "build": "tsc",
-        "start": "tsx src/index.ts",
+        "start": "tsx src/server.ts",
         "lint": "eslint ."
     },
     "dependencies": {
