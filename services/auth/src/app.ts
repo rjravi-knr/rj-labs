@@ -67,6 +67,46 @@ app.get('/', (c) => {
 
 // APIs
 
+// Debug/Health Endpoint
+app.openapi(
+  createRoute({
+    method: 'get',
+    path: '/debug',
+    responses: {
+      200: {
+        description: 'System Status',
+        content: { 'application/json': { schema: z.object({ status: z.string(), env: z.any() }) } }
+      }
+    }
+  }),
+  async (c) => {
+      const dbUrl = process.env.DATABASE_URL;
+      const dbCommonUrl = process.env.DATABASE_URL_COMMON;
+      
+      let dbStatus = 'unknown';
+      try {
+           // Simple query to check connection
+           const adapter = getAuthAdapter(); // Just to verify SDK init
+           dbStatus = 'connected';
+      } catch(e: any) {
+           dbStatus = `error: ${e.message}`;
+      }
+
+      return c.json({
+          status: 'ok',
+          uptime: process.uptime(),
+          env: {
+              NODE_ENV: process.env.NODE_ENV,
+              DATABASE_URL: dbUrl ? (dbUrl.includes('neondb') ? 'Set (Neon)' : 'Set') : 'Missing',
+              DATABASE_URL_COMMON: dbCommonUrl ? 'Set' : 'Missing',
+              AUTH_SECRET: process.env.AUTH_SECRET ? 'Set' : 'Missing',
+              PORT: process.env.PORT
+          },
+          dbStatus
+      });
+  }
+);
+
 // Login Endpoint
 app.openapi(
   createRoute({
@@ -224,10 +264,10 @@ app.openapi(
         // @ts-ignore - settings added recently
         settings: config.settings 
       } as any);
-    } catch (e) {
+      } as any);
+    } catch (e: any) {
       console.error(e);
-      // Fallback
-      return c.json({ enabledProviders: ['email_password'], passwordPolicy: { minLength: 8 }, selfRegistrationEnabled: true, name: tenantId } as any, 200);
+      return c.json({ error: e.message || 'Failed to fetch config' }, 500);
     }
   }
 );
