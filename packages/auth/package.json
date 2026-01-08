@@ -28,7 +28,8 @@
     "dependencies": {
         "zod": "^3.22.0",
         "@labs/database": "workspace:*",
-        "@labs/utils": "workspace:*"
+        "@labs/utils": "workspace:*",
+        "@labs/typescript-config": "workspace:*"
     },
     "peerDependencies": {
         "react": ">=18",

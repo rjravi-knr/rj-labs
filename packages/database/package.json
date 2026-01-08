@@ -27,12 +27,12 @@
         "ioredis": "^5.4.2",
         "mongoose": "^8.9.3",
         "postgres": "^3.4.5",
-        "zod": "^3.24.2"
+        "zod": "^3.24.2",
+        "@types/node": "^22.15.3",
+        "@labs/typescript-config": "workspace:*"
     },
     "devDependencies": {
         "@labs/eslint-config": "workspace:*",
-        "@labs/typescript-config": "workspace:*",
-        "@types/node": "^22.15.3",
         "drizzle-kit": "^0.24.0",
         "tsx": "^4.19.2",
         "typescript": "^5.9.2"

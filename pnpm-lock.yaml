@@ -262,6 +262,9 @@ importers:
       '@labs/database':
         specifier: workspace:*
         version: link:../database
+      '@labs/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
       '@labs/utils':
         specifier: workspace:*
         version: link:../utils
@@ -284,6 +287,12 @@ importers:
 
   packages/database:
     dependencies:
+      '@labs/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: ^22.15.3
+        version: 22.15.3
       drizzle-orm:
         specifier: ^0.33.0
         version: 0.33.0(@opentelemetry/api@1.9.0)(@types/react@19.2.2)(kysely@0.28.8)(postgres@3.4.7)(react@19.2.1)
@@ -303,12 +312,6 @@ importers:
       '@labs/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
-      '@labs/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
-      '@types/node':
-        specifier: ^22.15.3
-        version: 22.15.3
       drizzle-kit:
         specifier: ^0.24.0
         version: 0.24.0
