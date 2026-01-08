@@ -17,6 +17,7 @@
         "bcryptjs": "^3.0.3",
         "drizzle-orm": "^0.33.0",
         "hono": "^4.6.14",
+        "tsx": "^4.19.2",
         "zod": "3.23.8"
     },
     "devDependencies": {
@@ -24,7 +25,6 @@
         "@labs/typescript-config": "workspace:*",
         "@types/bcryptjs": "^3.0.0",
         "@types/node": "^22.10.2",
-        "tsx": "^4.19.2",
         "typescript": "^5.7.2"
     }
 }
