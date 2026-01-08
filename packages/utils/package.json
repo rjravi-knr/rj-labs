@@ -40,10 +40,11 @@
     "license": "MIT",
     "devDependencies": {
         "@labs/eslint-config": "workspace:*",
+        "@types/node": "^25.0.3",
         "typescript": "^5.9.2"
     },
     "dependencies": {
-        "moment": "^2.30.1",
-        "@labs/typescript-config": "workspace:*"
+        "@labs/typescript-config": "workspace:*",
+        "moment": "^2.30.1"
     }
 }

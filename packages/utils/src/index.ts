@@ -45,3 +45,9 @@ export * from './types';
 
 // Storage utilities
 export * from './storage';
+
+// API utilities
+export * from './api';
+export * from './api/errors';
+export * from './api/status';
+
