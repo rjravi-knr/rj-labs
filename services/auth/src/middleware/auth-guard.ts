@@ -1,5 +1,6 @@
 import { createMiddleware } from 'hono/factory';
 import { HttpStatus } from '@labs/utils';
+import { getTenantDb } from '@labs/database';
 import { validateSession, getUser } from '@labs/auth';
 import { AuthErrorCodes, AuthErrorMessages } from '../constants/errors';
 import { AuthEnv } from './db-context';
@@ -40,8 +41,15 @@ export const authGuard = createMiddleware<AuthEnv>(async (context, next) => {
         // Optional: Fetch User if needed extensively, but Session usually enough for simple checks.
         // For standard "User Context", let's fetch it.
         // NOTE: We assume 'db' is already available from dbContext!
-        const tenantId = context.var.tenantId || session.tenantId || 'default';
-        const user = await getUser(session.userId, String(tenantId));
+        // Use the Session's tenant to find the User
+        const userTenantId = session.tenantId;
+        const user = await getUser(session.userId, userTenantId!);
+
+        // If the context tenant is 'default' (unspecified), switch to the User's tenant
+        if (context.var.tenantId === 'default' && userTenantId) {
+             context.set('tenantId', userTenantId);
+             context.set('db', getTenantDb(userTenantId));
+        }
 
         if (!user) {
             return context.json({ 
@@ -53,9 +61,9 @@ export const authGuard = createMiddleware<AuthEnv>(async (context, next) => {
         context.set('user', user);
 
         await next();
-    } catch (e) {
+    } catch (e: any) {
         console.error('[AuthGuard] Error:', e);
-        return context.json({ error: 'Authentication failed' }, HttpStatus.UNAUTHORIZED);
+        return context.json({ error: 'Authentication failed', details: e.message || String(e) }, HttpStatus.UNAUTHORIZED);
     }
 });
 

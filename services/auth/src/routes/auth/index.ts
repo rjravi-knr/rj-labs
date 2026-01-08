@@ -77,5 +77,8 @@ authRouter.openapi(
     meHandler as any
 );
 
+// Explicitly register route to ensure availability
+authRouter.get(AuthPaths.ME, authGuard, meHandler);
+
 export default authRouter;
 import { z } from '@hono/zod-openapi'; // Helper for schema above
