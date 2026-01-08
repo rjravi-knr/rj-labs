@@ -16,16 +16,18 @@
         "@labs/typescript-config": "workspace:*",
         "@scalar/hono-api-reference": "^0.5.165",
         "bcryptjs": "^3.0.3",
+        "bowser": "^2.13.1",
+        "dotenv": "^16.4.5",
         "drizzle-orm": "^0.33.0",
         "hono": "^4.6.14",
         "tsx": "^4.19.2",
-        "zod": "3.23.8",
-        "dotenv": "^16.4.5"
+        "zod": "3.23.8"
     },
     "devDependencies": {
         "@labs/eslint-config": "workspace:*",
         "@types/bcryptjs": "^3.0.0",
         "@types/node": "^22.10.2",
+        "@types/ua-parser-js": "^0.7.39",
         "typescript": "^5.7.2"
     }
 }

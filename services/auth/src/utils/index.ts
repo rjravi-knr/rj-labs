@@ -1,3 +1,15 @@
+import Bowser from 'bowser';
+
+export const parseUserAgent = (userAgentString: string): string => {
+    if (!userAgentString) return 'Unknown';
+    const browser = Bowser.getParser(userAgentString);
+    const browserName = browser.getBrowserName();
+    const osName = browser.getOSName();
+
+    
+    
+    return `${browserName || 'Unknown Browser'} on ${osName || 'Unknown OS'}`;
+};
 
 import { getTenantDb } from '@labs/database';
 import { authConfig } from '@labs/database/auth';
