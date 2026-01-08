@@ -20,17 +20,31 @@ export const metadata: Metadata = {
   description: 'Sign in to your account',
 };
 
-import { authAdapter } from '../../lib/adapter';
 
+// import { authAdapter } from '../../lib/adapter'; // Removed
+
+
+
+// Helper to fetch config from API
 async function getAuthConfig(tenantId: string) {
     try {
-        console.log(`[SignInPage] Fetching config for tenant: ${tenantId}`);
-        // Direct call to adapter - avoids network/fetch issues on server side
-        const config = await authAdapter.getAuthConfig(tenantId);
+        const baseUrl = process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:8000';
+        console.log(`[SignInPage] Fetching config from ${baseUrl}/api/auth/config for tenant: ${tenantId}`);
+        
+        const res = await fetch(`${baseUrl}/api/auth/config?tenantId=${tenantId}`, {
+            next: { revalidate: 60 } // Cache config for 60s
+        });
+        
+        if (!res.ok) {
+            console.error('[SignInPage] Config fetch failed status:', res.status);
+            return null;
+        }
+        
+        const config = await res.json();
         return config;
     } catch (e) {
         console.error('[SignInPage] Failed to fetch auth config:', e);
-        return null;
+        return null; // Return null to trigger fallback UI
     }
 }
 

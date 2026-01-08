@@ -111,19 +111,22 @@ export function LoginForm({ tenantId, config }: LoginFormProps) {
         
         setIsLoading(true);
         try {
-            await fetch('/api/auth/login', {
+            // Note: services/auth only supports email/password in this version.
+            // OTP requests would go to a specific endpoint if supported.
+            const baseUrl = process.env.NEXT_PUBLIC_AUTH_API_URL || '';
+            
+            await fetch(`${baseUrl}/api/auth/otp/request`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     tenantId, 
                     identifier, 
-                    action: 'request_otp',
-                    strategy: mode === 'email' ? 'email' : 'sms'
+                    channel: mode === 'email' ? 'email' : 'sms'
                 })
             });
             toast.message("OTP Sent", { description: `We sent a code to your ${mode}.` });
         } catch (e) {
-            toast.error("Failed to send OTP");
+            toast.error("Failed to send OTP", { description: "Service might not support OTP yet." });
         } finally {
             setIsLoading(false);
         }
@@ -134,29 +137,37 @@ export function LoginForm({ tenantId, config }: LoginFormProps) {
         setIsLoading(true);
 
         try {
-            let payload: any = {
-                tenantId,
-                identifier,
-                strategy: mode === 'email' ? 'email' : 'sms'
-            };
-
+            const baseUrl = process.env.NEXT_PUBLIC_AUTH_API_URL || '';
+            let res;
+            
+            // Adapt to services/auth API which expects strict { email, password, tenantId } for password login
             if (method === 'password') {
-                payload.action = 'verify_password';
-                payload.password = password;
-            } else if (method === 'otp') {
-                payload.action = 'verify_otp';
-                payload.code = otpCode;
-            } else if (method === 'pin') {
-                 payload.action = 'verify_password'; // Reuse generic verify? Or specifically pin?
-                 payload.password = password; // Reuse password field
+                 res = await fetch(`${baseUrl}/api/auth/login`, {
+                     method: 'POST',
+                     headers: { 'Content-Type': 'application/json' },
+                     body: JSON.stringify({
+                         tenantId,
+                         email: identifier, // Map identifier to email
+                         password
+                     })
+                });
+            } else {
+                 // OTP / Other methods
+                 res = await fetch(`${baseUrl}/api/auth/login/verify`, {
+                     method: 'POST',
+                     headers: { 'Content-Type': 'application/json' },
+                     body: JSON.stringify({
+                        tenantId,
+                        identifier,
+                        strategy: mode === 'email' ? 'email' : 'sms',
+                        action: 'verify_otp',
+                        code: otpCode
+                     })
+                });
             }
-
-            const res = await fetch('/api/auth/login', {
-                 method: 'POST',
-                 body: JSON.stringify(payload)
-            });
             
             const data = await res.json();
+
             
             if (!res.ok) throw new Error(data.error || "Login Failed");
             
