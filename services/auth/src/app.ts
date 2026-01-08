@@ -264,7 +264,7 @@ app.openapi(
         // @ts-ignore - settings added recently
         settings: config.settings 
       } as any);
-      } as any);
+
     } catch (e: any) {
       console.error(e);
       return c.json({ error: e.message || 'Failed to fetch config' }, 500);
