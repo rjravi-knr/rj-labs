@@ -170,8 +170,9 @@ export function LoginForm({ tenantId, config, redirectUrl }: LoginFormProps) {
             }
 
             // 1. Determine Redirect Target
-            // Priority: URL Param > Configured Client URL > Default
-            const targetUrl = redirectUrl || config.redirectUrl;
+            // Priority: URL Param ONLY (as per user request: "if not no")
+            // We use config.redirectUrl only if the param specifically requests 'default' or similar, but for now strict.
+            const targetUrl = redirectUrl;
 
             if (data?.user?.isSuperAdmin && !targetUrl) {
                 // User asked to remove URL params as storage is set above
