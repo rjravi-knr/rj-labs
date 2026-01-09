@@ -5,38 +5,18 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@labs/auth/client";
 import { Button } from "@labs/ui/button";
 import { Input } from "@labs/ui/input";
-import { Slider } from "@labs/ui/slider";
-import { Label } from "@labs/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@labs/ui/card";
-import { Switch } from "@labs/ui/switch";
-
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@labs/ui/tabs";
 import { Sheet, SheetContent, SheetTrigger } from "@labs/ui/sheet";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@labs/ui/card";
 import { 
     Loader2, 
     Shield, 
-    Save, 
-    Copy, 
     LogOut, 
-    Eye, 
-    EyeOff, 
     Bell, 
     Search, 
-    ChevronRight,
-    Home,
     UploadCloud,
     Menu
 } from "lucide-react";
-import { toast } from "@labs/ui/sonner";
 import { storage } from "@labs/utils";
-import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
-} from "@labs/ui/breadcrumb";
 
 
 import { SettingsProvider, useSettings } from "./settings/context";
@@ -47,13 +27,6 @@ import { AuthConfigView } from "./views/auth-config-view";
 import { SocialConnectorsView } from "./views/social-connectors-view";
 import { SecuritySetupView } from "./views/security-setup-view";
 
-// --- VIEWS ---
-
-
-
-// --- LAYOUT & MAIN PAGE ---
-
-// --- LAYOUT & MAIN PAGE ---
 
 // 1. Dashboard Content (Consumes Settings)
 function DashboardContent({ 
