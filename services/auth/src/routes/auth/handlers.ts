@@ -1,13 +1,18 @@
 import { Context } from 'hono';
 import { AuthEnv } from '../../middleware/db-context';
 import { getAuthAdapter, createSession, validatePassword, DEFAULT_PASSWORD_POLICY } from '@labs/auth'; // Imports
+import { getTenantDb } from '@labs/database';
 import { HttpStatus } from '@labs/utils';
 import { AuthErrorCodes, AuthErrorMessages } from '../../constants/errors';
 import { authConfig, users } from '@labs/database/auth';
 import { eq } from 'drizzle-orm';
 import { parseUserAgent } from '../../utils';
 
-export const loginHandler = async (context: Context<AuthEnv>) => {
+export const loginHandler = async (...args: any[]) => {
+    let context = args[0] as Context<AuthEnv>;
+    if ((!context || !context.req) && args.length > 1 && args[1].req) {
+        context = args[1];
+    }
     try {
       const { email, password, tenantId } = (context.req as any).valid('json');
       
@@ -37,10 +42,16 @@ export const loginHandler = async (context: Context<AuthEnv>) => {
     }
 };
 
-export const signupHandler = async (context: Context<AuthEnv>) => {
+export const signupHandler = async (...args: any[]) => {
+    let context = args[0] as Context<AuthEnv>;
+    if ((!context || !context.req) && args.length > 1 && args[1].req) {
+        context = args[1];
+    }
     const { email, password, tenantId, name } = (context.req as any).valid('json');
     // Use DB from Context!
-    const db = context.var.db; 
+    // FIX: Context DB might be 'default' if tenantId was not in Query. 
+    // For Signup, we trust the Body tenantId to find the DB.
+    const db = getTenantDb(tenantId); 
     
     // 1. Check Config
     const [config] = await db.select().from(authConfig).limit(1);
@@ -79,7 +90,11 @@ export const signupHandler = async (context: Context<AuthEnv>) => {
     return context.json({ id: newUser.id.toString(), email: newUser.email } as any);
 };
 
-export const meHandler = async (context: Context<AuthEnv>) => {
+export const meHandler = async (...args: any[]) => {
+    let context = args[0] as Context<AuthEnv>;
+    if ((!context || !context.req) && args.length > 1 && args[1].req) {
+        context = args[1];
+    }
     // User is already attached by AuthGuard!
     const user = context.var.user!;
     

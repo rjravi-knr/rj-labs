@@ -6,17 +6,36 @@ import { HttpStatus } from '@labs/utils';
 import { AuthErrorCodes, AuthErrorMessages } from '../../constants/errors';
 import bcrypt from 'bcryptjs';
 
-export const listUsersHandler = async (context: Context<AuthEnv>) => {
-    const { tenantId } = (context.req as any).valid('query');
-    const db = context.var.db;
-    const user = context.var.user!;
-
-    // Auth Check: Tenant Admin or Super Admin
-    if (!user.isSuperAdmin && user.tenantId !== tenantId) {
-         return context.json({ error: AuthErrorMessages[AuthErrorCodes.FORBIDDEN], code: AuthErrorCodes.FORBIDDEN }, HttpStatus.FORBIDDEN);
+export const listUsersHandler = async (...args: any[]) => {
+    let context = args[0] as Context<AuthEnv>;
+    // Hack: If used with zod-validator hook, context might be 2nd arg
+    if ((!context || !context.req) && args.length > 1 && args[1].req) {
+        context = args[1];
     }
 
     try {
+        let tenantId = (args[0] as any)?.data?.tenantId;
+        if (!tenantId && (context.req as any).valid) {
+             try { tenantId = (context.req as any).valid('query').tenantId; } catch (e) { /* ignore */ }
+        }
+        
+        // Fallback to query param if validation didn't extract it or if validation is bypassed
+        if (!tenantId) {
+             tenantId = context.req.query('tenantId');
+        }
+        
+        const db = context.var.db;
+        const user = context.var.user;
+
+        if (!user) {
+            return context.json({ error: 'User not authenticated' }, 500);
+        }
+
+        // Auth Check: Tenant Admin or Super Admin
+        if (!user.isSuperAdmin && user.tenantId !== tenantId) {
+             return context.json({ error: AuthErrorMessages[AuthErrorCodes.FORBIDDEN], code: AuthErrorCodes.FORBIDDEN }, HttpStatus.FORBIDDEN);
+        }
+
         const tenantUsers = await db
             .select({
                 id: users.id,
@@ -44,11 +63,16 @@ export const listUsersHandler = async (context: Context<AuthEnv>) => {
 
         return context.json(formattedUsers as any);
     } catch (e: any) {
+        console.error('[ListUsers] Error:', e);
         return context.json({ error: e.message, code: AuthErrorCodes.INTERNAL_SERVER_ERROR }, 500);
     }
 };
 
-export const getUserHandler = async (context: Context<AuthEnv>) => {
+export const getUserHandler = async (...args: any[]) => {
+    let context = args[0] as Context<AuthEnv>;
+    if ((!context || !context.req) && args.length > 1 && args[1].req) {
+        context = args[1];
+    }
     const { userId } = (context.req as any).valid('param');
     const { tenantId } = (context.req as any).valid('query');
     const db = context.var.db;
@@ -100,7 +124,11 @@ export const getUserHandler = async (context: Context<AuthEnv>) => {
     }
 };
 
-export const createUserHandler = async (context: Context<AuthEnv>) => {
+export const createUserHandler = async (...args: any[]) => {
+    let context = args[0] as Context<AuthEnv>;
+    if ((!context || !context.req) && args.length > 1 && args[1].req) {
+        context = args[1];
+    }
     const { tenantId } = (context.req as any).valid('query');
     const { email, fullName, isSuperAdmin, password } = (context.req as any).valid('json');
     const db = context.var.db;

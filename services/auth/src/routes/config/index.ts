@@ -8,6 +8,14 @@ import { ErrorSchema } from '../auth/schema';
 
 const configRouter = new OpenAPIHono<AuthEnv>();
 
+// Apply AuthGuard only for PATCH requests
+configRouter.use('*', async (c, next) => {
+    if (c.req.method === 'PATCH') {
+        return authGuard(c, next);
+    }
+    await next();
+});
+
 // GET /config
 configRouter.openapi(
     createRoute({
@@ -59,7 +67,6 @@ configRouter.openapi(
             }
         }
     }),
-    authGuard as any,
     updateConfigHandler as any
 );
 

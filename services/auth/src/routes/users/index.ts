@@ -8,6 +8,9 @@ import { ErrorSchema } from '../auth/schema';
 
 const usersRouter = new OpenAPIHono<AuthEnv>();
 
+// Apply AuthGuard globally for this router
+usersRouter.use('*', authGuard);
+
 // GET /users
 usersRouter.openapi(
     createRoute({
@@ -27,7 +30,6 @@ usersRouter.openapi(
             500: { description: 'Server Error', content: { 'application/json': { schema: ErrorSchema } } }
         }
     }),
-    authGuard as any,
     listUsersHandler as any
 );
 
@@ -42,7 +44,7 @@ usersRouter.openapi(
             query: UserQuerySchema
         },
         responses: {
-             200: {
+            200: {
                 description: 'Detailed user information',
                 content: { 'application/json': { schema: UserDetailSchema } }
             },
@@ -51,7 +53,6 @@ usersRouter.openapi(
             500: { description: 'Server Error', content: { 'application/json': { schema: ErrorSchema } } }
         }
     }),
-    authGuard as any,
     getUserHandler as any
 );
 
@@ -70,7 +71,7 @@ usersRouter.openapi(
             }
         },
         responses: {
-             200: {
+            200: {
                 description: 'User Created',
                 content: { 'application/json': { schema: CreateUserResponseSchema } }
             },
@@ -79,7 +80,6 @@ usersRouter.openapi(
             500: { description: 'Server Error', content: { 'application/json': { schema: ErrorSchema } } }
         }
     }),
-    authGuard as any,
     createUserHandler as any
 );
 

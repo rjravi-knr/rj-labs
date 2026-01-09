@@ -11,8 +11,8 @@ import { AuthPaths } from '../constants/paths';
 const appRouter = new OpenAPIHono<AuthEnv>();
 
 // Mount Modules under /api/auth
-appRouter.route(AuthPaths.BASE, authRouter);
 appRouter.route(AuthPaths.BASE, configRouter);
+appRouter.route(AuthPaths.BASE, authRouter);
 appRouter.route(AuthPaths.BASE, usersRouter);
 appRouter.route(AuthPaths.BASE, systemRouter);
 

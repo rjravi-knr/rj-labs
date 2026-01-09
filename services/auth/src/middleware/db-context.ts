@@ -41,5 +41,10 @@ export const dbContext = createMiddleware<AuthEnv>(async (context, next) => {
         return context.json({ error: 'Database connection failed' }, 500);
     }
 
-    await next();
+    try {
+        await next();
+    } catch (e) {
+        console.error('[DbContext] Unhandled Error:', e);
+        throw e;
+    }
 });

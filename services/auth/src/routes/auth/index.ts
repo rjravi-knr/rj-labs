@@ -52,7 +52,7 @@ authRouter.openapi(
             },
             400: {
                 description: 'Bad Request',
-                 content: { 'application/json': { schema: ErrorSchema } }
+                content: { 'application/json': { schema: ErrorSchema } }
             }
         }
     }),
@@ -77,8 +77,7 @@ authRouter.openapi(
     meHandler as any
 );
 
-// Explicitly register route to ensure availability
-authRouter.get(AuthPaths.ME, authGuard, meHandler);
+
 
 export default authRouter;
 import { z } from '@hono/zod-openapi'; // Helper for schema above

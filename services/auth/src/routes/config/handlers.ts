@@ -5,7 +5,11 @@ import { HttpStatus } from '@labs/utils';
 import { eq } from 'drizzle-orm';
 import { AuthErrorCodes, AuthErrorMessages } from '../../constants/errors';
 
-export const getConfigHandler = async (context: Context<AuthEnv>) => {
+export const getConfigHandler = async (...args: any[]) => {
+    let context = args[0] as Context<AuthEnv>;
+    if ((!context || !context.req) && args.length > 1 && args[1].req) {
+        context = args[1];
+    }
     const { tenantId } = (context.req as any).valid('query');
     const db = context.var.db; // From Middleware
 
@@ -44,7 +48,11 @@ export const getConfigHandler = async (context: Context<AuthEnv>) => {
     }
 };
 
-export const updateConfigHandler = async (context: Context<AuthEnv>) => {
+export const updateConfigHandler = async (...args: any[]) => {
+    let context = args[0] as Context<AuthEnv>;
+    if ((!context || !context.req) && args.length > 1 && args[1].req) {
+        context = args[1];
+    }
     const { tenantId } = (context.req as any).valid('query');
     const body = (context.req as any).valid('json');
     const db = context.var.db; 

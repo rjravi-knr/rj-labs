@@ -59,7 +59,6 @@ export const authGuard = createMiddleware<AuthEnv>(async (context, next) => {
         }
 
         context.set('user', user);
-
         await next();
     } catch (e: any) {
         console.error('[AuthGuard] Error:', e);
