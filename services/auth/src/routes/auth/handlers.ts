@@ -69,25 +69,29 @@ export const signupHandler = async (...args: any[]) => {
     }
     
     // 2. Check User Existence
-    const [existing] = await db.select().from(users).where(eq(users.email, email));
-    if (existing) {
-        return context.json({ error: AuthErrorMessages[AuthErrorCodes.USER_ALREADY_EXISTS], code: AuthErrorCodes.USER_ALREADY_EXISTS }, HttpStatus.BAD_REQUEST);
-    }
+    try {
+        const [existing] = await db.select().from(users).where(eq(users.email, email));
+        if (existing) {
+            return context.json({ error: AuthErrorMessages[AuthErrorCodes.USER_ALREADY_EXISTS], code: AuthErrorCodes.USER_ALREADY_EXISTS }, HttpStatus.BAD_REQUEST);
+        }
 
-    // 3. Create User (Simplified for MVP - plain hash)
-    // In real world, use bcrypt.hash(password) here or via adapter
-    // Re-using hash logic from app.ts (simplified)
-    const [newUser] = await db.insert(users).values({
-        email,
-        tenantId,
-        fullName: name, 
-        passwordHash: password, 
-        updatedAt: new Date()
-    }).returning();
-    
-    if (!newUser) return context.json({ error: AuthErrorMessages[AuthErrorCodes.CREATION_FAILED], code: AuthErrorCodes.CREATION_FAILED }, HttpStatus.BAD_REQUEST);
-    
-    return context.json({ id: newUser.id.toString(), email: newUser.email } as any);
+        // 3. Create User (Simplified for MVP - plain hash)
+        // In real world, use bcrypt.hash(password) here or via adapter
+        // Re-using hash logic from app.ts (simplified)
+        const [newUser] = await db.insert(users).values({
+            email,
+            tenantId,
+            fullName: name, 
+            passwordHash: password, 
+            updatedAt: new Date()
+        }).returning();
+        
+        if (!newUser) return context.json({ error: AuthErrorMessages[AuthErrorCodes.CREATION_FAILED], code: AuthErrorCodes.CREATION_FAILED }, HttpStatus.INTERNAL_SERVER_ERROR);
+        
+        return context.json({ id: newUser.id.toString(), email: newUser.email } as any);
+    } catch (e: any) {
+        return context.json({ error: e.message, code: AuthErrorCodes.INTERNAL_SERVER_ERROR }, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 };
 
 export const meHandler = async (...args: any[]) => {

@@ -8,6 +8,8 @@ export const AuthErrorCodes = {
     INTERNAL_SERVER_ERROR: 'INTERNAL_SERVER_ERROR',
     CONFIG_NOT_FOUND: 'CONFIG_NOT_FOUND',
     CONFIG_UPDATE_FAILED: 'CONFIG_UPDATE_FAILED',
+    UNAUTHORIZED: 'UNAUTHORIZED',
+    FORBIDDEN: 'FORBIDDEN',
 } as const;
 
 export const AuthErrorMessages = {
@@ -17,4 +19,6 @@ export const AuthErrorMessages = {
     [AuthErrorCodes.INTERNAL_SERVER_ERROR]: 'An unexpected error occurred.',
     [AuthErrorCodes.CONFIG_NOT_FOUND]: 'Configuration not found.',
     [AuthErrorCodes.CONFIG_UPDATE_FAILED]: 'Failed to update configuration.',
+    [AuthErrorCodes.UNAUTHORIZED]: 'Unauthorized access.',
+    [AuthErrorCodes.FORBIDDEN]: 'Access forbidden.',
 } as const;

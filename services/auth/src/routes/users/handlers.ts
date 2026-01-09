@@ -28,7 +28,7 @@ export const listUsersHandler = async (...args: any[]) => {
         const user = context.var.user;
 
         if (!user) {
-            return context.json({ error: 'User not authenticated' }, 500);
+            return context.json({ error: AuthErrorMessages[AuthErrorCodes.UNAUTHORIZED], code: AuthErrorCodes.UNAUTHORIZED }, HttpStatus.UNAUTHORIZED);
         }
 
         // Auth Check: Tenant Admin or Super Admin
@@ -64,7 +64,7 @@ export const listUsersHandler = async (...args: any[]) => {
         return context.json(formattedUsers as any);
     } catch (e: any) {
         console.error('[ListUsers] Error:', e);
-        return context.json({ error: e.message, code: AuthErrorCodes.INTERNAL_SERVER_ERROR }, 500);
+        return context.json({ error: e.message, code: AuthErrorCodes.INTERNAL_SERVER_ERROR }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 };
 
@@ -120,7 +120,7 @@ export const getUserHandler = async (...args: any[]) => {
         } as any);
 
     } catch (e: any) {
-         return context.json({ error: e.message, code: AuthErrorCodes.INTERNAL_SERVER_ERROR }, 500);
+         return context.json({ error: e.message, code: AuthErrorCodes.INTERNAL_SERVER_ERROR }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 };
 
@@ -160,6 +160,6 @@ export const createUserHandler = async (...args: any[]) => {
 
         return context.json({ id: newUser.id.toString(), email: newUser.email } as any);
     } catch (e: any) {
-        return context.json({ error: e.message, code: AuthErrorCodes.INTERNAL_SERVER_ERROR }, 500);
+        return context.json({ error: e.message, code: AuthErrorCodes.INTERNAL_SERVER_ERROR }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 };

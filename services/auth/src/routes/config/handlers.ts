@@ -44,7 +44,7 @@ export const getConfigHandler = async (...args: any[]) => {
             settings: config.settings
         } as any);
     } catch (e: any) {
-        return context.json({ error: e.message || 'Failed to fetch config', code: AuthErrorCodes.CONFIG_NOT_FOUND }, 500);
+        return context.json({ error: e.message || 'Failed to fetch config', code: AuthErrorCodes.CONFIG_NOT_FOUND }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 };
 
@@ -92,10 +92,10 @@ export const updateConfigHandler = async (...args: any[]) => {
                 termsUrl: body.termsUrl,
             }).returning();
             
-            if (!newConfig) return context.json({ error: 'Failed to create config', code: AuthErrorCodes.CONFIG_UPDATE_FAILED }, 500);
+            if (!newConfig) return context.json({ error: AuthErrorMessages[AuthErrorCodes.CONFIG_UPDATE_FAILED], code: AuthErrorCodes.CONFIG_UPDATE_FAILED }, HttpStatus.INTERNAL_SERVER_ERROR);
             return context.json({ success: true, id: newConfig.id.toString() } as any);
         }
     } catch (e: any) {
-        return context.json({ error: e.message, code: AuthErrorCodes.INTERNAL_SERVER_ERROR }, 500);
+        return context.json({ error: e.message, code: AuthErrorCodes.INTERNAL_SERVER_ERROR }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 };
