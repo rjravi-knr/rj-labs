@@ -22,6 +22,7 @@ export const authConfig = pgTable('auth_config', {
 
   termsUrl: varchar('terms_url', { length: 512 }),
   privacyUrl: varchar('privacy_url', { length: 512 }),
+  redirectUrl: varchar('redirect_url', { length: 512 }), // Callback URL for redirection after login (e.g. platform URL)
   name: varchar('name', { length: 255 }),
   emailPolicy: jsonb('email_policy'), // Stores EmailPolicy interface
   settings: jsonb('settings'), // Flexible settings for theme, etc.

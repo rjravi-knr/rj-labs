@@ -12,6 +12,7 @@ export interface AuthConfig {
     selfRegistrationEnabled: boolean;
     termsUrl: string;
     privacyUrl: string;
+    redirectUrl: string; // Integration Callback
     mfaEnabled: boolean;
     providers: AuthProviderType[]; // Legacy/Compat
     enabledProviders: AuthProviderType[];
@@ -73,6 +74,7 @@ export function SettingsProvider({ children, tenantId: propTenantId }: { childre
         selfRegistrationEnabled: true,
         termsUrl: "",
         privacyUrl: "",
+        redirectUrl: "",
         mfaEnabled: false,
         providers: [],
         enabledProviders: ['email_password'],
@@ -101,6 +103,7 @@ export function SettingsProvider({ children, tenantId: propTenantId }: { childre
                 selfRegistrationEnabled: data.selfRegistrationEnabled ?? true,
                 termsUrl: data.termsUrl || "",
                 privacyUrl: data.privacyUrl || "",
+                redirectUrl: data.redirectUrl || "",
                 mfaEnabled: data.mfaEnabled || false,
                 providers: data.providers || [],
                 enabledProviders: data.enabledProviders || ['email_password'],
@@ -134,6 +137,7 @@ export function SettingsProvider({ children, tenantId: propTenantId }: { childre
     }, [isAuthLoading, session, tenantId]);
 
     const updateConfig = (updates: Partial<AuthConfig>) => {
+        console.log("Updating config", updates);
         setConfig(prev => ({ ...prev, ...updates }));
         setHasUnsavedChanges(true);
     };

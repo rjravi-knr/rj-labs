@@ -13,15 +13,21 @@ import { storage } from '@labs/utils';
 import { api } from '../lib/api';
 import { AuthConfig } from '@labs/auth'; 
 
+// Temporary augmentation until @labs/auth is rebuilt with new types from DB
+interface ExtendedAuthConfig extends AuthConfig {
+    redirectUrl?: string; // From backend
+} 
+
 interface LoginFormProps {
     tenantId: string;
-    config: AuthConfig;
+    config: ExtendedAuthConfig;
+    redirectUrl?: string;
 }
 
 type IdentifierMode = 'email' | 'phone';
 type ChallengeMethod = 'password' | 'otp' | 'pin';
 
-export function LoginForm({ tenantId, config }: LoginFormProps) {
+export function LoginForm({ tenantId, config, redirectUrl }: LoginFormProps) {
     const router = useRouter();
     const { signIn } = useAuth();
     
@@ -163,9 +169,20 @@ export function LoginForm({ tenantId, config }: LoginFormProps) {
                 storage.set('user_info', JSON.stringify(data.user));
             }
 
-            if (data?.user?.isSuperAdmin) {
+            // 1. Determine Redirect Target
+            // Priority: URL Param > Configured Client URL > Default
+            const targetUrl = redirectUrl || config.redirectUrl;
+
+            if (data?.user?.isSuperAdmin && !targetUrl) {
                 // User asked to remove URL params as storage is set above
                 window.location.href = `/settings`;
+            } else if (targetUrl && data.token) {
+                 // EXTERNAL REDIRECT FLOW
+                 // Validate protocol to avoid open redirect if needed (for now assuming trusted config/params or internal use)
+                 // Append token for the target app to consume
+                 const hasQuery = targetUrl.includes('?');
+                 const separator = hasQuery ? '&' : '?';
+                 window.location.href = `${targetUrl}${separator}token=${data.token}`;
             } else {
                  window.location.href = `/`;
             }

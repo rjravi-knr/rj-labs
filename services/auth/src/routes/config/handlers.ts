@@ -40,6 +40,7 @@ export const getConfigHandler = async (...args: any[]) => {
             pinPolicy: config.pinPolicy,
             loginMethods: config.loginMethods,
             emailPolicy: config.emailPolicy,
+            redirectUrl: config.redirectUrl || undefined,
             // @ts-ignore
             settings: config.settings
         } as any);
@@ -90,6 +91,7 @@ export const updateConfigHandler = async (...args: any[]) => {
                 loginMethods: body.loginMethods,
                 emailPolicy: body.emailPolicy,
                 termsUrl: body.termsUrl,
+                redirectUrl: body.redirectUrl,
             }).returning();
             
             if (!newConfig) return context.json({ error: AuthErrorMessages[AuthErrorCodes.CONFIG_UPDATE_FAILED], code: AuthErrorCodes.CONFIG_UPDATE_FAILED }, HttpStatus.INTERNAL_SERVER_ERROR);

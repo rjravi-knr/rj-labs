@@ -17,7 +17,8 @@ export const ConfigResponseSchema = z.object({
     settings: z.any().optional(),
     name: z.string().optional().openapi({ example: 'Acme Corp' }),
     termsUrl: z.string().optional(),
-    privacyUrl: z.string().optional()
+    privacyUrl: z.string().optional(),
+    redirectUrl: z.string().optional().openapi({ example: 'https://app.acme.com/callback' })
 });
 
 export const UpdateConfigBodySchema = z.object({
@@ -32,6 +33,7 @@ export const UpdateConfigBodySchema = z.object({
     loginMethods: z.any().optional(),
     termsUrl: z.string().optional(),
     privacyUrl: z.string().optional(),
+    redirectUrl: z.string().optional(),
     emailPolicy: z.any().optional(),
     settings: z.record(z.any()).optional()
 });

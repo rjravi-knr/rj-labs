@@ -36,7 +36,7 @@ export function ChangesReviewDialog({
         const diffs: { category: string; key: string; oldVal: string; newVal: string }[] = [];
 
         // Check Top Level Primitives
-        const keys: (keyof AuthConfig)[] = ['name', 'selfRegistrationEnabled', 'mfaEnabled', 'termsUrl', 'privacyUrl'];
+        const keys: (keyof AuthConfig)[] = ['name', 'selfRegistrationEnabled', 'mfaEnabled', 'termsUrl', 'privacyUrl', 'redirectUrl'];
         keys.forEach(key => {
             if (initialConfig[key] !== currentConfig[key]) {
                  // Format value for display

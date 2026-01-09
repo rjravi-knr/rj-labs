@@ -128,7 +128,11 @@ export default async function SignInPage(props: PageProps) {
             )}
 
 
-            <LoginForm tenantId={tenantId} config={authConfig} />
+            <LoginForm 
+                tenantId={tenantId} 
+                config={authConfig} 
+                redirectUrl={typeof searchParams.redirect === 'string' ? searchParams.redirect : undefined} 
+            />
           </div>
           
           {(termsUrl || privacyUrl) && (

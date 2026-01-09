@@ -26,6 +26,25 @@ export function GeneralSettingsView() {
                     </div>
                 </CardContent>
             </Card>
+            
+            <Card>
+                 <CardHeader>
+                    <CardTitle>Integrations</CardTitle>
+                    <CardDescription>Configure external integrations.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="redirectUrl">Callback URL</Label>
+                        <p className="text-xs text-muted-foreground">The URL to redirect users to after successful login (e.g. your main application dashboard).</p>
+                        <Input 
+                            id="redirectUrl" 
+                            value={config.redirectUrl || ''}
+                            onChange={(e) => updateConfig({ redirectUrl: e.target.value })}
+                            placeholder="https://app.yourdomain.com/auth/callback"  
+                        />
+                    </div>
+                </CardContent>
+            </Card>
 
             <Card>
                 <CardHeader>
