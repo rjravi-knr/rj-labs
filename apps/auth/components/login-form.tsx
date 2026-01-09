@@ -170,10 +170,33 @@ export function LoginForm({ tenantId, config, redirectUrl }: LoginFormProps) {
             }
 
             // 1. Determine Redirect Target
-            // Priority: URL Param ONLY (as per user request: "if not no")
-            // We use config.redirectUrl only if the param specifically requests 'default' or similar, but for now strict.
-            const targetUrl = redirectUrl;
+            // Priority: URL Param ONLY.
+            let targetUrl = null;
 
+            if (redirectUrl) {
+                // SECURITY: Whitelist Validation
+                // We only allow redirects if they match the configured 'redirectUrl' domain/base.
+                // This prevents Open Redirect vulnerabilities.
+                
+                const allowedBase = config.redirectUrl;
+                
+                if (allowedBase && redirectUrl.startsWith(allowedBase)) {
+                     targetUrl = redirectUrl;
+                } else if (allowedBase) {
+                    console.warn(`[Auth] Blocked invalid redirect attempt to: ${redirectUrl}. Allowed: ${allowedBase}`);
+                    toast.error("Invalid Redirect URL. You have been logged in but could not be redirected.");
+                    // Fallback to null (Dashboard)
+                } else {
+                    // No allowed base configured? 
+                    // Option A: Block all external redirects (Secure Default)
+                    // Option B: Allow (Insecure for Authenticator mode)
+                    // We stick to Secure Default: logic requires config to be set to allow redirect.
+                    console.warn(`[Auth] Blocked redirect to ${redirectUrl} because no Callback URL is configured in settings.`);
+                    // We don't error toast here to avoid confusing users if it's just a misconfig, just land on dashboard.
+                }
+            }
+
+            // Standard Dashboard Fallback
             if (data?.user?.isSuperAdmin && !targetUrl) {
                 // User asked to remove URL params as storage is set above
                 window.location.href = `/settings`;
