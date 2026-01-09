@@ -29,7 +29,7 @@ async function getAuthConfig(tenantId: string) {
         console.log(`[SignInPage] Fetching config for tenant: ${tenantId}`);
         
         const config = await api.get<any>(`/config?tenantId=${tenantId}`, {
-            next: { revalidate: 60 } 
+            cache: 'no-store'
         } as RequestInit);
         
         return config;
@@ -98,7 +98,10 @@ export default async function SignInPage(props: PageProps) {
 
   return (
     <AuthLayout>
-      <AuthRedirect />
+      <AuthRedirect 
+          redirectParam={typeof searchParams.redirect === 'string' ? searchParams.redirect : undefined}
+          allowedBase={authConfig.redirectUrl}
+      />
       <Card className="border-none shadow-none sm:border sm:shadow-sm w-full max-w-xl">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl font-bold tracking-tight">

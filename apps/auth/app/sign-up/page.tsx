@@ -80,7 +80,10 @@ export default async function SignUpPage(props: PageProps) {
 
   return (
     <AuthLayout>
-      <AuthRedirect />
+      <AuthRedirect 
+          redirectParam={typeof searchParams.redirect === 'string' ? searchParams.redirect : undefined}
+          allowedBase={authConfig?.redirectUrl}
+      />
       <Card className="border-none shadow-none sm:border sm:shadow-sm w-full max-w-xl">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl font-bold tracking-tight">

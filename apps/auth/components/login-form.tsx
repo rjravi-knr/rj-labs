@@ -178,9 +178,15 @@ export function LoginForm({ tenantId, config, redirectUrl }: LoginFormProps) {
                 // We only allow redirects if they match the configured 'redirectUrl' domain/base.
                 // This prevents Open Redirect vulnerabilities.
                 
-                const allowedBase = config.redirectUrl;
+                // Normalize URLs to avoid trailing slash mismatch issues
+                // remove trailing slash for comparison base
+                const normalize = (url: string) => url.endsWith('/') ? url.slice(0, -1) : url;
                 
-                if (allowedBase && redirectUrl.startsWith(allowedBase)) {
+                const allowedBase = config.redirectUrl;
+                const normalizedBase = allowedBase ? normalize(allowedBase) : null;
+                const normalizedTarget = normalize(redirectUrl);
+                
+                if (normalizedBase && normalizedTarget.startsWith(normalizedBase)) {
                      targetUrl = redirectUrl;
                 } else if (allowedBase) {
                     console.warn(`[Auth] Blocked invalid redirect attempt to: ${redirectUrl}. Allowed: ${allowedBase}`);
@@ -199,16 +205,16 @@ export function LoginForm({ tenantId, config, redirectUrl }: LoginFormProps) {
             // Standard Dashboard Fallback
             if (data?.user?.isSuperAdmin && !targetUrl) {
                 // User asked to remove URL params as storage is set above
-                window.location.href = `/settings`;
+                window.location.replace(`/settings`);
             } else if (targetUrl && data.token) {
                  // EXTERNAL REDIRECT FLOW
                  // Validate protocol to avoid open redirect if needed (for now assuming trusted config/params or internal use)
                  // Append token for the target app to consume
                  const hasQuery = targetUrl.includes('?');
                  const separator = hasQuery ? '&' : '?';
-                 window.location.href = `${targetUrl}${separator}token=${data.token}`;
+                 window.location.replace(`${targetUrl}${separator}token=${data.token}`);
             } else {
-                 window.location.href = `/`;
+                 window.location.replace(`/`);
             }
 
         } catch (e: any) {
