@@ -10,6 +10,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@labs/auth/client';
 import { storage } from '@labs/utils';
+import { api } from '../lib/api';
 import { AuthConfig } from '@labs/auth'; 
 
 interface LoginFormProps {
@@ -111,22 +112,14 @@ export function LoginForm({ tenantId, config }: LoginFormProps) {
         
         setIsLoading(true);
         try {
-            // Note: services/auth only supports email/password in this version.
-            // OTP requests would go to a specific endpoint if supported.
-            const baseUrl = process.env.NEXT_PUBLIC_AUTH_API_URL || '';
-            
-            await fetch(`${baseUrl}/api/auth/otp/request`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    tenantId, 
-                    identifier, 
-                    channel: mode === 'email' ? 'email' : 'sms'
-                })
+            await api.post('/otp/request', { 
+                tenantId, 
+                identifier, 
+                channel: mode === 'email' ? 'email' : 'sms'
             });
             toast.message("OTP Sent", { description: `We sent a code to your ${mode}.` });
-        } catch (e) {
-            toast.error("Failed to send OTP", { description: "Service might not support OTP yet." });
+        } catch (e: any) {
+            toast.error("Failed to send OTP", { description: e.message || "Service might not support OTP yet." });
         } finally {
             setIsLoading(false);
         }
@@ -137,41 +130,31 @@ export function LoginForm({ tenantId, config }: LoginFormProps) {
         setIsLoading(true);
 
         try {
-            const baseUrl = process.env.NEXT_PUBLIC_AUTH_API_URL || '';
-            let res;
+            let data;
             
             // Adapt to services/auth API which expects strict { email, password, tenantId } for password login
             if (method === 'password') {
-                 res = await fetch(`${baseUrl}/api/auth/login`, {
-                     method: 'POST',
-                     headers: { 'Content-Type': 'application/json' },
-                     body: JSON.stringify({
-                         tenantId,
-                         email: identifier, // Map identifier to email
-                         password
-                     })
-                });
+                 data = await api.post<any>('/login', {
+                     tenantId,
+                     email: identifier, // Map identifier to email
+                     password
+                 });
             } else {
                  // OTP / Other methods
-                 res = await fetch(`${baseUrl}/api/auth/login/verify`, {
-                     method: 'POST',
-                     headers: { 'Content-Type': 'application/json' },
-                     body: JSON.stringify({
-                        tenantId,
-                        identifier,
-                        strategy: mode === 'email' ? 'email' : 'sms',
-                        action: 'verify_otp',
-                        code: otpCode
-                     })
-                });
+                 data = await api.post<any>('/login/verify', {
+                    tenantId,
+                    identifier,
+                    strategy: mode === 'email' ? 'email' : 'sms',
+                    action: 'verify_otp',
+                    code: otpCode
+                 });
             }
             
-            const data = await res.json();
+            console.log('[LoginForm] Login Response:', data);
 
-            
-            if (!res.ok) throw new Error(data.error || "Login Failed");
-            
             toast.success("Login Successful");
+            
+            console.log('[LoginForm] Saving Token:', data.token);
             storage.set('tenantId', tenantId);
             if (data.token) {
                 storage.set('auth_token', data.token);
@@ -188,7 +171,7 @@ export function LoginForm({ tenantId, config }: LoginFormProps) {
             }
 
         } catch (e: any) {
-             toast.error("Login Failed", { description: e.message });
+             toast.error("Login Failed", { description: e.message || e.error });
         } finally {
             setIsLoading(false);
         }

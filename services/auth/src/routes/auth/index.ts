@@ -59,6 +59,9 @@ authRouter.openapi(
     signupHandler as any
 );
 
+// Apply AuthGuard to /me
+authRouter.use(AuthPaths.ME, authGuard);
+
 // GET /me
 authRouter.openapi(
     createRoute({
@@ -73,7 +76,6 @@ authRouter.openapi(
             401: { description: 'Unauthorized' }
         }
     }),
-    authGuard as any, // Apply Guard here!
     meHandler as any
 );
 

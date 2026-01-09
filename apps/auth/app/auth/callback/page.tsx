@@ -3,6 +3,7 @@
 import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { storage } from '@labs/utils';
+import { api } from '../../../lib/api';
 
 function CallbackContent() {
     const router = useRouter();
@@ -19,31 +20,25 @@ function CallbackContent() {
             
             try {
                 // Verify against the Service API
-                const apiBase = process.env.NEXT_PUBLIC_AUTH_API_URL;
-                if (!apiBase) throw new Error("NEXT_PUBLIC_AUTH_API_URL is missing");
-                const res = await fetch(`${apiBase}/me`, {
+                // Verify against the Service API
+                // We pass the token explicitly because it's not yet in storage
+                const data = await api.get<any>('/me', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 
-                if (res.ok) {
-                    const data = await res.json();
-                    console.log('Authentication Successful!', data);
-                    
-                    // Use centralized storage
-                    storage.set('auth_token', token);
-                    storage.setJSON('user_info', data.user);
-                    
-                    // Success! Redirect to home page with tenantId
-                    const tenantId = data.user.tenantId;
-                    // Force full reload to ensure AuthProvider picks up the new token from storage
-                    window.location.href = `/`;
-                } else {
-                    console.error('Session validation failed', await res.text());
-                    router.push('/sign-in?error=invalid_session');
-                }
+                console.log('Authentication Successful!', data);
+                
+                // Use centralized storage
+                storage.set('auth_token', token);
+                storage.setJSON('user_info', data.user);
+                
+                // Success! Redirect to home page with tenantId
+                const tenantId = data.user.tenantId;
+                // Force full reload to ensure AuthProvider picks up the new token from storage
+                window.location.href = `/`;
             } catch (err) {
-                 console.error('Error verifying session', err);
-                 router.push('/sign-in?error=network_error');
+                 console.error('Session validation failed', err);
+                 router.push('/sign-in?error=invalid_session');
             }
         };
 

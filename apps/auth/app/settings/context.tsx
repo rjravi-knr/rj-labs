@@ -4,6 +4,7 @@ import { AuthProviderType, LoginMethods } from "@labs/auth/types";
 import { toast } from "@labs/ui/sonner";
 import { useSearchParams, useRouter } from "next/navigation";
 import { storage } from "@labs/utils";
+import { api } from "../../lib/api";
 
 // Types matching the backend config
 export interface AuthConfig {
@@ -93,9 +94,7 @@ export function SettingsProvider({ children, tenantId: propTenantId }: { childre
     const fetchConfig = async () => {
         if (!session?.token || !tenantId) return;
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL}/config?tenantId=${tenantId}`);
-            if (!res.ok) throw new Error("Failed to load config");
-            const data = await res.json();
+            const data = await api.get<AuthConfig>(`/config?tenantId=${tenantId}`);
             
             const loadedConfig = {
                 name: data.name || "",
@@ -173,26 +172,14 @@ export function SettingsProvider({ children, tenantId: propTenantId }: { childre
 
             console.log("[Frontend] Saving payload:", JSON.stringify(payload, null, 2));
 
-            const res = await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL}/config?tenantId=${tenantId}`, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${session?.token}`
-                },
-                body: JSON.stringify(payload)
-            });
-
-            if (!res.ok) {
-                 const err = await res.json();
-                 throw new Error(err.error || "Update failed");
-            }
+            await api.patch(`/config?tenantId=${tenantId}`, payload);
 
             toast.success("Settings updated successfully!");
             setHasUnsavedChanges(false);
             // Refresh to get the updated enabledProviders from server
             await fetchConfig();
         } catch (error: any) {
-            toast.error(error.message);
+            toast.error(error.message || "Update failed");
         } finally {
             setIsSaving(false);
         }

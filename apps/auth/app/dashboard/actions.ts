@@ -1,7 +1,5 @@
 'use server'
 
-import { LogsRepository, createMongoClient } from '@labs/database'
-import { LogLevel } from '@labs/database'
 
 export type SecurityPulseResult = {
     score: number
@@ -14,23 +12,10 @@ export type SecurityPulseResult = {
 
 export async function getSecurityPulseAction(): Promise<SecurityPulseResult> {
     try {
-        await createMongoClient({ uri: process.env.MONGODB_URL || 'mongodb://localhost:27017/rj-suite' })
-        const logsRepo = new LogsRepository()
+        // Mock Data - Direct DB Access removed from Frontend App
+        const errorCount = 12;
+        const mfaAdoption = 45;
 
-        // 1. Get Error Logs (Last 24h)
-        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
-        const errorLogs = await logsRepo.findByDateRange(oneDayAgo, new Date(), LogLevel.ERROR)
-        const errorCount = errorLogs.length
-
-        // 2. Get MFA Adoption (MOCKED for now as User schema lacks mfaEnabled)
-        // TODO: Replace with real DB query when schema supports it
-        const mfaAdoption = 45 // 45%
-
-        // 3. Calculate Score
-        // Base: 100
-        // Penalty: 2 points per error (Max 40 penalty)
-        // Penalty: (100 - MFA) * 0.4 (Max 40 penalty)
-        
         let score = 100
         
         const errorPenalty = Math.min(errorCount * 2, 40)

@@ -97,6 +97,7 @@ import {
     Eye
 } from "lucide-react";
 import { UserDetailSheet } from "./user-detail-sheet";
+import { api } from "../../lib/api";
 
 export function UsersView() {
     const { user: currentUser, session } = useAuth();
@@ -164,54 +165,36 @@ export function UsersView() {
         try {
             let res;
             if (action === 'activate' || action === 'deactivate') {
-                res = await fetch(`/api/auth/users?tenantId=${tenantId}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.token}` },
-                    body: JSON.stringify({ ids: userIds, isActive: action === 'activate' })
-                });
+                res = await api.patch(`/users?tenantId=${tenantId}`, { ids: userIds, isActive: action === 'activate' });
             } else if (action === 'delete') {
-                res = await fetch(`/api/auth/users?tenantId=${tenantId}`, {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.token}` },
-                    body: JSON.stringify({ userIds: userIds })
+                res = await api.delete(`/users?tenantId=${tenantId}`, { 
+                     body: JSON.stringify({ userIds: userIds }),
+                     headers: { 'Content-Type': 'application/json' }
                 });
             } else if (action === 'revoke') {
-                 res = await fetch(`/api/auth/users/revoke-sessions?tenantId=${tenantId}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.token}` },
-                    body: JSON.stringify({ userIds: userIds })
-                });
+                 res = await api.post(`/users/revoke-sessions?tenantId=${tenantId}`, { userIds: userIds });
             } else if (action === 'verify') {
-                res = await fetch(`/api/auth/users?tenantId=${tenantId}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.token}` },
-                    body: JSON.stringify({ 
-                        ids: userIds, 
-                        emailVerified: verifyOptions.email ? true : undefined,
-                        phoneVerified: verifyOptions.phone ? true : undefined,
-                        userVerified: verifyOptions.user ? true : undefined
-                    })
+                res = await api.patch(`/users?tenantId=${tenantId}`, { 
+                    ids: userIds, 
+                    emailVerified: verifyOptions.email ? true : undefined,
+                    phoneVerified: verifyOptions.phone ? true : undefined,
+                    userVerified: verifyOptions.user ? true : undefined
                 });
             }
 
-            if (res && !res.ok) {
-                const err = await res.json();
-                toast.error(`Action failed: ${err.error || 'Unknown error'}`);
-            } else {
-                toast.success("Bulk action completed successfully");
-                setSelectedUsers(new Set());
-                fetchUsers();
-                // Close all dialogs
-                setVerifyDialogOpen(false);
-                setVerifyOptions({ email: false, phone: false, user: false }); // Reset verification options
-                setRevokeConfirmOpen(false);
-                setBulkDeleteConfirmOpen(false);
-                setBulkStatusConfirmOpen(false);
-            }
+            toast.success("Bulk action completed successfully");
+            setSelectedUsers(new Set());
+            fetchUsers();
+            // Close all dialogs
+            setVerifyDialogOpen(false);
+            setVerifyOptions({ email: false, phone: false, user: false }); // Reset verification options
+            setRevokeConfirmOpen(false);
+            setBulkDeleteConfirmOpen(false);
+            setBulkStatusConfirmOpen(false);
 
-        } catch (error) {
+        } catch (error: any) {
             console.error("Bulk action failed", error);
-            toast.error("An error occurred during bulk action.");
+            toast.error(`Action failed: ${error.message || 'Unknown error'}`);
         } finally {
             setLoading(false);
         }
@@ -222,20 +205,14 @@ export function UsersView() {
         if (!session?.token) return;
 
         try {
-            const res = await fetch(`/api/auth/users?tenantId=${currentUser?.tenantId || 'default-tenant'}`, {
-                headers: { 'Authorization': `Bearer ${session.token}` }
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setUsers(data);
-            }
+            const data = await api.get<User[]>(`/users?tenantId=${currentUser?.tenantId || 'default-tenant'}`);
+            setUsers(data);
         } catch (error) {
             console.error("Failed to fetch users", error);
         } finally {
             setLoading(false);
         }
     };
-
     useEffect(() => {
         fetchUsers();
     }, [currentUser?.tenantId, session?.token]);
@@ -258,32 +235,19 @@ export function UsersView() {
     const handleSuccess = () => {
         fetchUsers();
     };
-
     const handleToggleActive = async (user: User) => {
         if (!session?.token) return;
 
         try {
             setLoading(true);
             const tenantId = currentUser?.tenantId || 'default-tenant';
-            const res = await fetch(`/api/auth/users?tenantId=${tenantId}&userId=${user.id}`, {
-                method: 'PATCH',
-                headers: { 
-                    'Authorization': `Bearer ${session.token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ id: user.id, isActive: !user.isActive })
-            });
+            await api.patch(`/users?tenantId=${tenantId}&userId=${user.id}`, { id: user.id, isActive: !user.isActive });
 
-            if (!res.ok) {
-                const err = await res.json();
-                toast.error(`Failed to update user status: ${err.error || 'Unknown error'}`);
-            } else {
-                toast.success(`User ${!user.isActive ? 'activated' : 'deactivated'} successfully`);
-                fetchUsers();
-            }
-        } catch (error) {
+            toast.success(`User ${!user.isActive ? 'activated' : 'deactivated'} successfully`);
+            fetchUsers();
+        } catch (error: any) {
             console.error("Failed to update user status", error);
-            toast.error("An error occurred while updating the user status.");
+            toast.error(`Failed to update user status: ${error.message || 'Unknown error'}`);
         } finally {
             setLoading(false);
         }
@@ -296,21 +260,13 @@ export function UsersView() {
         try {
             setLoading(true);
             const tenantId = currentUser?.tenantId || 'default-tenant';
-            const res = await fetch(`/api/auth/users?tenantId=${tenantId}&userId=${userId}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${session.token}` }
-            });
+            await api.delete(`/users?tenantId=${tenantId}&userId=${userId}`);
 
-            if (!res.ok) {
-                const err = await res.json();
-                toast.error(`Failed to remove user: ${err.error || 'Unknown error'}`);
-            } else {
-                toast.success("User removed successfully");
-                fetchUsers();
-            }
-        } catch (error) {
+            toast.success("User removed successfully");
+            fetchUsers();
+        } catch (error: any) {
             console.error("Failed to remove user", error);
-            toast.error("An error occurred while removing the user.");
+            toast.error(`Failed to remove user: ${error.message || 'Unknown error'}`);
         } finally {
             setLoading(false);
         }

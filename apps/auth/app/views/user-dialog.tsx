@@ -15,6 +15,7 @@ import { Label } from "@labs/ui/label";
 import { Switch } from "@labs/ui/switch";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@labs/auth/client";
+import { api } from "../../lib/api";
 
 interface User {
     id: string;
@@ -83,24 +84,16 @@ export function UserDialog({ open, onOpenChange, user, onSuccess }: UserDialogPr
                 payload.email = email;
             }
 
-            const res = await fetch(`/api/auth/users?tenantId=${tenantId}`, {
-                method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session?.token}`
-                },
-                body: JSON.stringify(payload)
-            });
-
-            if (!res.ok) {
-                const errData = await res.json();
-                throw new Error(errData.details || errData.error || "Operation failed");
+            if (user) {
+                await api.patch(`/users?tenantId=${tenantId}`, payload);
+            } else {
+                await api.post(`/users?tenantId=${tenantId}`, payload);
             }
 
             onSuccess();
             onOpenChange(false);
         } catch (err: any) {
-            setError(err.message);
+            setError(err.message || "Operation failed");
         } finally {
             setLoading(false);
         }

@@ -22,14 +22,11 @@ export const metadata: Metadata = {
   description: 'Create an account',
 };
 
-async function getAuthConfig(tenantId: string) {
-    const apiBase = process.env.NEXT_PUBLIC_AUTH_API_URL;
-    if (!apiBase) return null;
+import { api } from '../../lib/api';
 
+async function getAuthConfig(tenantId: string) {
     try {
-        const res = await fetch(`${apiBase}/config?tenantId=${tenantId}`, { cache: 'no-store' });
-        if (!res.ok) return null;
-        return res.json();
+        return await api.get<any>(`/config?tenantId=${tenantId}`, { cache: 'no-store' } as RequestInit);
     } catch (e) {
         return null;
     }

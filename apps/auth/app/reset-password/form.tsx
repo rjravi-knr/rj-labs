@@ -9,6 +9,7 @@ import { PasswordInput } from '../../components/password-input';
 import { Label } from '@labs/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@labs/ui/alert';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { api } from '../../lib/api';
 
 interface ResetPasswordFormProps {
     token: string;
@@ -43,22 +44,11 @@ export function ResetPasswordForm({ token, tenantId }: ResetPasswordFormProps) {
         }
 
         try {
-            const apiBase = process.env.NEXT_PUBLIC_AUTH_API_URL || 'http://localhost:3002/api/auth';
-            const res = await fetch(`${apiBase}/reset-password`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    token,
-                    password,
-                    tenantId
-                })
+            await api.post('/reset-password', {
+                token,
+                password,
+                tenantId
             });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                throw new Error(data.error || 'Something went wrong');
-            }
 
             setSuccess(true);
             
@@ -68,7 +58,7 @@ export function ResetPasswordForm({ token, tenantId }: ResetPasswordFormProps) {
             }, 3000);
 
         } catch (e: any) {
-            setError(e.message);
+            setError(e.message || "Something went wrong");
         } finally {
             setIsLoading(false);
         }

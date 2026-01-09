@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
     Sheet,
     SheetContent,
+    SheetTitle,
 } from "@labs/ui/sheet";
 import { Badge } from "@labs/ui/badge";
 import { formatDate } from "@labs/utils";
@@ -42,6 +43,7 @@ import {
 } from "@labs/ui/accordion";
 import { Card, CardContent } from "@labs/ui/card";
 import { Separator } from "@labs/ui/separator";
+import { api } from "../../lib/api";
 
 interface User {
     id: string;
@@ -98,16 +100,8 @@ export function UserDetailSheet({ open, onOpenChange, user: initialUser }: UserD
             setLoading(true);
             try {
                 const tenantId = currentUser?.tenantId || 'default-tenant';
-                const res = await fetch(`/api/auth/users/${initialUser.id}?tenantId=${tenantId}`, {
-                    headers: { 'Authorization': `Bearer ${authSession.token}` }
-                });
-
-                if (res.ok) {
-                    const result = await res.json();
-                    setData(result);
-                } else {
-                    console.error("Failed to fetch user details");
-                }
+                const result = await api.get<DetailedUserResponse>(`/users/${initialUser.id}?tenantId=${tenantId}`);
+                setData(result);
             } catch (error) {
                 console.error("Error fetching user details", error);
             } finally {
@@ -188,9 +182,9 @@ export function UserDetailSheet({ open, onOpenChange, user: initialUser }: UserD
                         </Avatar>
                         <div className="flex-1 space-y-1">
                              <div className="flex items-center justify-between">
-                                <h2 className="text-2xl font-bold tracking-tight">
+                                <SheetTitle className="text-2xl font-bold tracking-tight">
                                     {displayUser.fullName || displayUser.username || "User Profile"}
-                                </h2>
+                                </SheetTitle>
                                 <div className="flex gap-2">
                                      {displayUser.isSuperAdmin && (
                                         <Badge variant="default" className="bg-indigo-500/10 text-indigo-600 hover:bg-indigo-500/20 border-indigo-200">
