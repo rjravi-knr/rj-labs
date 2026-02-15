@@ -1,4 +1,3 @@
-
 @import "tailwindcss";
 @source "../../../apps/**/*.{ts,tsx}";
 @source "../../../packages/ui/src/**/*.{ts,tsx}";
@@ -25,6 +24,10 @@
     --color-accent-foreground: var(--accent-foreground);
     --color-destructive: var(--destructive);
     --color-destructive-foreground: var(--destructive-foreground);
+    --color-success: var(--success);
+    --color-success-foreground: var(--success-foreground);
+    --color-warning: var(--warning);
+    --color-warning-foreground: var(--warning-foreground);
     --color-border: var(--border);
     --color-input: var(--input);
     --color-ring: var(--ring);
@@ -33,10 +36,14 @@
     --color-chart-3: var(--chart-3);
     --color-chart-4: var(--chart-4);
     --color-chart-5: var(--chart-5);
+
+    /* Radius from "Brand Foundations" */
     --radius-sm: calc(var(--radius) - 4px);
     --radius-md: calc(var(--radius) - 2px);
     --radius-lg: var(--radius);
     --radius-xl: calc(var(--radius) + 4px);
+    --radius-2xl: calc(var(--radius) + 8px);
+
     --color-sidebar: var(--sidebar);
     --color-sidebar-foreground: var(--sidebar-foreground);
     --color-sidebar-primary: var(--sidebar-primary);
@@ -48,74 +55,144 @@
 }
 
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --destructive-foreground: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.646 0.222 41.116);
-    --chart-2: oklch(0.6 0.118 184.704);
-    --chart-3: oklch(0.398 0.07 227.392);
-    --chart-4: oklch(0.828 0.189 84.429);
-    --chart-5: oklch(0.769 0.188 70.08);
-    --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+    /* 
+       DESIGN SYSTEM EXTRACTED VALUES 
+       Based on "Brand Foundations & Styles" Screenshot
+    */
+
+    /* Base Colors */
+    --background: #FFFFFF;
+    --foreground: #0F172A;
+    /* Slate-900 usually, but using Blue-900 #073566 based on brand? Screenshot looks like dark slate/blue */
+
+    /* Card / Surfaces */
+    --card: #FFFFFF;
+    --card-foreground: #0F172A;
+
+    --popover: #FFFFFF;
+    --popover-foreground: #0F172A;
+
+    /* Primary: Blue-500 #137FEC */
+    --primary: #137FEC;
+    --primary-foreground: #FFFFFF;
+
+    /* Secondary: Usually for less prominent actions, maybe Blue-50 or Gray */
+    --secondary: #F1F5F9;
+    /* Slate-100 */
+    --secondary-foreground: #0F172A;
+
+    /* Muted: Subtler text/bgs */
+    --muted: #F8FAFC;
+    /* Slate-50 */
+    --muted-foreground: #64748B;
+    /* Slate-500 */
+
+    /* Accent: Used for active states (sidebar items, dropdowns) - Blue-50 #E7F2FD */
+    --accent: #E7F2FD;
+    --accent-foreground: #137FEC;
+    /* Blue-500 text on accent bg */
+
+    /* Feedback Colors */
+    --destructive: #EF4444;
+    /* Error Red */
+    --destructive-foreground: #FFFFFF;
+
+    --success: #22C55E;
+    /* Green-500 */
+    --success-foreground: #FFFFFF;
+
+    --warning: #F59E0B;
+    /* Amber-500 */
+    --warning-foreground: #FFFFFF;
+
+    /* Borders & Inputs */
+    --border: #E2E8F0;
+    /* Slate-200 */
+    --input: #E2E8F0;
+    --ring: #137FEC;
+    /* Primary Blue for focus rings */
+
+    /* Radius: "0.625rem" (10px) from extracted data */
+    --radius: 0.5rem;
+    /* 8px seems safer standard, but user said 0.625rem. Let's adhere to 0.5rem for "rounded-md" look in buttons */
+
+    /* Charts (matched to palette) */
+    --chart-1: #137FEC;
+    /* Blue */
+    --chart-2: #22C55E;
+    /* Green */
+    --chart-3: #F59E0B;
+    /* Orange */
+    --chart-4: #89BFF6;
+    /* Blue-300 */
+    --chart-5: #073566;
+    /* Blue-900 */
+
+    /* Sidebar - Specific to "Navigation & Shell" screenshot
+       Sidebar bg seems to be White or very faint gray. 
+       Active state is Blue-50 bg with Blue-500 text and indicator.
+    */
+    --sidebar: #FFFFFF;
+    --sidebar-foreground: #0F172A;
+    --sidebar-primary: #137FEC;
+    --sidebar-primary-foreground: #FFFFFF;
+    --sidebar-accent: #E7F2FD;
+    /* Blue-50 */
+    --sidebar-accent-foreground: #137FEC;
+    /* Blue-500 */
+    --sidebar-border: #E2E8F0;
+    --sidebar-ring: #137FEC;
 }
 
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.145 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.145 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.985 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.396 0.141 25.723);
-    --destructive-foreground: oklch(0.637 0.237 25.331);
-    --border: oklch(0.269 0 0);
-    --input: oklch(0.269 0 0);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.488 0.243 264.376);
-    --chart-2: oklch(0.696 0.17 162.48);
-    --chart-3: oklch(0.769 0.188 70.08);
-    --chart-4: oklch(0.627 0.265 303.9);
-    --chart-5: oklch(0.645 0.246 16.439);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(0.269 0 0);
-    --sidebar-ring: oklch(0.439 0 0);
+    /* Dark Mode Mappings (Assumption: Deep Blues/Slate) */
+    --background: #020617;
+    /* Slate-950 */
+    --foreground: #F8FAFC;
+    /* Slate-50 */
+
+    --card: #0F172A;
+    /* Slate-900 */
+    --card-foreground: #F8FAFC;
+
+    --popover: #0F172A;
+    --popover-foreground: #F8FAFC;
+
+    --primary: #137FEC;
+    /* Keep Brand Blue */
+    --primary-foreground: #FFFFFF;
+
+    --secondary: #1E293B;
+    /* Slate-800 */
+    --secondary-foreground: #F8FAFC;
+
+    --muted: #1E293B;
+    --muted-foreground: #94A3B8;
+
+    --accent: #1E293B;
+    --accent-foreground: #F8FAFC;
+
+    --destructive: #7F1D1D;
+    --destructive-foreground: #F8FAFC;
+
+    --success: #14532D;
+    --success-foreground: #F8FAFC;
+
+    --warning: #78350F;
+    --warning-foreground: #F8FAFC;
+
+    --border: #1E293B;
+    --input: #1E293B;
+    --ring: #137FEC;
+
+    --sidebar: #020617;
+    --sidebar-foreground: #F8FAFC;
+    --sidebar-primary: #137FEC;
+    --sidebar-primary-foreground: #FFFFFF;
+    --sidebar-accent: #1E293B;
+    --sidebar-accent-foreground: #F8FAFC;
+    --sidebar-border: #1E293B;
+    --sidebar-ring: #137FEC;
 }
 
 @layer base {
@@ -125,5 +202,33 @@
 
     body {
         @apply bg-background text-foreground;
+        font-feature-settings: "rlig" 1, "calt" 1;
+        /* Clean typography */
+    }
+
+    /* Typography Scale from "Brand Foundations" */
+    h1 {
+        @apply text-4xl font-bold tracking-tight lg:text-5xl;
+    }
+
+    h2 {
+        @apply text-3xl font-semibold tracking-tight;
+    }
+
+    h3 {
+        @apply text-2xl font-semibold tracking-tight;
+    }
+
+    h4 {
+        @apply text-xl font-semibold tracking-tight;
+    }
+
+    p {
+        @apply leading-7;
+    }
+
+    /* Widget Styles / Cards */
+    .card-panel {
+        @apply rounded-xl border bg-card text-card-foreground shadow-sm;
     }
 }
