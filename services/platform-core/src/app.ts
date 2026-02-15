@@ -2,7 +2,6 @@ import express, { Express } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import { apiReference } from '@scalar/express-api-reference';
 import { openApiSpecification } from './config/swagger';
 import healthRoutes from './routes/health';
 
@@ -90,14 +89,16 @@ app.get('/', (req, res) => {
   `);
 });
 
-// Scalar API Reference
-app.use(
-  '/docs',
-  apiReference({
-    spec: {
-      content: openApiSpecification,
-    },
-  } as any),
-);
+// Scalar API Reference (Dynamic Import for ESM compatibility)
+import('@scalar/express-api-reference').then(({ apiReference }) => {
+  app.use(
+    '/docs',
+    apiReference({
+      spec: {
+        content: openApiSpecification,
+      },
+    } as any),
+  );
+});
 
 export default app;
