@@ -1,3 +1,5 @@
+"use client";
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, AuthError } from '../types';
 import { storage } from '@labs/utils';

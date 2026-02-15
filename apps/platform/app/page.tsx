@@ -10,19 +10,7 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="px-6 py-4 flex items-center justify-between border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-         <div className="flex items-center gap-2 font-bold text-xl">
-            <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground">
-                <LayoutDashboard className="h-5 w-5" />
-            </div>
-            RJ Platform
-         </div>
-         <nav className="flex gap-4">
-             <Link href="/docs" className="text-sm font-medium hover:text-primary transition-colors">
-                Documentation
-             </Link>
-         </nav>
-      </header>
+
 
       <main className="flex-1 flex flex-col items-center justify-center p-6 text-center">
         <div className="max-w-2xl space-y-8">
@@ -39,7 +27,11 @@ export default function Home() {
             </div>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <Link href={loginUrl}>
+                 {/* 
+                    Using direct URL construction for now as requested.
+                    Ideally this would share logic with Navbar or use a config hook.
+                 */}
+                <Link href={`http://localhost:3000/sign-in?redirect=http://localhost:3004/auth/callback`}>
                     <Button size="lg" className="gap-2 h-12 px-8 text-lg">
                         <ShieldCheck className="h-5 w-5" />
                         Sign In to Console
